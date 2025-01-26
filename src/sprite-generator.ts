@@ -99,9 +99,7 @@ export async function generateSprite(
       channels: 4,
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     },
-  })
-    .composite(composite)
-    [format]({ quality })
+  }).composite(composite)[format]({ quality })
 
   const spritePath = join(outputDir, `${prefix}-sprite.${format}`)
   await spriteSheet.toFile(spritePath)
