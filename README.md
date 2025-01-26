@@ -8,19 +8,42 @@
 
 # imgx
 
-> A better save for web developers.
+> A powerful image optimization toolkit for modern web development.
 
 ## Features
 
-- Image Optimizations & Manipulations
-- Lossy & Lossless Minification
-- Support for Responsive Images
-- WebP, AVIF, JPEG-XR, and JPEG 2000
-- Image Placeholder Generation _(via thumbhash)_
-- OG Image Generation
-- Ensures Privacy
-- Web Optimized by default
-- Simple, lightweight CLI & Library
+- **Advanced Image Optimization**
+  - Lossy & lossless compression
+  - Smart quality optimization
+  - Metadata stripping
+  - Color profile management
+
+- **Format Support**
+  - WebP, AVIF conversion
+  - JPEG, PNG optimization
+  - SVG minification
+  - Animated GIF optimization
+
+- **Modern Web Features**
+  - Responsive image generation
+  - Art direction support
+  - Lazy loading helpers
+  - ThumbHash placeholders
+  - Sprite sheet generation
+  - OG Image generation
+
+- **Developer Experience**
+  - Watch mode for development
+  - Development server with on-the-fly optimization
+  - CI/CD integration
+  - Detailed analysis and reporting
+  - Progress indicators
+
+- **Privacy & Performance**
+  - Metadata stripping
+  - Configurable optimization levels
+  - Cache control
+  - Web-optimized by default
 
 ## Install
 
@@ -28,65 +51,152 @@
 bun install -d @stacksjs/imgx
 ```
 
-<!-- _Alternatively, you can install:_
-
-```bash
-brew install imgx # wip
-pkgx install imgx # wip
-``` -->
-
 ## Get Started
 
-There are two ways of using this tool: _as a library or as a CLI._
+### CLI Usage
 
-### Library
+Basic optimization:
+```bash
+# Optimize a single image
+imgx optimize input.jpg -q 75
 
-Given the npm package is installed:
+# Convert to WebP
+imgx optimize input.jpg output.webp -f webp
 
-```ts
-// wip
+# Optimize a directory of images
+imgx optimize ./images -R -f webp
+
+# Watch mode for development
+imgx optimize ./src/images -w -f webp
 ```
 
-### CLI
+Advanced features:
 
 ```bash
-imgx wip
-imgx --help
-imgx --version
+# Generate responsive images
+imgx optimize hero.jpg --responsive --responsive-sizes 320,768,1024,1920
+
+# Create sprite sheet
+imgx sprite ./icons ./dist --retina --optimize
+
+# Generate thumbnails with ThumbHash
+imgx optimize input.jpg -t --thumbhash-size 64x64
+
+# Analyze image optimization potential
+imgx analyze ./images -o report.json --ci
+```
+
+Development server:
+```bash
+# Start dev server with on-the-fly optimization
+imgx serve ./public -p 3000
+
+# Access optimized images:
+# http://localhost:3000/image.jpg?format=webp&quality=75&size=800x600
+```
+
+### Library Usage
+
+```ts
+import { process, generateSprite, analyzeImage } from '@stacksjs/imgx'
+
+// Basic optimization
+await process({
+  input: 'input.jpg',
+  output: 'output.webp',
+  quality: 75,
+  format: 'webp'
+})
+
+// Generate responsive images
+await process({
+  input: 'hero.jpg',
+  responsive: true,
+  responsiveSizes: [320, 768, 1024, 1920],
+  format: 'webp'
+})
+
+// Create sprite sheet
+await generateSprite({
+  images: ['icon1.png', 'icon2.png'],
+  output: './dist',
+  retina: true,
+  format: 'webp'
+})
+
+// Analyze images
+const report = await analyzeImage('image.jpg')
+console.log(report.optimizationPotential)
 ```
 
 ## Configuration
 
-The Reverse Proxy can be configured using a `imgx.config.ts` _(or `imgx.config.js`)_ file and it will be automatically loaded when running the `reverse-proxy` command.
+Create an `imgx.config.ts` file:
 
 ```ts
-// imgx.config.{ts,js}
-import type { ImgxOptions } from '@stacksjs/imgx'
+import type { ImgxConfig } from '@stacksjs/imgx'
 
-const config: ImgxOptions = {
+export default {
+  // General options
   verbose: true,
-}
+  cache: true,
+  cacheDir: '.imgx-cache',
 
-export default config
+  // Default optimization settings
+  quality: 75,
+  format: 'webp',
+  progressive: true,
+  stripMetadata: true,
+
+  // Responsive image settings
+  responsive: {
+    sizes: [320, 768, 1024, 1920],
+    formats: ['webp', 'avif'],
+    quality: 75
+  },
+
+  // Sprite generation
+  sprites: {
+    retina: true,
+    padding: 2,
+    prefix: 'icon',
+    format: 'webp'
+  },
+
+  // Development server
+  server: {
+    port: 3000,
+    cache: true,
+    cors: true
+  }
+} satisfies ImgxConfig
 ```
 
-_Then run:_
+## CLI Reference
 
 ```bash
-./imgx start
+imgx optimize [input] [output]
+
+Options:
+  -q, --quality <number>     Image quality (1-100) (default: 80)
+  -r, --resize <string>      Resize image (e.g., "50%" or "800x600")
+  -f, --format <string>      Output format (jpeg, png, webp, avif)
+  -p, --progressive         Enable progressive mode (default: true)
+  -m, --preserve-metadata   Preserve image metadata
+  -w, --watch              Watch for file changes
+  -R, --recursive          Process directories recursively
+  -t, --thumbhash          Generate ThumbHash placeholder
+  --responsive             Generate responsive images
+  --skip-existing         Skip already optimized files
+  --backup                Create backup of original files
+
+Examples:
+  $ imgx optimize input.jpg -q 75 -r 50%
+  $ imgx optimize ./images -f webp -R
+  $ imgx optimize input.jpg -t --thumbhash-size 64x64
+  $ imgx sprite ./icons ./dist --retina --optimize
+  $ imgx analyze ./images --ci --threshold 500KB
 ```
-
-To learn more, head over to the [documentation](https://reverse-proxy.sh/).
-
-## Testing
-
-```bash
-bun test
-```
-
-## Changelog
-
-Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
 
 ## Contributing
 
@@ -104,9 +214,9 @@ For casual chit-chat with others using this package:
 
 ## Postcardware
 
-Two things are true: Stacks OSS will always stay open-source, and we do love to receive postcards from wherever Stacks is used! 🌍 _We also publish them on our website. And thank you, Spatie_
+Two things are true: Stacks OSS will always stay open-source, and we do love to receive postcards from wherever Stacks is used! _We also publish them on our website._
 
-Our address: Stacks.js, 12665 Village Ln #2306, Playa Vista, CA 90094
+Our address: Stacks.js, 12665 Village Ln #2306, Playa Vista, CA 90094 🌍
 
 ## Sponsors
 
@@ -122,7 +232,7 @@ We would like to extend our thanks to the following sponsors for funding Stacks 
 
 ## License
 
-The MIT License (MIT). Please see [LICENSE](https://github.com/stacksjs/stacks/tree/main/LICENSE.md) for more information.
+The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
 
 Made with 💙
 
