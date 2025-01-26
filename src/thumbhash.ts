@@ -1,3 +1,5 @@
+import sharp from 'sharp'
+
 // Thanks to evanw for the original implementation of this code:
 // https://github.com/evanw/thumbhash
 
@@ -368,4 +370,16 @@ export function rgbaToDataURL(w: number, h: number, rgba: ArrayLike<number>): st
 export function thumbHashToDataURL(hash: ArrayLike<number>): string {
   const image = thumbHashToRGBA(hash)
   return rgbaToDataURL(image.w, image.h, image.rgba)
+}
+
+export async function generateThumbHash(input: string): Promise<{ hash: Uint8Array, dataUrl: string }> {
+  const image = sharp(input)
+  const { data, info } = await image
+    .resize(100, 100, { fit: 'inside' })
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+
+  const hash = rgbaToThumbHash(info.width, info.height, data)
+  const dataUrl = thumbHashToDataURL(hash)
+  return { hash, dataUrl }
 }
