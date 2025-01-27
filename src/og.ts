@@ -11,6 +11,7 @@ export async function generateSocialImages(
   debugLog('social', `Generating social media images from ${input}`)
 
   const sizes = {
+    'og-github': { width: 1280, height: 640 },
     'og-facebook': { width: 1200, height: 630 },
     'og-twitter': { width: 1200, height: 600 },
     'og-linkedin': { width: 1104, height: 736 },
