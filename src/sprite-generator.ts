@@ -31,7 +31,7 @@ export async function generateSprite(
   outputDir: string,
   config: SpriteConfig = {},
 ): Promise<SpriteResult> {
-  const {
+  let {
     padding = 2,
     maxWidth = 2048,
     prefix = 'sprite',
@@ -60,7 +60,7 @@ export async function generateSprite(
   let currentX = 0
   let currentY = 0
   let rowHeight = 0
-  let maxWidth = 0
+  maxWidth = 0
   let maxHeight = 0
 
   const positions = sprites.map((sprite) => {

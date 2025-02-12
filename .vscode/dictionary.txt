@@ -43,6 +43,7 @@ softprops
 Solana
 sponsorware
 stacksjs
+thumbhash
 tlsx
 twoslash
 typecheck

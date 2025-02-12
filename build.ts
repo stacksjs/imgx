@@ -9,6 +9,7 @@ await Bun.build({
   target: 'node',
   minify: true,
   splitting: true,
+  external: ['bun'],
   plugins: [dts()],
 })
 
