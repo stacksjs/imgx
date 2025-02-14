@@ -1,4 +1,5 @@
 import type { OptimizeResult, ProcessOptions } from './types'
+import { Buffer } from 'node:buffer'
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import sharp from 'sharp'

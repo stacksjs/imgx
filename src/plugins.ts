@@ -1,6 +1,7 @@
 import type { Plugin } from 'vite'
 import type { Compiler } from 'webpack'
 import type { ProcessOptions } from './types'
+import { Buffer } from 'node:buffer'
 import { process } from './core'
 import { debugLog } from './utils'
 

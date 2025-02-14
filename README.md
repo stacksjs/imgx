@@ -98,7 +98,7 @@ imgx serve ./public -p 3000
 ### Library Usage
 
 ```ts
-import { process, generateSprite, analyzeImage } from '@stacksjs/imgx'
+import { analyzeImage, generateSprite, process } from '@stacksjs/imgx'
 
 // Basic optimization
 await process({

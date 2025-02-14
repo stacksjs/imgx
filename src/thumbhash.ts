@@ -18,7 +18,10 @@ export function rgbaToThumbHash(w: number, h: number, rgba: ArrayLike<number>): 
   const { PI, round, max, cos, abs } = Math
 
   // Determine the average color
-  let avg_r = 0; let avg_g = 0; let avg_b = 0; let avg_a = 0
+  let avg_r = 0
+  let avg_g = 0
+  let avg_b = 0
+  let avg_a = 0
   for (let i = 0, j = 0; i < w * h; i++, j += 4) {
     const alpha = rgba[j + 3] / 255
     avg_r += alpha / 255 * rgba[j]
@@ -54,8 +57,11 @@ export function rgbaToThumbHash(w: number, h: number, rgba: ArrayLike<number>): 
   }
 
   // Encode using the DCT into DC (constant) and normalized AC (varying) terms
-  const encodeChannel = (channel, nx, ny) => {
-    let dc = 0; const ac = []; let scale = 0; const fx = []
+  const encodeChannel = (channel: any, nx: any, ny: any) => {
+    let dc = 0
+    const ac = []
+    let scale = 0
+    const fx = []
     for (let cy = 0; cy < ny; cy++) {
       for (let cx = 0; cx * ny < nx * (ny - cy); cx++) {
         let f = 0
@@ -149,10 +155,15 @@ export function thumbHashToRGBA(hash: ArrayLike<number>): { w: number, h: number
   const ratio = thumbHashToApproximateAspectRatio(hash)
   const w = round(ratio > 1 ? 32 : 32 * ratio)
   const h = round(ratio > 1 ? 32 / ratio : 32)
-  const rgba = new Uint8Array(w * h * 4); const fx = []; const fy = []
+  const rgba = new Uint8Array(w * h * 4)
+  const fx = []
+  const fy = []
   for (let y = 0, i = 0; y < h; y++) {
     for (let x = 0; x < w; x++, i += 4) {
-      let l = l_dc; let p = p_dc; let q = q_dc; let a = a_dc
+      let l = l_dc
+      let p = p_dc
+      let q = q_dc
+      let a = a_dc
 
       // Precompute the coefficients
       for (let cx = 0, n = max(lx, hasAlpha ? 5 : 3); cx < n; cx++)
@@ -312,7 +323,8 @@ export function rgbaToDataURL(w: number, h: number, rgba: ArrayLike<number>): st
     -1609899400,
     -1111625188,
   ]
-  let a = 1; let b = 0
+  let a = 1
+  let b = 0
   for (let y = 0, i = 0, end = row - 1; y < h; y++, end += row - 1) {
     bytes.push(y + 1 < h ? 0 : 1, row & 255, row >> 8, ~row & 255, (row >> 8) ^ 255, 0)
     for (b = (b + a) % 65521; i < end; i++) {

@@ -55,8 +55,7 @@ export async function generateResponsiveImages(
       const outputPath = join(outputDir, filename)
 
       await sharp(inputBuffer)
-        .resize(width)
-        [format]({ quality })
+        .resize(width)[format]({ quality })
         .toFile(outputPath)
 
       const { size } = await sharp(outputPath).metadata()
@@ -122,8 +121,7 @@ export async function generateImageSet(options: ImageSetOptions) {
     const outputPath = join(outputDir, `${name}-${suffix}.${format}`)
 
     await sharp(input)
-      .resize(size.width, size.height)
-      [format]({ quality })
+      .resize(size.width, size.height)[format]({ quality })
       .toFile(outputPath)
 
     results.push({

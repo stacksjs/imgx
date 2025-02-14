@@ -332,7 +332,7 @@ async function processFile(input: string, output: string, options: ProcessOption
   if (options.thumbhash) {
     try {
       const { hash, dataUrl } = await generateThumbHash(input)
-      const [width, height] = options.thumbhashSize.split('x').map(Number)
+      // const [width, height] = options.thumbhashSize.split('x').map(Number)
 
       const thumbPath = `${output}.thumb.png`
       const hashPath = `${output}.thumb.hash`
@@ -342,7 +342,7 @@ async function processFile(input: string, output: string, options: ProcessOption
 
       console.log(`Generated ThumbHash: ${thumbPath}`)
     }
-    catch (error) {
+    catch (error: any) {
       console.error(`Error generating ThumbHash: ${error.message}`)
     }
   }
