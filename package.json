@@ -61,15 +61,15 @@
     "preview:docs": "bun --bun vitepress preview docs"
   },
   "devDependencies": {
-    "@iconify-json/carbon": "^1.2.6",
-    "@shikijs/vitepress-twoslash": "^2.3.2",
+    "@iconify-json/carbon": "^1.2.7",
+    "@shikijs/vitepress-twoslash": "^2.4.1",
     "@stacksjs/eslint-config": "^3.13.1-beta.2",
     "@stacksjs/tlsx": "^0.10.0",
     "@types/bun": "^1.2.2",
     "@vite-pwa/vitepress": "^0.5.3",
     "bumpp": "^10.0.3",
     "bun-plugin-dtsx": "^0.21.9",
-    "bunfig": "^0.5.3",
+    "bunfig": "^0.7.0",
     "cac": "^6.7.14",
     "changelogen": "^0.5.7",
     "consola": "^3.4.0",
@@ -77,12 +77,12 @@
     "sharp": "^0.33.5",
     "svgo": "^3.3.2",
     "typescript": "^5.7.3",
-    "unocss": "^65.4.3",
+    "unocss": "^65.5.0",
     "unplugin-icons": "^22.0.0",
-    "unplugin-vue-components": "^28.0.0",
+    "unplugin-vue-components": "^28.1.0",
     "vite-plugin-pwa": "^0.21.1",
     "vitepress": "^1.6.3",
-    "webpack": "^5.97.1"
+    "webpack": "^5.98.0"
   },
   "overrides": {
     "unconfig": "0.3.10"
