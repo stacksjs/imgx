@@ -71,7 +71,7 @@
     "cac": "^6.7.14",
     "changelogen": "^0.6.1",
     "consola": "^3.4.2",
-    "image-size": "^1.2.0",
+    "image-size": "^2.0.1",
     "sharp": "^0.33.5",
     "svgo": "^3.3.2",
     "typescript": "^5.8.2",
