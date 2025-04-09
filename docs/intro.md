@@ -21,6 +21,10 @@ Please see our [releases](https://github.com/stacksjs/stacks/releases) page for 
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
 
+## Stargazers
+
+[![Stargazers](https://starchart.cc/stacksjs/imgx.svg?variant=adaptive)](https://starchart.cc/stacksjs/imgx)
+
 ## Community
 
 For help, discussion about best practices, or any other conversation that would benefit from being searchable:
