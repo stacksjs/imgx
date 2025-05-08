@@ -1,9 +1,9 @@
 {
-  "name": "imgx",
+  "name": "bun-plugin-imgx",
   "type": "module",
   "version": "0.0.0",
   "private": true,
-  "description": "Modern image optimizations & manipulations.",
+  "description": "Bun plugin for imgx",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/imgx",
@@ -15,6 +15,8 @@
     "url": "https://github.com/stacksjs/imgx/issues"
   },
   "keywords": [
+    "bun",
+    "plugin",
     "image",
     "manipulation",
     "compression",

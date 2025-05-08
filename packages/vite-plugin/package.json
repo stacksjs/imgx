@@ -1,9 +1,9 @@
 {
-  "name": "imgx",
+  "name": "vite-plugin-imgx",
   "type": "module",
   "version": "0.0.0",
   "private": true,
-  "description": "Modern image optimizations & manipulations.",
+  "description": "Vite plugin for imgx",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/imgx",
@@ -16,6 +16,8 @@
   },
   "keywords": [
     "image",
+    "vite",
+    "plugin",
     "manipulation",
     "compression",
     "web optimization",

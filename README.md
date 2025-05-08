@@ -31,6 +31,8 @@
   - ThumbHash placeholders
   - Sprite sheet generation
   - OG Image generation
+  - Low-resolution image placeholders
+  - Batch image processing
 
 - **Developer Experience**
   - Watch mode for development
@@ -100,7 +102,14 @@ imgx serve ./public -p 3000
 ### Library Usage
 
 ```ts
-import { analyzeImage, generateSprite, process } from '@stacksjs/imgx'
+import {
+  analyzeImage,
+  batchProcessImages,
+  convertImageFormat,
+  generatePlaceholder,
+  generateSprite,
+  process
+} from '@stacksjs/imgx'
 
 // Basic optimization
 await process({
@@ -126,8 +135,30 @@ await generateSprite({
   format: 'webp'
 })
 
-// Analyze images
-const report = await analyzeImage('image.jpg')
+// Generate low-resolution placeholder
+const placeholder = await generatePlaceholder('hero.jpg', {
+  width: 20,
+  blurLevel: 40,
+  quality: 50,
+  format: 'webp',
+  base64Encode: true, // Get base64 data URL
+})
+// Use placeholder.dataURL in your HTML for LQIP technique
+
+// Generate thumbhash placeholder
+const thumbhashPlaceholder = await generatePlaceholder('hero.jpg', {
+  thumbhash: true,
+})
+// Use thumbhashPlaceholder.dataURL for an efficient placeholder
+
+// Convert image to a different format
+const webpPath = await convertImageFormat('image.jpg', 'webp', {
+  quality: 80,
+  outputDir: './dist',
+})
+
+// Process a directory of images in batch
+const results = await analyzeImage('image.jpg')
 console.log(report.optimizationPotential)
 ```
 
@@ -299,6 +330,203 @@ The tool will generate:
 1. All required app icon sizes for the selected platform(s)
 2. A properly formatted `Contents.json` file for Xcode
 3. A README.md with installation instructions
+
+## Image Placeholders
+
+Imgx provides powerful image placeholder generation for improved page load performance:
+
+```ts
+// Generate a low-resolution blurred placeholder
+const placeholder = await generatePlaceholder('image.jpg', {
+  width: 20, // Small width for efficiency
+  blurLevel: 40, // Higher values = more blur
+  quality: 50, // Lower quality for smaller size
+  format: 'webp', // WebP is usually smaller
+})
+
+// Use in HTML
+const html = `
+<div class="image-wrapper" style="background-image: url(${placeholder.dataURL})">
+  <img src="image.jpg" loading="lazy" width="${placeholder.width}" height="${placeholder.height}">
+</div>
+`
+
+// ThumbHash alternative (even smaller, fixed quality)
+const thumbHash = await generatePlaceholder('image.jpg', {
+  strategy: 'thumbhash',
+})
+
+// Use dominant color as placeholder for even faster loading
+const colorPlaceholder = await generatePlaceholder('image.jpg', {
+  strategy: 'dominant-color',
+})
+
+// Pixelated placeholder for a retro effect
+const pixelatedPlaceholder = await generatePlaceholder('image.jpg', {
+  strategy: 'pixelate',
+  width: 30,
+})
+
+// Generate with CSS helper
+const placeholderWithCSS = await generatePlaceholder('image.jpg', {
+  strategy: 'blur',
+  cssFilter: true,
+})
+
+// Use the CSS class in your HTML
+console.log(placeholderWithCSS.css)
+// .placeholder-image { background-size: cover; ... }
+```
+
+## Batch Processing
+
+Process entire directories of images:
+
+```ts
+// Convert all JPG/PNG images to WebP and AVIF
+const { results, summary } = await batchProcessImages('./images', {
+  formats: ['webp', 'avif'],
+  quality: 75,
+  resize: { width: 1200 }, // Optional resize
+  recursive: true, // Process subdirectories
+  skipExisting: true, // Skip already processed files
+  preserveStructure: true, // Keep directory structure
+  filenameTemplate: '[name]-optimized.[format]', // Custom naming
+})
+
+console.log(`Processed ${summary.successCount} of ${summary.totalFiles} images`)
+console.log(`Total saved: ${summary.saved} bytes (${summary.savedPercentage.toFixed(2)}%)`)
+
+// With progress tracking
+await batchProcessImages('./images', {
+  formats: ['webp'],
+  progressCallback: (progress) => {
+    console.log(`Progress: ${progress.percentage.toFixed(2)}% (${progress.completed}/${progress.total})`)
+  }
+})
+
+// With optimization presets
+await batchProcessImages('./images', {
+  formats: ['webp', 'jpeg'],
+  optimizationPreset: 'quality', // 'web', 'quality', 'performance'
+})
+
+// With custom transformations
+await batchProcessImages('./images', {
+  formats: ['webp'],
+  transformations: [
+    { type: 'grayscale' },
+    { type: 'blur', options: { sigma: 2 } },
+  ]
+})
+
+// Format-specific quality settings
+await batchProcessImages('./images', {
+  formats: ['webp', 'avif', 'jpeg'],
+  quality: {
+    webp: 80,
+    avif: 70,
+    jpeg: 85
+  }
+})
+```
+
+## Format Conversion
+
+Easily convert between image formats:
+
+```ts
+// Convert a JPEG to WebP
+const result = await convertImageFormat('photo.jpg', 'webp')
+console.log(`Converted to ${result.outputPath} (saved ${result.savedPercentage.toFixed(2)}%)`)
+
+// Convert an image with options
+const avifResult = await convertImageFormat('photo.jpg', 'avif', {
+  quality: 80,
+  outputDir: './optimized',
+  lossless: false,
+  filenamePrefix: 'converted-',
+  filenameSuffix: '-hq',
+})
+
+// Convert with resize
+await convertImageFormat('photo.jpg', 'webp', {
+  resize: { width: 800, height: 600 },
+  quality: 85,
+})
+
+// Format-specific optimizations
+await convertImageFormat('photo.png', 'jpeg', {
+  quality: 90,
+  progressive: true,
+  chromaSubsampling: '4:4:4', // High quality chroma
+})
+
+// Batch convert all PNG files to WebP
+const pngFiles = await getFiles('./images', { patterns: ['**/*.png'] })
+await Promise.all(pngFiles.map(file =>
+  convertImageFormat(file, 'webp', { outputDir: './webp' })
+))
+```
+
+## Image Watermarking
+
+Add text or image watermarks to your images:
+
+```ts
+// Add text watermark
+const watermarked = await applyWatermark('image.jpg', {
+  text: 'Copyright 2023',
+  position: 'bottom-right', // 'center', 'top-left', 'bottom-right', etc.
+  opacity: 0.7,
+  output: 'watermarked-image.jpg',
+  textOptions: {
+    fontSize: 24,
+    color: 'rgba(255, 255, 255, 0.8)',
+    background: 'rgba(0, 0, 0, 0.5)',
+    padding: 10,
+  }
+})
+
+// Add image watermark
+await applyWatermark('photo.jpg', {
+  image: 'logo.png',
+  position: 'bottom-right',
+  scale: 0.2, // 20% of the main image size
+  opacity: 0.5,
+  output: 'branded-photo.jpg',
+})
+
+// Create a tiled watermark pattern
+await applyWatermark('background.jpg', {
+  image: 'small-logo.png',
+  tiled: true,
+  opacity: 0.15,
+  output: 'watermarked-background.jpg',
+})
+
+// Apply rotated watermark
+await applyWatermark('certificate.jpg', {
+  text: 'VERIFIED',
+  position: 'center',
+  rotate: 45, // 45 degrees rotation
+  opacity: 0.3,
+  textOptions: {
+    fontSize: 72,
+    color: 'rgba(255, 0, 0, 0.5)',
+  }
+})
+
+// Apply watermark to images in batch
+const images = await getFiles('./photos', { patterns: ['**/*.jpg'] })
+await Promise.all(images.map(image =>
+  applyWatermark(image, {
+    text: '© Company Name',
+    position: 'bottom-right',
+    output: image.replace('.jpg', '.watermarked.jpg'),
+  })
+))
+```
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/@stacksjs/imgx?style=flat-square
