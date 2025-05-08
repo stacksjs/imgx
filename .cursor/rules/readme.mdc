@@ -1,9 +1,8 @@
 ---
 description: General information based on the latest ./README.md content
-globs: 
+globs:
+alwaysApply: false
 ---
-Update it if APIs change:
-
 # imgx
 
 > A powerful image optimization toolkit for modern web development.

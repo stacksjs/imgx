@@ -1,11 +1,12 @@
+import type { BunPlugin, OnLoadResult } from 'bun'
 import type { Plugin } from 'vite'
-import type { Compiler } from 'webpack'
-import type { ProcessOptions } from './types'
+import type { OptimizeResult, ProcessOptions } from './types'
 import { Buffer } from 'node:buffer'
-import { process } from './core'
+import process from 'node:process'
+import { process as processImage } from './core'
 import { debugLog } from './utils'
 
-interface ImgxPluginOptions extends ProcessOptions {
+interface ImgxPluginOptions extends Partial<ProcessOptions> {
   include?: string[]
   exclude?: string[]
   disabled?: boolean
@@ -16,7 +17,7 @@ export function viteImgxPlugin(options: ImgxPluginOptions = {}): Plugin {
   const {
     include = ['**/*.{jpg,jpeg,png,webp,avif,svg}'],
     exclude = ['node_modules/**'],
-    disabled = process.env.NODE_ENV === 'development',
+    disabled = process.env?.NODE_ENV === 'development',
     ...processOptions
   } = options
 
@@ -44,7 +45,7 @@ export function viteImgxPlugin(options: ImgxPluginOptions = {}): Plugin {
       try {
         debugLog('vite', `Processing ${id}`)
 
-        const result = await process({
+        const result = await processImage({
           ...processOptions,
           input: id,
         })
@@ -54,67 +55,63 @@ export function viteImgxPlugin(options: ImgxPluginOptions = {}): Plugin {
           map: null,
         }
       }
-      catch (error) {
-        debugLog('error', `Failed to process ${id}: ${error.message}`)
+      catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        debugLog('error', `Failed to process ${id}: ${errorMessage}`)
         return null
       }
     },
   }
 }
 
-// Webpack plugin
-export class WebpackImgxPlugin {
-  private options: ImgxPluginOptions
+// Bun plugin
+export function bunImgxPlugin(options: ImgxPluginOptions = {}): BunPlugin {
+  const {
+    include = ['**/*.{jpg,jpeg,png,webp,avif,svg}'],
+    exclude = ['node_modules/**'],
+    disabled = process.env?.NODE_ENV === 'development',
+    ...processOptions
+  } = options
 
-  constructor(options: ImgxPluginOptions = {}) {
-    this.options = {
-      include: ['**/*.{jpg,jpeg,png,webp,avif,svg}'],
-      exclude: ['node_modules/**'],
-      disabled: process.env.NODE_ENV === 'development',
-      ...options,
+  if (disabled) {
+    return {
+      name: 'bun-plugin-imgx',
+      setup() {},
     }
   }
 
-  apply(compiler: Compiler) {
-    if (this.options.disabled)
-      return
+  return {
+    name: 'bun-plugin-imgx',
+    setup(build) {
+      build.onLoad({ filter: /\.(jpg|jpeg|png|webp|avif|svg)$/i }, async (args) => {
+        const id = args.path
 
-    const { include, exclude, ...processOptions } = this.options
-
-    compiler.hooks.emit.tapAsync('WebpackImgxPlugin', async (compilation, callback) => {
-      const assets = compilation.assets
-      const promises = []
-
-      for (const filename in assets) {
-        const shouldInclude = include.some(pattern => filename.match(new RegExp(pattern)))
-        const shouldExclude = exclude.some(pattern => filename.match(new RegExp(pattern)))
+        // Check include/exclude patterns
+        const shouldInclude = include.some(pattern => id.match(new RegExp(pattern)))
+        const shouldExclude = exclude.some(pattern => id.match(new RegExp(pattern)))
 
         if (!shouldInclude || shouldExclude)
-          continue
-
-        const source = assets[filename].source()
+          return null as unknown as OnLoadResult
 
         try {
-          debugLog('webpack', `Processing ${filename}`)
+          debugLog('bun', `Processing ${id}`)
 
-          const result = await process({
+          const result = await processImage({
             ...processOptions,
-            input: Buffer.from(source),
-            isSvg: filename.endsWith('.svg'),
+            input: id,
           })
 
-          compilation.assets[filename] = {
-            source: () => result.outputBuffer,
-            size: () => result.outputSize,
+          return {
+            contents: `export default ${JSON.stringify(result.outputPath)}`,
+            loader: 'js',
           }
         }
-        catch (error) {
-          debugLog('error', `Failed to process ${filename}: ${error.message}`)
+        catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : String(error)
+          debugLog('error', `Failed to process ${id}: ${errorMessage}`)
+          return null as unknown as OnLoadResult
         }
-      }
-
-      await Promise.all(promises)
-      callback()
-    })
+      })
+    },
   }
 }
