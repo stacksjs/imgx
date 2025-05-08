@@ -1,3 +1,9 @@
+import type { ProcessOptions } from './types'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import sharp from 'sharp'
+import { debugLog } from './utils'
+
 interface ResponsiveImageOptions extends ProcessOptions {
   breakpoints: number[]
   formats: ('webp' | 'avif' | 'jpeg' | 'png')[]
@@ -14,7 +20,7 @@ interface ResponsiveImageResult {
     format: string
     size: number
   }>
-  srcset: Record<string, string>
+  srcset: Record<string, string[]>
   htmlMarkup: string
 }
 
@@ -31,14 +37,24 @@ export async function generateResponsiveImages(
     generateSrcset = true,
   } = options
 
+  if (typeof input !== 'string') {
+    throw new TypeError('Input must be a string path')
+  }
+
   debugLog('responsive', `Generating responsive images for ${input}`)
 
   const inputBuffer = await readFile(input)
   const metadata = await sharp(inputBuffer).metadata()
-  const originalWidth = metadata.width
+  const originalWidth = metadata.width || 0
 
-  const variants = []
-  const srcset: Record<string, string> = {}
+  const variants: Array<{
+    path: string
+    width: number
+    format: string
+    size: number
+  }> = []
+
+  const srcset: Record<string, string[]> = {}
 
   for (const format of formats) {
     srcset[format] = []
@@ -47,8 +63,9 @@ export async function generateResponsiveImages(
       if (width > originalWidth)
         continue
 
+      const inputName = input.split('/').pop()?.split('.')[0] || 'image'
       const filename = filenameTemplate
-        .replace('[name]', input.split('/').pop().split('.')[0])
+        .replace('[name]', inputName)
         .replace('[width]', width.toString())
         .replace('[ext]', format)
 
@@ -64,7 +81,7 @@ export async function generateResponsiveImages(
         path: outputPath,
         width,
         format,
-        size,
+        size: size || 0,
       })
 
       if (generateSrcset) {
@@ -83,12 +100,12 @@ export async function generateResponsiveImages(
     sizes="(max-width: ${Math.max(...breakpoints)}px) 100vw, ${Math.max(...breakpoints)}px"
   />`).join('\n')}
   <img
-    src="${variants[0].path}"
+    src="${variants[0]?.path || ''}"
     alt=""
     loading="lazy"
     decoding="async"
-    width="${variants[0].width}"
-    height="${Math.round(variants[0].width * (metadata.height / metadata.width))}"
+    width="${variants[0]?.width || 0}"
+    height="${Math.round((variants[0]?.width || 0) * ((metadata.height || 0) / (metadata.width || 1)))}"
   />
 </picture>`.trim()
 
@@ -109,12 +126,18 @@ interface ImageSetOptions {
   quality?: number
 }
 
-export async function generateImageSet(options: ImageSetOptions) {
+export async function generateImageSet(options: ImageSetOptions): Promise<Array<{
+  size: { width: number, height?: number, suffix?: string }
+  path: string
+}>> {
   const { input, name, sizes, outputDir, format = 'png', quality = 80 } = options
 
   debugLog('imageset', `Generating image set for ${input}`)
 
-  const results = []
+  const results: Array<{
+    size: { width: number, height?: number, suffix?: string }
+    path: string
+  }> = []
 
   for (const size of sizes) {
     const suffix = size.suffix || `${size.width}x${size.height || size.width}`
