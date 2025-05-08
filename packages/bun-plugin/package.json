@@ -29,6 +29,17 @@
     "typescript",
     "javascript"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js"
+    }
+  },
+  "module": "./dist/src/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "imgx": "./dist/bin/cli.js"
+  },
+  "files": ["README.md", "dist"],
   "scripts": {
     "build": "bun build.ts && bun run compile",
     "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/imgx",
@@ -42,28 +53,31 @@
     "lint:fix": "bunx --bun eslint . --fix",
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
     "changelog": "bunx changelogen --output CHANGELOG.md",
-    "prepublishOnly": "bun --bun run build && bun run compile:all && bun run zip",
+    "prepublishOnly": "bun --bun run build && bun run compile:all",
     "release": "bun run changelog && bunx bumpp package.json --all",
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit",
     "dev:docs": "bun --bun vitepress dev docs",
     "build:docs": "bun --bun vitepress build docs",
-    "preview:docs": "bun --bun vitepress preview docs",
-    "zip": "bun run zip:all",
-    "zip:all": "bun run zip:linux-x64 && bun run zip:linux-arm64 && bun run zip:windows-x64 && bun run zip:darwin-x64 && bun run zip:darwin-arm64",
-    "zip:linux-x64": "zip -j bin/imgx-linux-x64.zip bin/imgx-linux-x64",
-    "zip:linux-arm64": "zip -j bin/imgx-linux-arm64.zip bin/imgx-linux-arm64",
-    "zip:windows-x64": "zip -j bin/imgx-windows-x64.zip bin/imgx-windows-x64.exe",
-    "zip:darwin-x64": "zip -j bin/imgx-darwin-x64.zip bin/imgx-darwin-x64"
+    "preview:docs": "bun --bun vitepress preview docs"
   },
   "devDependencies": {
-    "@stacksjs/docs": "^0.70.23",
-    "@stacksjs/eslint-config": "^4.10.2-beta.3",
+    "@stacksjs/docs": "^0.69.3",
+    "@stacksjs/eslint-config": "^3.13.1-beta.2",
+    "@stacksjs/tlsx": "^0.10.0",
     "@types/bun": "^1.2.2",
     "bumpp": "^10.0.3",
+    "bun-plugin-dtsx": "^0.21.9",
+    "bunfig": "^0.5.3",
+    "cac": "^6.7.14",
     "changelogen": "^0.5.7",
+    "consola": "^3.4.0",
+    "image-size": "^1.2.0",
+    "sharp": "^0.33.5",
+    "svgo": "^3.3.2",
     "typescript": "^5.7.3",
-    "unocss": "^66.1.1"
+    "unocss": "^65.4.3",
+    "webpack": "^5.97.1"
   },
   "overrides": {
     "unconfig": "0.3.10"
@@ -73,8 +87,5 @@
   },
   "lint-staged": {
     "*.{js,ts}": "bunx eslint . --fix"
-  },
-  "workspaces": [
-    "packages/*"
-  ]
+  }
 }

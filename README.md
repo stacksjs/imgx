@@ -216,7 +216,7 @@ For casual chit-chat with others using this package:
 
 ## Postcardware
 
-“Software that is free, but hopes for a postcard.” We love receiving postcards from around the world showing where `imgx` is being used! We showcase them on our website too.
+"Software that is free, but hopes for a postcard." We love receiving postcards from around the world showing where `imgx` is being used! We showcase them on our website too.
 
 Our address: Stacks.js, 12665 Village Ln #2306, Playa Vista, CA 90094, United States 🌎
 
@@ -237,6 +237,68 @@ We would like to extend our thanks to the following sponsors for funding Stacks 
 The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
 
 Made with 💙
+
+## App Icon Generation
+
+You can now use imgx to generate properly sized app icons for macOS and iOS applications from a single source image.
+
+### Command Line Usage
+
+```bash
+# Generate app icons for all platforms (macOS and iOS)
+imgx app-icon source-icon.png
+
+# Generate only macOS app icons
+imgx app-icon source-icon.png -p macos
+
+# Generate only iOS app icons
+imgx app-icon source-icon.png -p ios
+
+# Specify a custom output directory
+imgx app-icon source-icon.png -o ./my-app/assets
+```
+
+### Programmatic Usage
+
+```typescript
+import { generateAppIcons } from 'imgx'
+
+// Generate app icons for all platforms
+await generateAppIcons('path/to/source-icon.png')
+
+// Generate only macOS app icons
+await generateAppIcons('path/to/source-icon.png', {
+  platform: 'macos',
+  outputDir: './my-app/assets'
+})
+```
+
+### Configuration
+
+You can configure the app icon generation in your `imgx.config.ts` file:
+
+```typescript
+import type { ImgxConfig } from 'imgx'
+
+const config: ImgxConfig = {
+  // Other configuration options...
+
+  appIcon: {
+    outputDir: 'assets/app-icons', // Default output directory
+    platform: 'all', // Default platform target ('macos', 'ios', or 'all')
+  },
+}
+
+export default config
+```
+
+### Output
+
+The tool will generate:
+
+1. All required app icon sizes for the selected platform(s)
+2. A properly formatted `Contents.json` file for Xcode
+3. A README.md with installation instructions
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/@stacksjs/imgx?style=flat-square

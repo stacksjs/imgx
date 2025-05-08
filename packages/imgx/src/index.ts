@@ -1,4 +1,5 @@
 export * from './analyze'
+export * from './app-icon'
 export { config } from './config'
 export * from './favicon'
 export * from './og'

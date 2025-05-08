@@ -6,6 +6,10 @@ export interface ImgxConfig {
   cacheDir: string
   concurrent: number
   skipOptimized: boolean
+  appIcon?: {
+    outputDir?: string
+    platform?: 'macos' | 'ios' | 'all'
+  }
 }
 
 export type ImgxOptions = Partial<ImgxConfig>
@@ -90,4 +94,17 @@ export interface GetFilesOptions extends ScanOptions {
   patterns?: string[]
   ignore?: string[]
   maxDepth?: number
+}
+
+export interface AppIconSize {
+  size: number
+  scale: 1 | 2
+  idiom: string
+  filename: string
+}
+
+export interface AppIconResult {
+  platform: string
+  sizes: Array<{ size: number, path: string, filename: string }>
+  contentsJson?: string
 }

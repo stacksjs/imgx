@@ -1,15 +1,74 @@
 import type { ImgxOptions, ProcessOptions } from '../src/types'
 import { Buffer } from 'node:buffer'
-import { writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { copyFile, stat, writeFile } from 'node:fs/promises'
+import { join, resolve } from 'node:path'
 import proc from 'node:process'
 import { CAC } from 'cac'
 import { version } from '../package.json'
 import { formatReport, generateReport } from '../src/analyze'
+import { generateAppIcons } from '../src/app-icon'
 import { process } from '../src/core'
 import { generateSprite } from '../src/sprite-generator'
 import { generateThumbHash } from '../src/thumbhash'
 import { debugLog, formatBytes, getFiles } from '../src/utils'
+
+// Helper function to parse file size strings like "5MB" or "500KB"
+function parseFileSize(sizeStr: string): number {
+  const units = {
+    b: 1,
+    kb: 1024,
+    mb: 1024 * 1024,
+    gb: 1024 * 1024 * 1024,
+  }
+
+  const match = sizeStr.match(/^(\d+(?:\.\d+)?)\s*([a-z]+)$/i)
+  if (!match)
+    return Number.parseInt(sizeStr, 10) || 0
+
+  const size = Number.parseFloat(match[1])
+  const unit = match[2].toLowerCase()
+
+  return size * (units[unit] || 1)
+}
+
+// Helper function to format a report
+function formatReport(report: any): string {
+  const { stats, summary } = report
+
+  let output = `
+Image Analysis Report
+=====================
+
+Summary:
+- Total images: ${summary.totalImages}
+- Total size: ${formatBytes(summary.totalSize)}
+- Average size: ${formatBytes(summary.averageSize)}
+- Potential savings: ${summary.potentialSavings}
+
+Format breakdown:
+${Object.entries(summary.formatBreakdown)
+  .map(([format, count]) => `- ${format}: ${count}`)
+  .join('\n')}
+
+Warnings:
+${summary.warnings.length ? summary.warnings.map(w => `- ${w}`).join('\n') : '- None'}
+
+Details:
+`
+
+  for (const stat of stats) {
+    output += `
+${stat.path}
+Size: ${formatBytes(stat.size)}
+Format: ${stat.format}
+Dimensions: ${stat.width}x${stat.height}
+Optimization potential: ${stat.optimizationPotential}
+${stat.warnings.length ? `Warnings:\n${stat.warnings.map(w => `- ${w}`).join('\n')}` : ''}
+`
+  }
+
+  return output
+}
 
 const cli = new CAC('imgx')
 
@@ -430,6 +489,46 @@ cli
   .action(() => {
     // TODO: Implement shell completion generation
     console.log('Shell completion not implemented yet')
+  })
+
+cli
+  .command('app-icon <input>', 'Generate app icons for macOS and iOS')
+  .alias('icon')
+  .option('-o, --output-dir <dir>', 'Output directory for app icons', { default: 'assets/app-icons' })
+  .option('-p, --platform <platform>', 'Target platform (macos, ios, all)', { default: 'all' })
+  .option('-v, --verbose', 'Enable verbose logging')
+  .example('imgx app-icon app-icon.png')
+  .example('imgx app-icon logo.png -o ./src/assets -p macos')
+  .action(async (input: string, options?: { outputDir?: string, platform?: 'macos' | 'ios' | 'all', verbose?: boolean }) => {
+    if (!input) {
+      cli.outputHelp()
+      return
+    }
+
+    try {
+      const results = await generateAppIcons(input, {
+        outputDir: options.outputDir,
+        platform: options.platform,
+      })
+
+      console.log(`Generated app icons for ${results.map(r => r.platform).join(', ')}:`)
+
+      for (const result of results) {
+        console.log(`\n${result.platform.toUpperCase()}:`)
+        console.log(`- Output directory: ${options.outputDir}/AppIcon.appiconset`)
+        console.log(`- Generated ${result.sizes.length} icon sizes`)
+
+        if (options.verbose) {
+          for (const size of result.sizes) {
+            console.log(`  - ${size.filename} (${size.size}x${size.size}px)`)
+          }
+        }
+      }
+    }
+    catch (error) {
+      console.error(`Error generating app icons: ${error.message}`)
+      proc.exit(1)
+    }
   })
 
 cli.version(version)
