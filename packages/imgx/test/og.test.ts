@@ -66,10 +66,10 @@ describe('og', () => {
       })
 
       // Lower quality should produce smaller files
-      const lowQualitySize = (await Bun.file(results['og-twitter']).size())
-      const highQualitySize = (await Bun.file(highQualityResults['og-twitter']).size())
+      const lowQualityFileInfo = await Bun.file(results['og-twitter']).stat()
+      const highQualityFileInfo = await Bun.file(highQualityResults['og-twitter']).stat()
 
-      expect(lowQualitySize).toBeLessThan(highQualitySize)
+      expect(lowQualityFileInfo.size).toBeLessThan(highQualityFileInfo.size)
     })
   })
 })

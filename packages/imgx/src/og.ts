@@ -3,10 +3,14 @@ import { join } from 'node:path'
 import sharp from 'sharp'
 import { debugLog } from './utils'
 
+export interface SocialImageOptions {
+  quality?: number
+}
+
 export async function generateSocialImages(
   input: string,
   outputDir: string,
-  options: ProcessOptions = {},
+  options: SocialImageOptions = {},
 ): Promise<Record<string, string>> {
   debugLog('social', `Generating social media images from ${input}`)
 
@@ -18,7 +22,7 @@ export async function generateSocialImages(
     'og-instagram': { width: 1080, height: 1080 },
   }
 
-  const results = {}
+  const results: Record<string, string> = {}
 
   for (const [name, size] of Object.entries(sizes)) {
     const outputPath = join(outputDir, `${name}.png`)

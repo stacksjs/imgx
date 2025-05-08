@@ -41,7 +41,7 @@ export async function analyzeImage(path: string): Promise<ImageStats> {
     optimizationPotential = 'medium'
 
   // Check for common issues
-  if (dimensions.width > 3000 || dimensions.height > 3000) {
+  if (dimensions.width > 2000 || dimensions.height > 2000) {
     warnings.push('Image dimensions are very large')
     optimizationPotential = 'high'
   }

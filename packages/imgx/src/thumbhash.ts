@@ -239,11 +239,11 @@ export function thumbHashToAverageRGBA(hash: ArrayLike<number>): { r: number, g:
  * @returns The approximate aspect ratio (i.e. width / height).
  */
 export function thumbHashToApproximateAspectRatio(hash: ArrayLike<number>): number {
-  const header = hash[3]
-  const hasAlpha = hash[2] & 0x80
-  const isLandscape = hash[4] & 0x80
-  const lx = isLandscape ? hasAlpha ? 5 : 7 : header & 7
-  const ly = isLandscape ? header & 7 : hasAlpha ? 5 : 7
+  const header16 = hash[3] | (hash[4] << 8)
+  const hasAlpha = (hash[2] & 0x80) !== 0
+  const isLandscape = (header16 & 0x8000) !== 0
+  const lx = isLandscape ? hasAlpha ? 5 : 7 : header16 & 7
+  const ly = isLandscape ? header16 & 7 : hasAlpha ? 5 : 7
   return lx / ly
 }
 

@@ -31,7 +31,7 @@ export async function generateSprite(
   outputDir: string,
   config: SpriteConfig = {},
 ): Promise<SpriteResult> {
-  let {
+  const {
     padding = 2,
     maxWidth = 2048,
     prefix = 'sprite',
@@ -47,11 +47,21 @@ export async function generateSprite(
     images.map(async ({ path, name }) => {
       const image = sharp(path)
       const metadata = await image.metadata()
+
+      // Apply scaling if needed
+      let processedImage = image
+      if (scale !== 1) {
+        const width = Math.ceil((metadata.width || 0) * scale)
+        const height = Math.ceil((metadata.height || 0) * scale)
+        processedImage = processedImage.resize(width, height)
+      }
+
+      const buffer = await processedImage.toBuffer()
       return {
         name,
-        image,
-        width: Math.ceil(metadata.width * scale),
-        height: Math.ceil(metadata.height * scale),
+        buffer,
+        width: Math.ceil((metadata.width || 0) * scale),
+        height: Math.ceil((metadata.height || 0) * scale),
       }
     }),
   )
@@ -60,7 +70,7 @@ export async function generateSprite(
   let currentX = 0
   let currentY = 0
   let rowHeight = 0
-  maxWidth = 0
+  let spriteWidth = 0
   let maxHeight = 0
 
   const positions = sprites.map((sprite) => {
@@ -79,7 +89,7 @@ export async function generateSprite(
 
     currentX += sprite.width + padding
     rowHeight = Math.max(rowHeight, sprite.height)
-    maxWidth = Math.max(maxWidth, currentX)
+    spriteWidth = Math.max(spriteWidth, currentX)
     maxHeight = Math.max(maxHeight, currentY + sprite.height)
 
     return position
@@ -87,14 +97,14 @@ export async function generateSprite(
 
   // Create sprite sheet
   const composite = positions.map((pos, i) => ({
-    input: sprites[i].image,
+    input: sprites[i].buffer,
     left: pos.x,
     top: pos.y,
   }))
 
   const spriteSheet = sharp({
     create: {
-      width: maxWidth,
+      width: spriteWidth,
       height: maxHeight,
       channels: 4,
       background: { r: 0, g: 0, b: 0, alpha: 0 },
@@ -122,7 +132,7 @@ export async function generateSprite(
   return {
     imagePath: spritePath,
     cssPath,
-    width: maxWidth,
+    width: spriteWidth,
     height: maxHeight,
     sprites: spriteData,
   }

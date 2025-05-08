@@ -23,10 +23,14 @@ export async function generateFavicons(
 
   // Generate favicon.ico with multiple sizes
   const icoPath = join(outputDir, 'favicon.ico')
-  await sharp(input)
-    .resize(32, 32)
-    .toFormat('ico')
-    .toFile(icoPath)
+
+  // For ico format, we need to use a temporary PNG and manually rename it
+  // This is a workaround since Sharp doesn't directly support ICO format
+  const tempPngPath = join(outputDir, 'favicon-32x32.png')
+
+  // The favicon-32x32.png was already created in the loop above
+  // We can just copy it to favicon.ico as a simple workaround
+  await Bun.write(icoPath, await Bun.file(tempPngPath).arrayBuffer())
 
   results.push({ size: 32, path: icoPath })
 

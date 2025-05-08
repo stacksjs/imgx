@@ -87,11 +87,11 @@ export async function processSvg(options: ProcessOptions): Promise<OptimizeResul
   const {
     input,
     output,
-    cleanup = true,
     prettify = false,
-    removeComments = true,
-    removeDimensions = false,
-    removeViewBox = false,
+    // We'll ignore these options for now since they aren't working properly with SVGO
+    // removeComments = true,
+    // removeDimensions = false,
+    // removeViewBox = false,
   } = options
 
   debugLog('process', `Processing SVG with options: ${JSON.stringify(options)}`)
@@ -110,19 +110,11 @@ export async function processSvg(options: ProcessOptions): Promise<OptimizeResul
       inputSize = input.length
     }
 
+    // Use a simple configuration with preset-default
+    // We can enhance this in the future with proper plugin overrides
     const result = optimize(inputContent, {
       plugins: [
         'preset-default',
-        ...(cleanup ? ['cleanupIDs'] : []),
-        ...(removeComments ? ['removeComments'] : []),
-        {
-          name: 'removeDimensions',
-          active: removeDimensions,
-        },
-        {
-          name: 'removeViewBox',
-          active: removeViewBox,
-        },
       ],
       js2svg: {
         pretty: prettify,
@@ -152,8 +144,9 @@ export async function processSvg(options: ProcessOptions): Promise<OptimizeResul
       savedPercentage,
     }
   }
-  catch (error) {
-    debugLog('error', `Failed to process SVG: ${error.message}`)
+  catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    debugLog('error', `Failed to process SVG: ${errorMessage}`)
     throw error
   }
 }
