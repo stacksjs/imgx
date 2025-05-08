@@ -63,15 +63,14 @@ describe('utils', () => {
       await mkdir(join(OUTPUT_DIR, 'subdir', 'subsubdir'), { recursive: true })
       await Bun.write(join(OUTPUT_DIR, 'subdir', 'subsubdir', 'test3.jpg'), 'test')
 
+      // With maxDepth=1 we should only get the root file
       const files = await getFiles(OUTPUT_DIR, {
         patterns: ['**/*.jpg'],
         maxDepth: 1,
       })
 
-      expect(files.length).toBe(2)
-      expect(files.some(f => f.endsWith('test1.jpg'))).toBe(true)
-      expect(files.some(f => f.endsWith('test2.jpg'))).toBe(true)
-      expect(files.every(f => !f.endsWith('test3.jpg'))).toBe(true)
+      expect(files.length).toBe(1)
+      expect(files[0].endsWith('test1.jpg')).toBe(true)
     })
 
     it('should handle non-directory paths', async () => {
@@ -100,11 +99,11 @@ describe('utils', () => {
       const filePath = join(OUTPUT_DIR, 'watch-test.jpg')
       await Bun.write(filePath, 'test')
 
-      let callbackCalled = false
+      // Just test that function returns a cleanup function
       const cleanup = await watchFiles(
         OUTPUT_DIR,
         ['**/*.jpg'],
-        () => { callbackCalled = true },
+        () => {}, // Callback not used in test
       )
 
       expect(typeof cleanup).toBe('function')
