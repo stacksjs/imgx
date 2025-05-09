@@ -267,28 +267,23 @@ export async function optimizeSvg(
               removeXMLProcInst,
               removeTitle,
               removeDesc,
-              cleanupIDs,
               convertPathData,
-              convertStyleToAttrs,
               convertTransform,
               inlineStyles,
               mergePaths,
               minifyStyles,
               cleanupNumericValues,
-              cleanupListOfValues,
               collapseGroups,
               convertColors,
-              convertShapeToPath,
               removeEmptyAttrs,
               removeEmptyContainers,
-              removeHiddenElements,
               removeUnusedNS,
               sortAttrs,
               sortDefsChildren,
             },
           },
         },
-      ].filter(Boolean) as any, // Type assertion needed for SVGO's complex plugin config
+      ] as any, // Type assertion needed for SVGO's complex plugin config
       js2svg: {
         pretty: prettify,
         indent: 2,
@@ -296,7 +291,28 @@ export async function optimizeSvg(
       },
     }
 
-    // Add additional plugins that are not included in preset-default
+    // For non-preset-default plugins, we add them separately
+    // Note: SVGO expects proper plugin objects/configs, not just names
+    if (cleanupIDs) {
+      svgoConfig.plugins.push({ name: 'cleanupIds' })
+    }
+
+    if (cleanupListOfValues) {
+      svgoConfig.plugins.push({ name: 'cleanupListOfValues' })
+    }
+
+    if (convertShapeToPath) {
+      svgoConfig.plugins.push({ name: 'convertShapeToPath' })
+    }
+
+    if (convertStyleToAttrs) {
+      svgoConfig.plugins.push({ name: 'convertStyleToAttrs' })
+    }
+
+    if (removeHiddenElements) {
+      svgoConfig.plugins.push({ name: 'removeHiddenElems' })
+    }
+
     if (removeDimensions) {
       svgoConfig.plugins.push({ name: 'removeDimensions' })
     }
@@ -334,11 +350,11 @@ export async function optimizeSvg(
     }
 
     if (removeScriptElement) {
-      svgoConfig.plugins.push({ name: 'removeScriptElement' })
+      svgoConfig.plugins.push({ name: 'removeScriptElems' })
     }
 
     if (removeStyleElement) {
-      svgoConfig.plugins.push({ name: 'removeStyleElement' })
+      svgoConfig.plugins.push({ name: 'removeStyleElems' })
     }
 
     // Run the optimization
@@ -450,9 +466,14 @@ export async function imageToSvg(
       inputPath = 'buffer'
     }
 
-    // We'll use potrace through a reliable npm package for tracing
-    // This implementation will use potrace.js that works in modern environments
-    const potrace = await import('potrace')
+    // Import potrace dynamically to handle environments where it might not be available
+    let potrace: any
+    try {
+      potrace = await import('potrace')
+    }
+    catch {
+      throw new Error('Potrace library is required for image to SVG conversion. Please install it with: bun install potrace')
+    }
 
     // Get image metadata for dimensions
     const metadata = await sharp(inputBuffer).metadata()
@@ -477,16 +498,20 @@ export async function imageToSvg(
     }
     else if (mode === 'posterized') {
       // Posterize image (reduce colors) before tracing
+      // Since sharp doesn't have a direct posterize method, we'll use quantization
       processedBuffer = await sharp(inputBuffer)
-        .pipelineColorspace('rgb16')
-        .toColourspace('srgb')
-        .posterize(steps)
+        .toColorspace('srgb')
+        // Quantize colors to simulate posterization
+        .toFormat('png', {
+          colors: steps, // Number of colors in the palette
+          dither: 0, // No dithering for cleaner tracing
+        })
         .toBuffer()
     }
     else {
       // Color mode - just ensure it's in RGB format
       processedBuffer = await sharp(inputBuffer)
-        .toColourspace('srgb')
+        .toColorspace('srgb')
         .toBuffer()
     }
 
@@ -796,8 +821,13 @@ export async function convertImageFormat(
     const resizeOptions = {
       width: resize.width || imageMetadata.width,
       height: resize.height || imageMetadata.height,
+      fit: resize.fit || 'contain',
     }
-    imageProcessor = imageProcessor.resize(resizeOptions.width, resizeOptions.height)
+    imageProcessor = imageProcessor.resize(
+      resizeOptions.width,
+      resizeOptions.height,
+      { fit: resizeOptions.fit as any },
+    )
   }
 
   // Apply format-specific options

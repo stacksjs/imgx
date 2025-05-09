@@ -382,7 +382,11 @@ export interface ConversionOptions {
   progressive?: boolean
   filenamePrefix?: string
   filenameSuffix?: string
-  resize?: { width?: number, height?: number }
+  resize?: {
+    width?: number
+    height?: number
+    fit?: 'contain' | 'cover' | 'fill' | 'inside' | 'outside'
+  }
   preserveMetadata?: boolean
   chromaSubsampling?: string
   optimizationLevel?: number

@@ -528,6 +528,92 @@ await Promise.all(images.map(image =>
 ))
 ```
 
+## SVG Optimization
+
+Optimize SVG files for web use with comprehensive options:
+
+```ts
+// Basic SVG optimization
+const result = await optimizeSvg('icon.svg', {
+  output: 'optimized-icon.svg',
+})
+console.log(`Optimized SVG: saved ${result.savedPercentage.toFixed(2)}%`)
+
+// Advanced SVG optimization with detailed options
+await optimizeSvg('logo.svg', {
+  output: 'optimized-logo.svg',
+  multipass: true, // Run multiple optimization passes
+  removeComments: true, // Remove comments
+  cleanupIDs: true, // Clean up ID attributes
+  removeHiddenElements: true, // Remove hidden elements
+  removeEmptyAttrs: true, // Remove empty attributes
+  removeEmptyContainers: true, // Remove empty containers
+  mergePaths: true, // Merge paths when possible
+  convertShapeToPath: true, // Convert basic shapes to paths
+  removeViewBox: false, // Keep viewBox attribute (important for responsive SVGs)
+  prettify: false, // Minify output for smaller file size
+})
+
+// Optimize SVG string content
+const svgContent = '<svg>...</svg>'
+const optimized = await optimizeSvg(svgContent, {
+  removeComments: true,
+  cleanupIDs: true,
+})
+console.log(optimized.content) // Get the optimized SVG content
+
+// Optimize with prefix IDs (useful for embedding multiple SVGs)
+await optimizeSvg('icon.svg', {
+  output: 'prefixed-icon.svg',
+  prefixIds: 'icon-', // All IDs will be prefixed with 'icon-'
+})
+```
+
+## Image to SVG Conversion
+
+Convert raster images to scalable SVG using tracing:
+
+```ts
+// Convert image to black and white SVG
+const result = await imageToSvg('photo.jpg', {
+  output: 'photo.svg',
+  mode: 'bw', // Black and white mode
+  threshold: 128, // Threshold for black/white conversion (0-255)
+})
+
+// Convert image to color SVG
+await imageToSvg('logo.png', {
+  output: 'logo.svg',
+  mode: 'color', // Full color tracing
+  colorCount: 16, // Number of colors to use (lower = simpler SVG)
+})
+
+// Convert with posterization effect
+await imageToSvg('image.jpg', {
+  output: 'posterized.svg',
+  mode: 'posterized', // Posterized effect
+  steps: 8, // Number of color levels
+})
+
+// Add background color to resulting SVG
+await imageToSvg('icon.png', {
+  output: 'icon-with-bg.svg',
+  mode: 'bw',
+  background: '#f0f0f0', // Add light gray background
+})
+
+// Convert and optimize in one step
+await imageToSvg('photo.jpg', {
+  output: 'photo.svg',
+  mode: 'bw',
+  optionsSvg: { // Apply SVG optimization options
+    removeComments: true,
+    cleanupIDs: true,
+    convertShapeToPath: true,
+  }
+})
+```
+
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/@stacksjs/imgx?style=flat-square
 [npm-version-href]: https://npmjs.com/package/@stacksjs/imgx

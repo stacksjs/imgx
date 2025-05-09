@@ -43,46 +43,17 @@
   },
   "files": ["README.md", "dist"],
   "scripts": {
-    "build": "bun build.ts && bun run compile",
-    "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/imgx",
-    "compile:all": "bun run compile:linux-x64 && bun run compile:linux-arm64 && bun run compile:windows-x64 && bun run compile:darwin-x64 && bun run compile:darwin-arm64",
-    "compile:linux-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-x64 --outfile bin/imgx-linux-x64",
-    "compile:linux-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-linux-arm64 --outfile bin/imgx-linux-arm64",
-    "compile:windows-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-windows-x64 --outfile bin/imgx-windows-x64.exe",
-    "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/imgx-darwin-x64",
-    "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/imgx-darwin-arm64",
+    "build": "bun build.ts",
     "lint": "bunx --bun eslint .",
     "lint:fix": "bunx --bun eslint . --fix",
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
-    "changelog": "bunx changelogen --output CHANGELOG.md",
-    "prepublishOnly": "bun --bun run build && bun run compile:all",
+    "prepublishOnly": "bun --bun run build",
     "release": "bun run changelog && bunx bumpp package.json --all",
     "test": "bun test",
-    "typecheck": "bunx tsc --noEmit",
-    "dev:docs": "bun --bun vitepress dev docs",
-    "build:docs": "bun --bun vitepress build docs",
-    "preview:docs": "bun --bun vitepress preview docs"
+    "typecheck": "bunx tsc --noEmit"
   },
-  "devDependencies": {
-    "@stacksjs/docs": "^0.69.3",
-    "@stacksjs/eslint-config": "^3.13.1-beta.2",
-    "@stacksjs/tlsx": "^0.10.0",
-    "@types/bun": "^1.2.2",
-    "bumpp": "^10.0.3",
-    "bun-plugin-dtsx": "^0.21.9",
-    "bunfig": "^0.5.3",
-    "cac": "^6.7.14",
-    "changelogen": "^0.5.7",
-    "consola": "^3.4.0",
-    "image-size": "^1.2.0",
-    "sharp": "^0.33.5",
-    "svgo": "^3.3.2",
-    "typescript": "^5.7.3",
-    "unocss": "^65.4.3",
-    "webpack": "^5.97.1"
-  },
-  "overrides": {
-    "unconfig": "0.3.10"
+  "dependencies": {
+    "@stacksjs/imgx": "workspace:*"
   },
   "simple-git-hooks": {
     "pre-commit": "bunx lint-staged"

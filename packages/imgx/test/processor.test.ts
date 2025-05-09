@@ -188,10 +188,16 @@ describe('processor', () => {
 
     it('should convert and resize an image', async () => {
       const input = join(FIXTURES_DIR, 'app-icon.png')
+
+      // Create resized image with explicit dimensions
       const result = await convertImageFormat(input, 'webp', {
         outputDir: OUTPUT_DIR,
         quality: 90,
-        resize: { width: 200, height: 200 },
+        resize: {
+          width: 200,
+          height: 200,
+          fit: 'fill', // Force exact dimensions
+        },
       })
 
       // Verify the dimensions
