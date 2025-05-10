@@ -1,4 +1,4 @@
-name: CI
+name: Releaser
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
       - 'v*'
 
 jobs:
-  release:
-    name: release
+  npm:
+    name: npm
     runs-on: ubuntu-latest
 
     steps:
@@ -40,13 +40,13 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Attach Binaries
-        uses: softprops/action-gh-release@v2
+        uses: stacksjs/action-releaser@v1.1.0
         with:
           files: |
-            bin/imgx-linux-x64.zip
-            bin/imgx-linux-arm64.zip
-            bin/imgx-windows-x64.zip
-            bin/imgx-darwin-x64.zip
-            bin/imgx-darwin-arm64.zip
+            packages/imgx/bin/imgx-linux-x64.zip
+            packages/imgx/bin/imgx-linux-arm64.zip
+            packages/imgx/bin/imgx-windows-x64.zip
+            packages/imgx/bin/imgx-darwin-x64.zip
+            packages/imgx/bin/imgx-darwin-arm64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
