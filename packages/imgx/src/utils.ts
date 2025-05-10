@@ -1,5 +1,4 @@
 import type { GetFilesOptions, OptimizeResult } from './types'
-import { Glob } from 'bun'
 import { stat } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
 import { config } from './config'
@@ -25,7 +24,7 @@ export async function getFiles(
 
     // Process include patterns
     for (const pattern of patterns) {
-      const glob = new Glob(pattern)
+      const glob = new Bun.Glob(pattern)
       for await (const file of glob.scan({
         ...scanOptions,
         cwd: path,
@@ -39,7 +38,7 @@ export async function getFiles(
     // Process ignore patterns
     if (ignore.length > 0) {
       for (const pattern of ignore) {
-        const glob = new Glob(pattern)
+        const glob = new Bun.Glob(pattern)
         for await (const file of glob.scan({
           ...scanOptions,
           cwd: path,
@@ -94,15 +93,15 @@ export async function watchFiles(
 
 export function isPathMatching(path: string, patterns: string[]): boolean {
   return patterns.some((pattern) => {
-    const glob = new Glob(pattern)
+    const glob = new Bun.Glob(pattern)
     return glob.match(path)
   })
 }
 
 export function filterPaths(paths: string[], include: string[], exclude: string[] = []): string[] {
   return paths.filter(path =>
-    include.some(pattern => new Glob(pattern).match(path))
-    && !exclude.some(pattern => new Glob(pattern).match(path)),
+    include.some(pattern => new Bun.Glob(pattern).match(path))
+    && !exclude.some(pattern => new Bun.Glob(pattern).match(path)),
   )
 }
 
