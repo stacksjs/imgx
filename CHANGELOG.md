@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.3...main
+
+[compare changes](https://github.com/stacksjs/imgx/compare/v0.1.3...main)
+
+### 🏡 Chore
+
+- Adjust build ([fa0bcca](https://github.com/stacksjs/imgx/commit/fa0bcca))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.1.2...v0.1.2
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.2...v0.1.2)
