@@ -57,12 +57,17 @@
     "lint:fix": "bunx --bun eslint . --fix",
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
     "changelog": "bunx changelogen --output CHANGELOG.md",
-    "prepublishOnly": "bun --bun run build && bun run compile:all",
+    "prepublishOnly": "bun --bun run build && bun run compile:all && bun run zip:all",
     "release": "bun run changelog && bunx bumpp package.json --all",
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit",
-    "app-icon": "bun test/test-app-icon.ts",
-    "app-icon:hush": "bun test/generate-hush-icons.ts"
+    "zip": "bun run zip:all",
+    "zip:all": "bun run zip:linux-x64 && bun run zip:linux-arm64 && bun run zip:windows-x64 && bun run zip:darwin-x64 && bun run zip:darwin-arm64",
+    "zip:linux-x64": "zip -j bin/imgx-linux-x64.zip bin/imgx-linux-x64",
+    "zip:linux-arm64": "zip -j bin/imgx-linux-arm64.zip bin/imgx-linux-arm64",
+    "zip:windows-x64": "zip -j bin/imgx-windows-x64.zip bin/imgx-windows-x64.exe",
+    "zip:darwin-x64": "zip -j bin/imgx-darwin-x64.zip bin/imgx-darwin-x64",
+    "zip:darwin-arm64": "zip -j bin/imgx-darwin-arm64.zip bin/imgx-darwin-arm64"
   },
   "devDependencies": {
     "bun-plugin-dtsx": "^0.21.12",
