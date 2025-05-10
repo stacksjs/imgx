@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.4...main
+
+[compare changes](https://github.com/stacksjs/imgx/compare/v0.1.4...main)
+
+### 🏡 Chore
+
+- Use Bun.Glob ([8c5b11c](https://github.com/stacksjs/imgx/commit/8c5b11c))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.1.3...main
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.3...main)
