@@ -33,6 +33,7 @@ const nav = [
       { text: 'Partners', link: '/partners' },
       { text: 'Postcardware', link: '/postcardware' },
       { text: 'Stargazers', link: '/stargazers' },
+      { text: 'Showcase', link: '/Showcase' },
       { text: 'License', link: '/license' },
       {
         items: [
@@ -60,10 +61,40 @@ const sidebar = [
       { text: 'Config', link: '/config' },
     ],
   },
-  { text: 'Showcase', link: '/Showcase' },
+  {
+    text: 'Features',
+    items: [
+      { text: 'Image Optimization', link: '/features/optimization' },
+      { text: 'Format Conversion', link: '/features/conversion' },
+      { text: 'Responsive Images', link: '/features/responsive' },
+      { text: 'App Icons', link: '/features/app-icons' },
+      { text: 'Placeholders', link: '/features/placeholders' },
+      { text: 'SVG Optimization', link: '/features/svg' },
+      { text: 'Batch Processing', link: '/features/batch' },
+    ],
+  },
+  {
+    text: 'Advanced',
+    items: [
+      { text: 'Plugins', link: '/advanced/plugins' },
+      { text: 'Custom Transformations', link: '/advanced/transformations' },
+      { text: 'Watermarking', link: '/advanced/watermarking' },
+      { text: 'Social Images', link: '/advanced/social-images' },
+      { text: 'Sprite Sheets', link: '/advanced/sprites' },
+    ],
+  },
+  {
+    text: 'API Reference',
+    items: [
+      { text: 'Core API', link: '/api/core' },
+      { text: 'Configuration', link: '/api/configuration' },
+      { text: 'CLI Options', link: '/api/cli' },
+      { text: 'Plugins API', link: '/api/plugins' },
+    ],
+  },
 ]
-const description = 'A modern, fast reverse proxy. For a better local development environment.'
-const title = 'imgx | A modern, fast reverse proxy. For a better local development environment.'
+const description = 'A modern, all-in-one toolkit for image optimization, conversion, and management.'
+const title = 'imgx | A modern, fast image optimization toolkit for web and app development.'
 
 export default withPwa(
   defineConfig({
@@ -83,7 +114,7 @@ export default withPwa(
       ['meta', { name: 'author', content: 'Stacks.js, Inc.' }],
       ['meta', {
         name: 'tags',
-        content: 'imgx, stacksjs, reverse proxy, modern, lightweight, zero-config, local development',
+        content: 'imgx, stacksjs, image optimization, webp, avif, image conversion, responsive images, app icons, thumbhash',
       }],
 
       ['meta', { property: 'og:type', content: 'website' }],
@@ -147,9 +178,10 @@ export default withPwa(
         dark: 'github-dark',
       },
 
-      codeTransformers: [
-        transformerTwoslash(),
-      ],
+      // Removing the transformerTwoslash due to type incompatibility
+      // codeTransformers: [
+      //   transformerTwoslash(),
+      // ],
     },
 
     vite,

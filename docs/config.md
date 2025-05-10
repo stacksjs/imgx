@@ -1,56 +1,107 @@
 # Configuration
 
-The Reverse Proxy can be configured using a `imgx.config.ts` _(or `imgx.config.js`)_ file and it will be automatically loaded when running the `reverse-proxy` command.
+imgx can be configured using an `imgx.config.ts` _(or `imgx.config.js`)_ file and it will be automatically loaded when running the `imgx` command.
 
 ```ts
 // imgx.config.{ts,js}
-import type { ReverseProxyOptions } from '@stacksjs/imgx'
-import os from 'node:os'
-import path from 'node:path'
+import type { ImgxConfig } from '@stacksjs/imgx'
 
-const config: ReverseProxyOptions = {
+const config: ImgxConfig = {
   /**
-   * The from URL to proxy from.
-   * Default: localhost:5173
-   */
-  from: 'localhost:5173',
-
-  /**
-   * The to URL to proxy to.
-   * Default: stacks.localhost
-   */
-  to: 'stacks.localhost',
-
-  /**
-   * The HTTPS settings.
+   * Enable verbose logging
    * Default: true
-   * If set to false, the proxy will use HTTP.
-   * If set to true, the proxy will use HTTPS.
-   * If set to an object, the proxy will use HTTPS with the provided settings.
    */
-  https: {
-    domain: 'stacks.localhost',
-    hostCertCN: 'stacks.localhost',
-    caCertPath: path.join(os.homedir(), '.stacks', 'ssl', `stacks.localhost.ca.crt`),
-    certPath: path.join(os.homedir(), '.stacks', 'ssl', `stacks.localhost.crt`),
-    keyPath: path.join(os.homedir(), '.stacks', 'ssl', `stacks.localhost.crt.key`),
-    altNameIPs: ['127.0.0.1'],
-    altNameURIs: ['localhost'],
-    organizationName: 'stacksjs.org',
-    countryName: 'US',
-    stateName: 'California',
-    localityName: 'Playa Vista',
-    commonName: 'stacks.localhost',
-    validityDays: 180,
-    verbose: false,
+  verbose: true,
+
+  /**
+   * Enable caching of processed images
+   * Default: true
+   */
+  cache: true,
+
+  /**
+   * Directory to store cached images
+   * Default: '.imgx-cache'
+   */
+  cacheDir: '.imgx-cache',
+
+  /**
+   * Number of concurrent processing operations
+   * Default: 4
+   */
+  concurrent: 4,
+
+  /**
+   * Skip already optimized images
+   * Default: false
+   */
+  skipOptimized: false,
+
+  /**
+   * Default quality setting for images
+   * Default: 80
+   */
+  quality: 80,
+
+  /**
+   * Default output format
+   * Default: 'webp'
+   */
+  format: 'webp',
+
+  /**
+   * Enable progressive image loading
+   * Default: true
+   */
+  progressive: true,
+
+  /**
+   * Preserve image metadata
+   * Default: false
+   */
+  preserveMetadata: false,
+
+  /**
+   * App icon generation settings
+   */
+  appIcon: {
+    outputDir: 'assets/app-icons',
+    platform: 'all', // 'macos', 'ios', or 'all'
   },
 
   /**
-   * The verbose setting.
-   * Default: false
-   * If set to true, the proxy will log more information.
+   * Responsive image generation settings
    */
-  verbose: false,
+  responsive: {
+    sizes: [320, 640, 960, 1280, 1920],
+    formats: ['webp', 'jpeg'],
+    quality: 80,
+    generateSrcset: true,
+    filenameTemplate: '[name]-[width].[ext]',
+  },
+
+  /**
+   * Placeholder generation settings
+   */
+  placeholders: {
+    width: 20,
+    quality: 50,
+    format: 'webp',
+    blurLevel: 40,
+    base64Encode: true,
+    useThumbhash: false,
+    strategy: 'blur', // 'blur', 'pixelate', 'thumbhash', 'dominant-color'
+  },
+
+  /**
+   * SVG optimization settings
+   */
+  svg: {
+    prettify: false,
+    removeComments: true,
+    removeDimensions: true,
+    removeViewBox: false,
+  }
 }
 
 export default config
@@ -59,7 +110,7 @@ export default config
 _Then run:_
 
 ```bash
-./imgx start
+imgx <command>
 ```
 
-To learn more, head over to the [documentation](https://reverse-proxy.sh/).
+For a complete list of all configuration options, see the [Configuration API Reference](/api/configuration).

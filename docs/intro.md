@@ -1,17 +1,22 @@
 <p align="center"><img src="https://github.com/stacksjs/imgx/blob/main/.github/art/cover.jpg?raw=true" alt="Social Card of this repo"></p>
 
-# A Better Developer Experience
+# A Better Image Experience
 
-> A zero-config reverse proxy for local development with SSL support, custom domains, and more.
+> A modern, all-in-one toolkit for image optimization, conversion, and responsive image generation.
 
 ## Features
 
-- Simple, lightweight Reverse Proxy
-- Custom Domains _(with wildcard support)_
-- Zero-Config Setup
-- SSL Support _(HTTPS by default)_
-- Auto HTTP-to-HTTPS Redirection
-- Self `/etc/hosts` Management
+- Advanced Image Optimization (JPG, PNG, WebP, AVIF)
+- Modern Format Conversion
+- Responsive Image Generation
+- App Icon Generation (iOS, macOS)
+- ThumbHash Placeholders
+- SVG Optimization & Sprite Sheets
+- Batch Processing with Powerful Filters
+- Vite & Bun Integration Plugins
+- CLI Tool with Watch Mode Support
+- Watermarking & Custom Transformations
+- Social Media Image Generation
 
 ## Changelog
 
