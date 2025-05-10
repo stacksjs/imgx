@@ -92,7 +92,7 @@ console.log(`Placeholder data URL: ${placeholder.dataURL}`)
 imgx provides a Vite plugin for automatic image optimization during build:
 
 ```ts
-import { viteImgxPlugin } from '@stacksjs/vite-plugin'
+import { viteImgxPlugin } from 'vite-plugin-imgx'
 // vite.config.ts
 import { defineConfig } from 'vite'
 
@@ -114,7 +114,7 @@ imgx can also be used with Bun:
 
 ```ts
 // bunfig.ts
-import { bunImgxPlugin } from '@stacksjs/bun-plugin'
+import { bunImgxPlugin } from 'bun-plugin-imgx'
 
 export default {
   plugins: [

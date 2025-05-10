@@ -11,13 +11,13 @@ The Vite plugin automatically optimizes images during the build process, reducin
 If you've installed imgx, the Vite plugin is available as a separate package:
 
 ```bash
-npm install --save-dev @stacksjs/vite-plugin
+npm install --save-dev vite-plugin-imgx
 ```
 
 ### Basic Usage
 
 ```ts
-import { viteImgxPlugin } from '@stacksjs/vite-plugin'
+import { viteImgxPlugin } from 'vite-plugin-imgx'
 // vite.config.ts
 import { defineConfig } from 'vite'
 
@@ -33,7 +33,7 @@ export default defineConfig({
 The Vite plugin accepts all standard imgx options plus some plugin-specific options:
 
 ```ts
-import { viteImgxPlugin } from '@stacksjs/vite-plugin'
+import { viteImgxPlugin } from 'vite-plugin-imgx'
 // vite.config.ts
 import { defineConfig } from 'vite'
 
@@ -69,14 +69,14 @@ The Bun plugin provides similar functionality for Bun projects, automatically op
 ### Installation
 
 ```bash
-bun install --dev @stacksjs/bun-plugin
+bun install --dev bun-plugin-imgx
 ```
 
 ### Basic Usage
 
 ```ts
 // bunfig.ts
-import { bunImgxPlugin } from '@stacksjs/bun-plugin'
+import { bunImgxPlugin } from 'bun-plugin-imgx'
 
 export default {
   plugins: [
@@ -91,7 +91,7 @@ The Bun plugin accepts the same configuration options as the Vite plugin:
 
 ```ts
 // bunfig.ts
-import { bunImgxPlugin } from '@stacksjs/bun-plugin'
+import { bunImgxPlugin } from 'bun-plugin-imgx'
 
 export default {
   plugins: [

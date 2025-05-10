@@ -9,7 +9,7 @@ The Vite plugin automatically optimizes your images during the build process.
 ### Installation
 
 ```bash
-npm install --save-dev @stacksjs/vite-plugin
+npm install --save-dev vite-plugin-imgx
 ```
 
 ### API
@@ -51,7 +51,7 @@ interface ProcessOptions {
 **Basic usage:**
 
 ```ts
-import { viteImgxPlugin } from '@stacksjs/vite-plugin'
+import { viteImgxPlugin } from 'vite-plugin-imgx'
 // vite.config.ts
 import { defineConfig } from 'vite'
 
@@ -65,7 +65,7 @@ export default defineConfig({
 **With configuration:**
 
 ```ts
-import { viteImgxPlugin } from '@stacksjs/vite-plugin'
+import { viteImgxPlugin } from 'vite-plugin-imgx'
 // vite.config.ts
 import { defineConfig } from 'vite'
 
@@ -93,7 +93,7 @@ The Bun plugin provides similar functionality for Bun projects.
 ### Installation
 
 ```bash
-bun install --dev @stacksjs/bun-plugin
+bun install --dev bun-plugin-imgx
 ```
 
 ### API
@@ -127,7 +127,7 @@ interface ImgxPluginOptions extends Partial<ProcessOptions> {
 
 ```ts
 // bunfig.ts
-import { bunImgxPlugin } from '@stacksjs/bun-plugin'
+import { bunImgxPlugin } from 'bun-plugin-imgx'
 
 export default {
   plugins: [
@@ -140,7 +140,7 @@ export default {
 
 ```ts
 // bunfig.ts
-import { bunImgxPlugin } from '@stacksjs/bun-plugin'
+import { bunImgxPlugin } from 'bun-plugin-imgx'
 
 export default {
   plugins: [
@@ -185,7 +185,7 @@ You can create a reusable plugin configuration in a separate file:
 
 ```ts
 // imgx-plugin-config.ts
-import type { ImgxPluginOptions } from '@stacksjs/vite-plugin'
+import type { ImgxPluginOptions } from 'vite-plugin-imgx'
 
 export const imgxConfig: ImgxPluginOptions = {
   include: ['**/*.{jpg,png}'],
@@ -199,7 +199,7 @@ export const imgxConfig: ImgxPluginOptions = {
 Then import and use this configuration in your build files:
 
 ```ts
-import { viteImgxPlugin } from '@stacksjs/vite-plugin'
+import { viteImgxPlugin } from 'vite-plugin-imgx'
 // vite.config.ts
 import { defineConfig } from 'vite'
 import { imgxConfig } from './imgx-plugin-config'
@@ -213,7 +213,7 @@ export default defineConfig({
 
 ```ts
 // bunfig.ts
-import { bunImgxPlugin } from '@stacksjs/bun-plugin'
+import { bunImgxPlugin } from 'bun-plugin-imgx'
 import { imgxConfig } from './imgx-plugin-config'
 
 export default {
