@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.5...main
+
+[compare changes](https://github.com/stacksjs/imgx/compare/v0.1.5...main)
+
+### 🏡 Chore
+
+- Add zipping of bins ([31f6ade](https://github.com/stacksjs/imgx/commit/31f6ade))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.1.4...main
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.4...main)

@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-imgx",
   "type": "module",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Vite plugin for imgx",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
