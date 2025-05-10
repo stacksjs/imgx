@@ -30,7 +30,6 @@
     "javascript"
   ],
   "scripts": {
-    "build": "bun build.ts",
     "lint": "bunx --bun eslint .",
     "lint:fix": "bunx --bun eslint . --fix",
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
