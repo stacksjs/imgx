@@ -156,6 +156,8 @@ export async function generateIOSAppIcons(
  *
  * @param input Source image path
  * @param options Configuration options
+ * @param options.outputDir Directory where app icons will be saved
+ * @param options.platform Target platform: 'macos', 'ios', or 'all'
  * @returns Information about the generated icons
  */
 export async function generateAppIcons(

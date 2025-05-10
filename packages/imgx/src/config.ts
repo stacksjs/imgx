@@ -1,5 +1,4 @@
 import type { ImgxConfig } from './types'
-import { resolve } from 'node:path'
 
 // Default configuration values
 export const defaultConfig: ImgxConfig = {

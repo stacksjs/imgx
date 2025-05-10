@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import sharp from 'sharp'
 import { generateSprite } from '../src/sprite-generator'
 
-const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
+// const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
 const OUTPUT_DIR = join(import.meta.dir, 'output')
 
 describe('sprite-generator', () => {

@@ -1,4 +1,4 @@
-import type { AppIconResult, AppIconSize, GetFilesOptions, ImageOptions, ImgxConfig, ImgxOptions, OptimizeResult, ProcessOptions, ScanOptions, SvgOptions } from '../src/types'
+import type { ImageOptions, ImgxConfig, ImgxOptions, OptimizeResult, ProcessOptions, SvgOptions } from '../src/types'
 import { describe, expect, it } from 'bun:test'
 
 describe('types', () => {

@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
-import { process } from '../src/core'
-import { imageToSvg, optimizeSvg, processSvg } from '../src/processor'
+import { imageToSvg, optimizeSvg } from '../src/processor'
 
 const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
 const OUTPUT_DIR = join(FIXTURES_DIR, 'output', 'svg-advanced-tests')

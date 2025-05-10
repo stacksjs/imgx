@@ -1,4 +1,3 @@
-import type { ProcessOptions } from './types'
 import { join } from 'node:path'
 import sharp from 'sharp'
 import { debugLog } from './utils'

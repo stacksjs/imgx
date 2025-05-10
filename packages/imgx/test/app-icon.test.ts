@@ -1,7 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
-import { mkdir, readFile, rm } from 'node:fs/promises'
+import { mkdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
-import sharp from 'sharp'
 import { generateAppIcons, generateIOSAppIcons, generateMacOSAppIcons } from '../src/app-icon'
 
 const FIXTURES_DIR = join(import.meta.dir, 'fixtures')

@@ -1,20 +1,21 @@
-import type { ImgxOptions, ProcessOptions } from '../src/types'
+// For the Express module
+import type { ImgxOptions, OptimizeResult, ProcessOptions } from '../src/types'
 import { Buffer } from 'node:buffer'
 import { copyFile, stat, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import proc from 'node:process'
 import { CAC } from 'cac'
 import { version } from '../package.json'
-import { formatReport, generateReport } from '../src/analyze'
+import { generateReport } from '../src/analyze'
 import { generateAppIcons } from '../src/app-icon'
 import { process } from '../src/core'
 import { generateSprite } from '../src/sprite-generator'
 import { generateThumbHash } from '../src/thumbhash'
-import { debugLog, formatBytes, getFiles } from '../src/utils'
+import { debugLog, formatBytes, getFiles, watchFiles } from '../src/utils'
 
 // Helper function to parse file size strings like "5MB" or "500KB"
 function parseFileSize(sizeStr: string): number {
-  const units = {
+  const units: Record<string, number> = {
     b: 1,
     kb: 1024,
     mb: 1024 * 1024,
@@ -51,7 +52,7 @@ ${Object.entries(summary.formatBreakdown)
   .join('\n')}
 
 Warnings:
-${summary.warnings.length ? summary.warnings.map(w => `- ${w}`).join('\n') : '- None'}
+${summary.warnings.length ? summary.warnings.map((w: string) => `- ${w}`).join('\n') : '- None'}
 
 Details:
 `
@@ -63,11 +64,52 @@ Size: ${formatBytes(stat.size)}
 Format: ${stat.format}
 Dimensions: ${stat.width}x${stat.height}
 Optimization potential: ${stat.optimizationPotential}
-${stat.warnings.length ? `Warnings:\n${stat.warnings.map(w => `- ${w}`).join('\n')}` : ''}
+${stat.warnings.length ? `Warnings:\n${stat.warnings.map((w: string) => `- ${w}`).join('\n')}` : ''}
 `
   }
 
   return output
+}
+
+// CLI options interface for optimize command
+interface OptimizeCommandOptions extends Omit<ProcessOptions, 'responsive'>, Omit<ImgxOptions, 'responsive'> {
+  maxSize?: string
+  minSize?: string
+  include: string
+  exclude: string
+  maxDepth?: string
+  followSymlinks: boolean
+  dot: boolean
+  outputDir?: string
+  backup?: boolean
+  skipExisting?: boolean
+  watch?: boolean
+  responsive?: boolean
+  responsiveSizes: string
+  thumbhash?: boolean
+  thumbhashSize: string
+}
+
+// CLI options interface for analyze command
+interface AnalyzeCommandOptions {
+  json?: boolean
+  output?: string
+  ci?: boolean
+  threshold?: string
+}
+
+// CLI options interface for app-icon command
+interface AppIconCommandOptions {
+  outputDir?: string
+  platform?: 'macos' | 'ios' | 'all'
+  verbose?: boolean
+}
+
+// CLI options interface for serve command
+interface ServeCommandOptions {
+  port: number
+  host: string
+  cache: boolean
 }
 
 const cli = new CAC('imgx')
@@ -105,7 +147,7 @@ cli
   .example('imgx optimize input.jpg')
   .example('imgx optimize input.jpg output.webp -q 75 -r 50%')
   .example('imgx optimize ./images -f webp -R')
-  .action(async (input?: string, output?: string, options?: ProcessOptions & ImgxOptions) => {
+  .action(async (input?: string, output?: string, options?: OptimizeCommandOptions) => {
     if (!input) {
       cli.outputHelp()
       return
@@ -113,19 +155,19 @@ cli
 
     try {
       // Parse file size limits if specified
-      const maxSize = options.maxSize ? parseFileSize(options.maxSize) : Infinity
-      const minSize = options.minSize ? parseFileSize(options.minSize) : 0
+      const maxSize = options?.maxSize ? parseFileSize(options.maxSize) : Infinity
+      const minSize = options?.minSize ? parseFileSize(options.minSize) : 0
 
       // Parse include/exclude patterns
-      const includePatterns = options.include.split(',').map(p => p.trim())
-      const excludePatterns = options.exclude.split(',').map(p => p.trim())
+      const includePatterns = options?.include.split(',').map(p => p.trim()) || ['**/*.{jpg,jpeg,png,webp,avif,svg}']
+      const excludePatterns = options?.exclude.split(',').map(p => p.trim()) || ['**/node_modules/**,**/.git/**']
 
       const files = await getFiles(input, {
         patterns: includePatterns,
         ignore: excludePatterns,
-        maxDepth: options.maxDepth ? Number.parseInt(options.maxDepth) : undefined,
-        followSymlinks: options.followSymlinks,
-        dot: options.dot,
+        maxDepth: options?.maxDepth ? Number.parseInt(options.maxDepth) : undefined,
+        followSymlinks: options?.followSymlinks,
+        dot: options?.dot,
         absolute: true,
         onlyFiles: true,
       })
@@ -138,15 +180,17 @@ cli
       debugLog('cli', `Found ${files.length} files to process`)
 
       // Watch mode
-      if (options.watch) {
+      if (options?.watch) {
         console.log('Watching for changes...')
 
         const cleanup = await watchFiles(input, includePatterns, async (file) => {
           console.log(`File ${file} has been changed`)
-          await processFile(file, file, options)
+          if (options) {
+            await processFile(file, file, options)
+          }
         }, {
-          dot: options.dot,
-          followSymlinks: options.followSymlinks,
+          dot: options?.dot,
+          followSymlinks: options?.followSymlinks,
           ignore: excludePatterns,
         })
 
@@ -161,11 +205,11 @@ cli
 
       // Single file processing
       if (files.length === 1 && output) {
-        await processFile(files[0], output, options)
+        await processFile(files[0], output, options || { input: files[0], output, include: '**', exclude: '', followSymlinks: false, dot: false, responsiveSizes: '320,768,1024,1920' })
       }
       // Batch processing
       else {
-        const outputDir = options.outputDir ? resolve(options.outputDir) : null
+        const outputDir = options?.outputDir ? resolve(options.outputDir) : null
         const results = await Promise.all(
           files.map(async (file) => {
             const stats = await stat(file)
@@ -174,7 +218,7 @@ cli
               return null
             }
 
-            if (options.skipExisting) {
+            if (options?.skipExisting) {
               try {
                 const outputStats = await stat(file)
                 if (outputStats.mtimeMs > stats.mtimeMs) {
@@ -186,20 +230,20 @@ cli
             }
 
             const outputPath = outputDir
-              ? join(outputDir, file.split('/').pop())
+              ? join(outputDir, file.split('/').pop() || '')
               : file
 
-            if (options.backup) {
+            if (options?.backup) {
               const backupPath = `${file}.backup`
               await copyFile(file, backupPath)
               debugLog('cli', `Created backup: ${backupPath}`)
             }
 
-            return processFile(file, outputPath, options)
+            return processFile(file, outputPath, options || { input: file, output: outputPath, include: '**', exclude: '', followSymlinks: false, dot: false, responsiveSizes: '320,768,1024,1920' })
           }),
         )
 
-        const validResults = results.filter(Boolean)
+        const validResults = results.filter(Boolean) as OptimizeResult[]
 
         // Print summary
         const successful = validResults.filter(r => !r.error)
@@ -222,14 +266,14 @@ cli
         if (failed.length > 0) {
           console.error(`\nFailed to process ${failed.length} files:`)
           failed.forEach((result) => {
-            console.error(`- ${result.inputPath}: ${result.error.message}`)
+            console.error(`- ${result.inputPath}: ${result.error?.message}`)
           })
           proc.exit(1)
         }
       }
     }
     catch (error) {
-      console.error(`Error: ${error.message}`)
+      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
       proc.exit(1)
     }
   })
@@ -241,21 +285,21 @@ cli
   .option('-o, --output <file>', 'Save report to file')
   .option('--ci', 'Exit with error if optimization potential is high')
   .option('--threshold <size>', 'Size threshold for warnings (e.g., "500KB")')
-  .action(async (input?: string, options?: { json?: boolean, output?: string, ci?: boolean, threshold?: string }) => {
+  .action(async (input?: string, options?: AnalyzeCommandOptions) => {
     if (!input) {
       cli.outputHelp()
       return
     }
 
     try {
-      const files = await getFiles(input, { recursive: true })
+      const files = await getFiles(input, { onlyFiles: true })
       const report = await generateReport(files)
 
-      const output = options.json
+      const output = options?.json
         ? JSON.stringify(report, null, 2)
         : formatReport(report)
 
-      if (options.output) {
+      if (options?.output) {
         await writeFile(options.output, output)
         console.log(`Report saved to ${options.output}`)
       }
@@ -264,8 +308,8 @@ cli
       }
 
       // CI mode
-      if (options.ci) {
-        const threshold = options.threshold ? parseFileSize(options.threshold) : 500 * 1024 // 500KB default
+      if (options?.ci) {
+        const threshold = options?.threshold ? parseFileSize(options.threshold) : 500 * 1024 // 500KB default
         const hasLargeFiles = report.stats.some(stat => stat.size > threshold)
         const hasHighPotential = report.stats.some(stat => stat.optimizationPotential === 'high')
 
@@ -276,7 +320,7 @@ cli
       }
     }
     catch (error) {
-      console.error(`Error: ${error.message}`)
+      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
       proc.exit(1)
     }
   })
@@ -302,14 +346,14 @@ cli
       const files = await getFiles(input)
       const images = files.map(file => ({
         path: file,
-        name: file.split('/').pop()?.split('.')[0],
+        name: file.split('/').pop()?.split('.')[0] || '',
       }))
 
       // Generate normal sprite sheet
       const result = await generateSprite(images, output, options)
 
       // Generate retina sprite sheet if requested
-      if (options.retina) {
+      if (options?.retina) {
         const retinaOptions = {
           ...options,
           scale: 2,
@@ -320,7 +364,7 @@ cli
       }
 
       // Optimize if requested
-      if (options.optimize) {
+      if (options?.optimize) {
         await process({
           input: result.imagePath,
           output: result.imagePath,
@@ -337,7 +381,7 @@ cli
       `)
     }
     catch (error) {
-      console.error(`Error: ${error.message}`)
+      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
       proc.exit(1)
     }
   })
@@ -345,7 +389,7 @@ cli
 cli
   .command('convert [input] [output]', 'Convert images between formats')
   .alias('c')
-  .option('-f, --format <format>', 'Output format (jpeg, png, webp, avif)', { required: true })
+  .option('-f, --format <format>', 'Output format (jpeg, png, webp, avif)')
   .option('-q, --quality <number>', 'Output quality', { default: 80 })
   .option('--strip', 'Strip metadata')
   .option('--keep-animation', 'Preserve animation frames')
@@ -357,24 +401,43 @@ cli
     }
 
     try {
-      const files = await getFiles(input, { recursive: options.recursive })
+      const files = await getFiles(input, { onlyFiles: true })
       for (const file of files) {
-        const outputPath = output || file.replace(/\.[^.]+$/, `.${options.format}`)
+        const outputPath = output || file.replace(/\.[^.]+$/, `.${options?.format}`)
         await process({
           ...options,
           input: file,
           output: outputPath,
-          format: options.format,
+          format: options?.format,
         })
       }
     }
     catch (error) {
-      console.error(`Error: ${error.message}`)
+      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
       proc.exit(1)
     }
   })
 
-async function processFile(input: string, output: string, options: ProcessOptions & ImgxOptions) {
+interface ProcessFileOptions extends Omit<ProcessOptions, 'responsive'> {
+  maxSize?: string
+  minSize?: string
+  include?: string
+  exclude?: string
+  maxDepth?: string
+  followSymlinks?: boolean
+  dot?: boolean
+  outputDir?: string
+  backup?: boolean
+  skipExisting?: boolean
+  watch?: boolean
+  responsive?: boolean
+  responsiveSizes?: string
+  thumbhash?: boolean
+  thumbhashSize?: string
+  [key: string]: any // Allow other properties
+}
+
+async function processFile(input: string, output: string, options: ProcessFileOptions): Promise<OptimizeResult> {
   // Process main image
   const result = await process({
     ...options,
@@ -408,7 +471,7 @@ async function processFile(input: string, output: string, options: ProcessOption
 
   // Generate responsive images if requested
   if (options.responsive) {
-    const sizes = options.responsiveSizes.split(',').map(Number)
+    const sizes = options.responsiveSizes?.split(',').map(Number) || [320, 768, 1024, 1920]
     const ext = options.format || input.split('.').pop()
 
     for (const width of sizes) {
@@ -437,49 +500,82 @@ cli
   .option('-p, --port <number>', 'Port number', { default: 3000 })
   .option('-H, --host <host>', 'Host to bind to', { default: 'localhost' })
   .option('--cache', 'Enable caching', { default: true })
-  .action(async (directory = '.', options) => {
+  .action(async (directory = '.', options?: ServeCommandOptions) => {
     try {
-      const express = await import('express')
-      const app = express.default()
+      const server = Bun.serve({
+        port: options?.port || 3000,
+        hostname: options?.host || 'localhost',
+        fetch: async (req) => {
+          const url = new URL(req.url)
+          const path = join(directory, url.pathname)
 
-      // Cache middleware
-      if (options.cache) {
-        app.use((req, res, next) => {
-          res.setHeader('Cache-Control', 'public, max-age=31536000')
-          next()
-        })
-      }
+          // Check if path matches image extension
+          if (!path.match(/\.(jpg|jpeg|png|webp|avif|gif|svg)$/i)) {
+            // Try to serve the file directly
+            const file = Bun.file(path)
+            const exists = await file.exists()
 
-      // Image optimization middleware
-      app.use(async (req, res, next) => {
-        const path = join(directory, req.path)
-        if (!path.match(/\.(jpg|jpeg|png|webp|avif|gif|svg)$/i)) {
-          return next()
-        }
+            if (exists) {
+              const response = new Response(file)
 
-        try {
-          const query = req.query
-          const result = await process({
-            input: path,
-            quality: Number.parseInt(query.quality as string) || 80,
-            format: query.format as string,
-            resize: query.size as string,
-          })
+              // Add cache headers if enabled
+              if (options?.cache) {
+                response.headers.set('Cache-Control', 'public, max-age=31536000')
+              }
 
-          res.type(`image/${result.format || 'jpeg'}`)
-          res.send(result.buffer)
-        }
-        catch (error) {
-          next(error)
-        }
+              return response
+            }
+
+            return new Response('Not Found', { status: 404 })
+          }
+
+          try {
+            // Parse query parameters for image processing
+            const searchParams = url.searchParams
+            const quality = searchParams.get('quality') ? Number(searchParams.get('quality')) : 80
+            const format = searchParams.get('format') as 'jpeg' | 'png' | 'webp' | 'avif' | undefined
+            const resize = searchParams.get('size') || undefined
+
+            // Process the image
+            const result = await process({
+              input: path,
+              quality,
+              format,
+              resize,
+            })
+
+            // Create a response with the processed image
+            const response = new Response(Bun.file(result.outputPath))
+
+            // Set content type based on format
+            const outputFormat = format || path.split('.').pop() || 'jpeg'
+            response.headers.set('Content-Type', `image/${outputFormat}`)
+
+            // Add cache headers if enabled
+            if (options?.cache) {
+              response.headers.set('Cache-Control', 'public, max-age=31536000')
+            }
+
+            return response
+          }
+          catch (error) {
+            console.error(`Error processing image: ${error instanceof Error ? error.message : String(error)}`)
+            return new Response('Error processing image', { status: 500 })
+          }
+        },
       })
 
-      app.listen(options.port, options.host, () => {
-        console.log(`Server running at http://${options.host}:${options.port}`)
+      console.log(`Server running at http://${server.hostname}:${server.port}`)
+
+      // Handle cleanup on exit
+      proc.on('SIGINT', () => {
+        console.log('Shutting down server...')
+        server.stop()
+        proc.exit(0)
       })
     }
     catch (error) {
-      console.error(`Error: ${error.message}`)
+      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`)
       proc.exit(1)
     }
   })
@@ -499,7 +595,7 @@ cli
   .option('-v, --verbose', 'Enable verbose logging')
   .example('imgx app-icon app-icon.png')
   .example('imgx app-icon logo.png -o ./src/assets -p macos')
-  .action(async (input: string, options?: { outputDir?: string, platform?: 'macos' | 'ios' | 'all', verbose?: boolean }) => {
+  .action(async (input: string, options?: AppIconCommandOptions) => {
     if (!input) {
       cli.outputHelp()
       return
@@ -507,18 +603,18 @@ cli
 
     try {
       const results = await generateAppIcons(input, {
-        outputDir: options.outputDir,
-        platform: options.platform,
+        outputDir: options?.outputDir,
+        platform: options?.platform,
       })
 
       console.log(`Generated app icons for ${results.map(r => r.platform).join(', ')}:`)
 
       for (const result of results) {
         console.log(`\n${result.platform.toUpperCase()}:`)
-        console.log(`- Output directory: ${options.outputDir}/AppIcon.appiconset`)
+        console.log(`- Output directory: ${options?.outputDir || 'assets/app-icons'}/AppIcon.appiconset`)
         console.log(`- Generated ${result.sizes.length} icon sizes`)
 
-        if (options.verbose) {
+        if (options?.verbose) {
           for (const size of result.sizes) {
             console.log(`  - ${size.filename} (${size.size}x${size.size}px)`)
           }
@@ -526,7 +622,7 @@ cli
       }
     }
     catch (error) {
-      console.error(`Error generating app icons: ${error.message}`)
+      console.error(`Error generating app icons: ${error instanceof Error ? error.message : String(error)}`)
       proc.exit(1)
     }
   })

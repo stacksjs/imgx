@@ -1,8 +1,8 @@
-import { expect, describe, it, beforeAll, afterAll, afterEach } from 'bun:test'
-import { generateResponsiveImages, generateImageSet } from '../src/responsive'
-import { join } from 'node:path'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { mkdir, rm } from 'node:fs/promises'
+import { join } from 'node:path'
 import sharp from 'sharp'
+import { generateImageSet, generateResponsiveImages } from '../src/responsive'
 
 const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
 const OUTPUT_DIR = join(import.meta.dir, 'output')

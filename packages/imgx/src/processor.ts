@@ -18,7 +18,7 @@ import { dirname, extname, join } from 'node:path'
 import sharp from 'sharp'
 import { optimize } from 'svgo'
 import { config } from './config'
-import { generateThumbHash, rgbaToThumbHash, thumbHashToDataURL } from './thumbhash'
+import { generateThumbHash } from './thumbhash'
 import { debugLog } from './utils'
 
 function parseResize(resize: string | { width?: number, height?: number }) {
@@ -419,6 +419,14 @@ export async function optimizeSvg(
  *
  * @param input Path to the input image or Buffer
  * @param options Conversion options
+ * @param options.output Path to save the output SVG file
+ * @param options.mode Tracing mode: 'color', 'grayscale', 'bw', or 'posterized'
+ * @param options.background Background color for the SVG
+ * @param options.colorCount Number of colors to use in color tracing mode
+ * @param options.steps Number of steps for posterized mode
+ * @param options.threshold Brightness threshold value (0-255) for black and white mode
+ * @param options.tolerance Tolerance for path optimization (higher = smoother paths)
+ * @param options.optionsSvg Additional SVG optimization options
  * @returns Path to the output SVG and metadata
  */
 export async function imageToSvg(
@@ -1282,6 +1290,11 @@ export async function batchProcessImages(
  * @param input Path to the input image
  * @param output Path to save the optimized image
  * @param options Optional configuration options
+ * @param options.quality Compression quality (1-100)
+ * @param options.lossless Whether to use lossless compression
+ * @param options.progressive Enable progressive encoding
+ * @param options.effort Compression effort level (1-10)
+ * @param options.metadata Preserve image metadata
  * @returns Result of the optimization
  */
 export async function optimizeImage(
