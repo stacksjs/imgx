@@ -1,6 +1,56 @@
 # Changelog
 
 
+## ...main
+
+
+### 🚀 Enhancements
+
+- Add github preset ([6b9df15](https://github.com/stacksjs/imgx/commit/6b9df15))
+
+### 📖 Documentation
+
+- Update index ([94698b5](https://github.com/stacksjs/imgx/commit/94698b5))
+- Adjust documentation ([b290cab](https://github.com/stacksjs/imgx/commit/b290cab))
+- Add api config page ([a2873b0](https://github.com/stacksjs/imgx/commit/a2873b0))
+- Add more pages ([43cadff](https://github.com/stacksjs/imgx/commit/43cadff))
+
+### 🏡 Chore
+
+- Initial commit ([fdb8038](https://github.com/stacksjs/imgx/commit/fdb8038))
+- Wip ([acec9b7](https://github.com/stacksjs/imgx/commit/acec9b7))
+- Update readme ([cd5d505](https://github.com/stacksjs/imgx/commit/cd5d505))
+- Add placeholder tests ([5acae29](https://github.com/stacksjs/imgx/commit/5acae29))
+- Wip ([d6ee00c](https://github.com/stacksjs/imgx/commit/d6ee00c))
+- Add github funding info ([c9eda13](https://github.com/stacksjs/imgx/commit/c9eda13))
+- Add `open_collective` funding info ([22ad651](https://github.com/stacksjs/imgx/commit/22ad651))
+- Minor updates ([dd5587b](https://github.com/stacksjs/imgx/commit/dd5587b))
+- Enhance funding and fix lint ([50d058b](https://github.com/stacksjs/imgx/commit/50d058b))
+- Add stacks docs and cursor rule ([71063eb](https://github.com/stacksjs/imgx/commit/71063eb))
+- Bin build changes and stargazers ([b4d36f7](https://github.com/stacksjs/imgx/commit/b4d36f7))
+- Wip ([68b366b](https://github.com/stacksjs/imgx/commit/68b366b))
+- Wip ([5be65a1](https://github.com/stacksjs/imgx/commit/5be65a1))
+- Wip ([5eb93b3](https://github.com/stacksjs/imgx/commit/5eb93b3))
+- Wip ([bcb1f09](https://github.com/stacksjs/imgx/commit/bcb1f09))
+- Wip ([8454d58](https://github.com/stacksjs/imgx/commit/8454d58))
+- Wip ([ce059bd](https://github.com/stacksjs/imgx/commit/ce059bd))
+- Wip ([e86494d](https://github.com/stacksjs/imgx/commit/e86494d))
+- Wip ([21bb57b](https://github.com/stacksjs/imgx/commit/21bb57b))
+- Wip ([037e8f8](https://github.com/stacksjs/imgx/commit/037e8f8))
+- Wip ([8f3252d](https://github.com/stacksjs/imgx/commit/8f3252d))
+- Update readme ([0db9480](https://github.com/stacksjs/imgx/commit/0db9480))
+- Adjust workflows ([211a268](https://github.com/stacksjs/imgx/commit/211a268))
+- Build updates ([ddbe856](https://github.com/stacksjs/imgx/commit/ddbe856))
+- Lint ([71e7962](https://github.com/stacksjs/imgx/commit/71e7962))
+- Adjust ci workflow ([0245058](https://github.com/stacksjs/imgx/commit/0245058))
+- Adjust names ([b642d15](https://github.com/stacksjs/imgx/commit/b642d15))
+- Adjust intro ([7f5a47e](https://github.com/stacksjs/imgx/commit/7f5a47e))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+- Test User ([@osintorg](https://github.com/osintorg))
+
 ## v0.9.0...main
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.9.0...main)
