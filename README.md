@@ -10,6 +10,26 @@
 
 > A powerful image optimization toolkit for modern web development.
 
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#install)
+- [Getting Started](#get-started)
+- [Configuration](#configuration)
+- [CLI Reference](#cli-reference)
+- [Feature Documentation](#feature-documentation)
+  - [App Icon Generation](#app-icon-generation)
+  - [Image Placeholders](#image-placeholders)
+  - [Batch Processing](#batch-processing)
+  - [Format Conversion](#format-conversion)
+  - [Image Watermarking](#image-watermarking)
+  - [SVG Optimization](#svg-optimization)
+  - [Image to SVG Conversion](#image-to-svg-conversion)
+- [Contributing](#contributing)
+- [Community](#community)
+- [Credits](#credits)
+- [License](#license)
+
 ## Features
 
 - **Advanced Image Optimization**
@@ -51,6 +71,9 @@
 
 ```bash
 bun install -d @stacksjs/imgx
+npm install --save-dev @stacksjs/imgx
+yarn add -D @stacksjs/imgx
+pnpm add -D @stacksjs/imgx
 ```
 
 ## Get Started
@@ -231,49 +254,17 @@ Examples:
   $ imgx analyze ./images --ci --threshold 500KB
 ```
 
-## Contributing
+## Feature Documentation
 
-Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
+For more detailed documentation on each feature, visit our [documentation site](https://imgx.stacksjs.dev).
 
-## Community
-
-For help, discussion about best practices, or any other conversation that would benefit from being searchable:
-
-[Discussions on GitHub](https://github.com/stacksjs/stacks/discussions)
-
-For casual chit-chat with others using this package:
-
-[Join the Stacks Discord Server](https://discord.gg/stacksjs)
-
-## Postcardware
-
-"Software that is free, but hopes for a postcard." We love receiving postcards from around the world showing where `imgx` is being used! We showcase them on our website too.
-
-Our address: Stacks.js, 12665 Village Ln #2306, Playa Vista, CA 90094, United States 🌎
-
-## Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Stacks development. If you are interested in becoming a sponsor, please reach out to us.
-
-- [JetBrains](https://www.jetbrains.com/)
-- [The Solana Foundation](https://solana.com/)
-
-## Credits
-
-- [Chris Breuer](https://github.com/chrisbbreuer)
-- [All Contributors](../../contributors)
-
-## License
-
-The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
-
-Made with 💙
-
-## App Icon Generation
+### App Icon Generation
 
 You can now use imgx to generate properly sized app icons for macOS and iOS applications from a single source image.
 
-### Command Line Usage
+[Read the full App Icon documentation →](https://imgx.stacksjs.dev/features/app-icons)
+
+#### Command Line Usage
 
 ```bash
 # Generate app icons for all platforms (macOS and iOS)
@@ -289,7 +280,7 @@ imgx app-icon source-icon.png -p ios
 imgx app-icon source-icon.png -o ./my-app/assets
 ```
 
-### Programmatic Usage
+#### Programmatic Usage
 
 ```typescript
 import { generateAppIcons } from 'imgx'
@@ -334,6 +325,8 @@ The tool will generate:
 ## Image Placeholders
 
 Imgx provides powerful image placeholder generation for improved page load performance:
+
+[Read the full Image Placeholders documentation →](https://imgx.stacksjs.dev/features/placeholders)
 
 ```ts
 // Generate a low-resolution blurred placeholder
@@ -381,6 +374,8 @@ console.log(placeholderWithCSS.css)
 ## Batch Processing
 
 Process entire directories of images:
+
+[Read the full Batch Processing documentation →](https://imgx.stacksjs.dev/features/batch)
 
 ```ts
 // Convert all JPG/PNG images to WebP and AVIF
@@ -434,6 +429,8 @@ await batchProcessImages('./images', {
 ## Format Conversion
 
 Easily convert between image formats:
+
+[Read the full Format Conversion documentation →](https://imgx.stacksjs.dev/features/conversion)
 
 ```ts
 // Convert a JPEG to WebP
@@ -532,6 +529,8 @@ await Promise.all(images.map(image =>
 
 Optimize SVG files for web use with comprehensive options:
 
+[Read the full SVG Optimization documentation →](https://imgx.stacksjs.dev/features/svg)
+
 ```ts
 // Basic SVG optimization
 const result = await optimizeSvg('icon.svg', {
@@ -573,6 +572,8 @@ await optimizeSvg('icon.svg', {
 
 Convert raster images to scalable SVG using tracing:
 
+[Read the full Image to SVG Conversion documentation →](https://imgx.stacksjs.dev/features/svg#converting-raster-images-to-svg)
+
 ```ts
 // Convert image to black and white SVG
 const result = await imageToSvg('photo.jpg', {
@@ -613,6 +614,44 @@ await imageToSvg('photo.jpg', {
   }
 })
 ```
+
+## Contributing
+
+Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.
+
+## Community
+
+For help, discussion about best practices, or any other conversation that would benefit from being searchable:
+
+[Discussions on GitHub](https://github.com/stacksjs/stacks/discussions)
+
+For casual chit-chat with others using this package:
+
+[Join the Stacks Discord Server](https://discord.gg/stacksjs)
+
+## Postcardware
+
+"Software that is free, but hopes for a postcard." We love receiving postcards from around the world showing where `imgx` is being used! We showcase them on our website too.
+
+Our address: Stacks.js, 12665 Village Ln #2306, Playa Vista, CA 90094, United States 🌎
+
+## Sponsors
+
+We would like to extend our thanks to the following sponsors for funding Stacks development. If you are interested in becoming a sponsor, please reach out to us.
+
+- [JetBrains](https://www.jetbrains.com/)
+- [The Solana Foundation](https://solana.com/)
+
+## Credits
+
+- [Chris Breuer](https://github.com/chrisbbreuer)
+- [All Contributors](../../contributors)
+
+## License
+
+The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
+
+Made with 💙
 
 <!-- Badges -->
 [npm-version-src]: https://img.shields.io/npm/v/@stacksjs/imgx?style=flat-square
