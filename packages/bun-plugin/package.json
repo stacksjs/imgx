@@ -2,7 +2,6 @@
   "name": "bun-plugin-imgx",
   "type": "module",
   "version": "0.0.0",
-  "private": true,
   "description": "Bun plugin for imgx",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
@@ -33,14 +32,12 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/src/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
-  "module": "./dist/src/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "imgx": "./dist/bin/cli.js"
-  },
   "files": ["README.md", "dist"],
   "scripts": {
     "build": "bun build.ts",
