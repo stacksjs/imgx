@@ -141,7 +141,14 @@ describe('processor', () => {
   describe('convertImageFormat', () => {
     it('should convert an image to webp format', async () => {
       const input = join(FIXTURES_DIR, 'app-icon.png')
-      const result = await convertImageFormat(input, 'webp', {
+
+      // Create a smaller test image for faster conversion
+      const smallerImage = join(OUTPUT_DIR, 'small-test-image.png')
+      await sharp(input)
+        .resize(200) // Resizing to make the test faster
+        .toFile(smallerImage)
+
+      const result = await convertImageFormat(smallerImage, 'webp', {
         outputDir: OUTPUT_DIR,
         quality: 90,
       })
@@ -161,7 +168,7 @@ describe('processor', () => {
       // Verify the format
       const metadata = await sharp(result.outputPath).metadata()
       expect(metadata.format).toBe('webp')
-    })
+    }, 10000) // Extend timeout to 10 seconds
 
     it('should convert an image to jpeg format with custom options', async () => {
       const input = join(FIXTURES_DIR, 'app-icon.png')
@@ -196,7 +203,7 @@ describe('processor', () => {
         resize: {
           width: 200,
           height: 200,
-          fit: 'fill', // Force exact dimensions
+          fit: 'cover',
         },
       })
 

@@ -469,10 +469,10 @@ export async function imageToSvg(
     // Import potrace dynamically to handle environments where it might not be available
     let potrace: any
     try {
-      potrace = await import('potrace')
+      potrace = await import('ts-potrace')
     }
     catch {
-      throw new Error('Potrace library is required for image to SVG conversion. Please install it with: bun install potrace')
+      throw new Error('Potrace library is required for image to SVG conversion. Please install it with: bun install ts-potrace')
     }
 
     // Get image metadata for dimensions
@@ -823,11 +823,11 @@ export async function convertImageFormat(
       height: resize.height || imageMetadata.height,
       fit: resize.fit || 'contain',
     }
-    imageProcessor = imageProcessor.resize(
-      resizeOptions.width,
-      resizeOptions.height,
-      { fit: resizeOptions.fit as any },
-    )
+    imageProcessor = imageProcessor.resize({
+      width: resizeOptions.width,
+      height: resizeOptions.height,
+      fit: resizeOptions.fit as any,
+    })
   }
 
   // Apply format-specific options
