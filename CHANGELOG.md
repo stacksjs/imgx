@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.1...main
+
+[compare changes](https://github.com/stacksjs/imgx/compare/v0.1.1...main)
+
+### 🏡 Chore
+
+- Use dtsx to generate types ([870b7fd](https://github.com/stacksjs/imgx/commit/870b7fd))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.1.0...main
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.0...main)

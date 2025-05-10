@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/imgx",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Modern image optimizations & manipulations.",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
