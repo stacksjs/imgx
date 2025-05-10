@@ -5,6 +5,9 @@
     "moduleDetection": "force",
     "module": "esnext",
     "moduleResolution": "bundler",
+    "paths": {
+      "@stacksjs/imgx": ["../imgx/src"]
+    },
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "strict": true,

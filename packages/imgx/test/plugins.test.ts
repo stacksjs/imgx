@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { bunImgxPlugin, viteImgxPlugin } from '../src/plugins'
+import { bunImgxPlugin } from '../../bun-plugin/src'
+import { viteImgxPlugin } from '../../vite-plugin/src'
 
 describe('plugins', () => {
   it('should export viteImgxPlugin function', () => {
