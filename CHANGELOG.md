@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.0...main
+
+[compare changes](https://github.com/stacksjs/imgx/compare/v0.1.0...main)
+
+### 🏡 Chore
+
+- Use release script ([588a552](https://github.com/stacksjs/imgx/commit/588a552))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## ...main
 
 
