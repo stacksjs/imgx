@@ -76,7 +76,7 @@
     "changelogen": "^0.6.1",
     "image-size": "^2.0.2",
     "sharp": "^0.34.1",
-    "svgo": "^3.3.2",
+    "svgo": "^4.0.0",
     "ts-potrace": "^0.1.0"
   },
   "simple-git-hooks": {
