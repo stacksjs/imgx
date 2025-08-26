@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "bun-plugin-dtsx": "^0.21.12",
-    "bunfig": "^0.8.5",
+    "bunfig": "^0.14.1",
     "cac": "^6.7.14",
     "changelogen": "^0.6.1",
     "image-size": "^2.0.2",
