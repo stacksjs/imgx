@@ -73,9 +73,9 @@
     "bun-plugin-dtsx": "^0.21.12",
     "bunfig": "^0.8.5",
     "cac": "^6.7.14",
-    "changelogen": "^0.6.1",
+    "changelogen": "^0.6.2",
     "image-size": "^2.0.2",
-    "sharp": "^0.34.1",
+    "sharp": "^0.34.3",
     "svgo": "^3.3.2",
     "ts-potrace": "^0.1.0"
   },
