@@ -1,7 +1,12 @@
 import type { GetFilesOptions, OptimizeResult } from './types'
 import { stat } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
+import { Logger } from '@stacksjs/clarity'
 import { config } from './config'
+
+const logger = new Logger('imgx', {
+  showTags: false,
+})
 
 export async function getFiles(
   path: string,
@@ -111,16 +116,14 @@ export function debugLog(category: string, message: string, verbose?: boolean | 
   }
 
   if (verbose === true || config.verbose === true) {
-    // eslint-disable-next-line no-console
-    console.debug(`[imgx:${category}] ${message}`)
+    logger.debug(`[imgx:${category}] ${message}`)
   }
 
   if (Array.isArray(verbose)) {
     // Check if any of the verbose categories match the prefix
     const matches = verbose.some(prefix => category.startsWith(prefix))
     if (matches) {
-      // eslint-disable-next-line no-console
-      console.log(`[imgx:${category}] ${message}`)
+      logger.info(`[imgx:${category}] ${message}`)
     }
   }
 
@@ -128,8 +131,7 @@ export function debugLog(category: string, message: string, verbose?: boolean | 
     // Check if any of the verbose categories match the prefix
     const matches = config.verbose.some(prefix => category.startsWith(prefix))
     if (matches) {
-      // eslint-disable-next-line no-console
-      console.log(`[imgx:${category}] ${message}`)
+      logger.debug(`[imgx:${category}] ${message}`)
     }
   }
 }
@@ -173,8 +175,7 @@ export function printSummary(results: Array<OptimizeResult | null>): void {
     const totalSaved = totalInputSize - totalOutputSize
     const totalPercentage = (totalSaved / totalInputSize) * 100
 
-    // eslint-disable-next-line no-console
-    console.log(`
+    logger.box(`
       Successfully processed ${successful.length} files:
       - Total input size: ${formatBytes(totalInputSize)}
       - Total output size: ${formatBytes(totalOutputSize)}
@@ -183,9 +184,9 @@ export function printSummary(results: Array<OptimizeResult | null>): void {
   }
 
   if (failed.length > 0) {
-    console.error(`\nFailed to process ${failed.length} files:`)
+    logger.error(`\nFailed to process ${failed.length} files:`)
     failed.forEach((result) => {
-      console.error(`- ${result?.inputPath}: ${result?.error?.message}`)
+      logger.error(`- ${result?.inputPath}: ${result?.error?.message}`)
     })
   }
 }
