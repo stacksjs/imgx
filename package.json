@@ -54,7 +54,7 @@
     "@types/bun": "^1.2.23",
     "buddy-bot": "^0.9.7",
     "bun-git-hooks": "^0.2.19",
-    "typescript": "^5.9.2",
+    "typescript": "^5.9.3",
     "unocss": "^66.5.2"
   },
   "overrides": {
