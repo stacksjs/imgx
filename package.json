@@ -52,7 +52,7 @@
     "@stacksjs/gitlint": "^0.1.5",
     "@stacksjs/logsmith": "^0.1.18",
     "@types/bun": "^1.2.23",
-    "buddy-bot": "^0.9.7",
+    "buddy-bot": "^0.9.8",
     "bun-git-hooks": "^0.3.1",
     "typescript": "^5.9.3",
     "unocss": "^66.5.2"
