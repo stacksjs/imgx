@@ -70,12 +70,12 @@
     "zip:darwin-arm64": "zip -j bin/imgx-darwin-arm64.zip bin/imgx-darwin-arm64"
   },
   "devDependencies": {
-    "bun-plugin-dtsx": "^0.21.12",
-    "bunfig": "^0.15.0",
+    "bun-plugin-dtsx": "^0.21.17",
+    "bunfig": "^0.15.6",
     "cac": "^6.7.14",
     "changelogen": "^0.6.2",
     "image-size": "^2.0.2",
-    "sharp": "^0.34.4",
+    "sharp": "^0.34.5",
     "svgo": "^4.0.0",
     "ts-potrace": "^0.1.0"
   },
