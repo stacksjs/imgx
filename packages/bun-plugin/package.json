@@ -50,7 +50,7 @@
     "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/imgx": "workspace:*"
+    "ts-images": "workspace:*"
   },
   "devDependencies": {
     "bun-plugin-dtsx": "^0.21.12"

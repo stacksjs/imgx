@@ -1,7 +1,7 @@
-import type { ProcessOptions } from '@stacksjs/imgx'
+import type { ProcessOptions } from 'ts-images'
 import type { Plugin } from 'vite'
 import process from 'node:process'
-import { debugLog, process as processImage } from '@stacksjs/imgx'
+import { debugLog, process as processImage } from 'ts-images'
 
 export interface ImgxPluginOptions extends Partial<ProcessOptions> {
   include?: string[]
