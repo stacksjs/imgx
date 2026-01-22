@@ -40,25 +40,13 @@
     "release": "bun run changelog:generate && bunx bumpx prompt --recursive",
     "postinstall": "bunx git-hooks",
     "typecheck": "bunx tsc --noEmit",
-    "dev:docs": "bun --bun vitepress dev docs",
-    "build:docs": "bun --bun vitepress build docs",
-    "preview:docs": "bun --bun vitepress preview docs"
+    "dev:docs": "bun --bun bunpress dev docs",
+    "deploy:docs": "bun --bun bunpress deploy docs",
+    "build:docs": "bun --bun bunpress build docs",
+    "preview:docs": "bun --bun bunpress preview docs"
   },
   "devDependencies": {
-    "@stacksjs/bumpx": "^0.1.84",
-    "@stacksjs/clarity": "^0.3.23",
-    "@stacksjs/docs": "^0.70.23",
-    "@stacksjs/eslint-config": "^4.14.0-beta.3",
-    "@stacksjs/gitlint": "^0.1.5",
-    "@stacksjs/logsmith": "^0.1.18",
-    "@types/bun": "^1.2.23",
-    "buddy-bot": "^0.9.7",
-    "bun-git-hooks": "^0.2.19",
-    "typescript": "^5.9.2",
-    "unocss": "^66.5.2"
-  },
-  "overrides": {
-    "unconfig": "0.3.10"
+    "better-dx": "^0.2.5"
   },
   "workspaces": [
     "packages/*"
@@ -66,7 +54,7 @@
   "git-hooks": {
     "pre-commit": {
       "staged-lint": {
-        "*.{js,ts,json,yaml,yml,md}": "bunx --bun eslint --fix"
+        "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier --fix"
       }
     },
     "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"

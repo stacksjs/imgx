@@ -1,4 +1,6 @@
-import sharp from 'sharp'
+import { readFile } from 'node:fs/promises'
+import { resize } from './core'
+import { decode } from './codecs'
 
 // Thanks to evanw for the original implementation of this code:
 // https://github.com/evanw/thumbhash
@@ -385,13 +387,15 @@ export function thumbHashToDataURL(hash: ArrayLike<number>): string {
 }
 
 export async function generateThumbHash(input: string): Promise<{ hash: Uint8Array, dataUrl: string }> {
-  const image = sharp(input)
-  const { data, info } = await image
-    .resize(100, 100, { fit: 'inside' })
-    .raw()
-    .toBuffer({ resolveWithObject: true })
+  // Read and decode the image
+  const inputBuffer = await readFile(input)
+  const imageData = await decode(inputBuffer)
 
-  const hash = rgbaToThumbHash(info.width, info.height, data)
+  // Resize to fit within 100x100
+  const resized = resize(imageData, { width: 100, height: 100, fit: 'inside' })
+
+  // Generate thumbhash from RGBA data
+  const hash = rgbaToThumbHash(resized.width, resized.height, resized.data)
   const dataUrl = thumbHashToDataURL(hash)
   return { hash, dataUrl }
 }

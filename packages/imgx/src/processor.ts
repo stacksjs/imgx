@@ -15,9 +15,24 @@ import type {
 import { Buffer } from 'node:buffer'
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { dirname, extname, join } from 'node:path'
-import sharp from 'sharp'
 import { optimize } from 'svgo'
 import { config } from './config'
+import {
+  blur,
+  composite,
+  createImageData,
+  flip,
+  flop,
+  getDominantColor,
+  grayscale,
+  modulate,
+  resize,
+  rotate,
+  sharpen,
+  threshold,
+} from './core'
+import type { ImageData } from './core'
+import { decode, encode, detectFormat, getMetadata } from './codecs'
 import { generateThumbHash } from './thumbhash'
 import { debugLog } from './utils'
 
@@ -38,55 +53,80 @@ async function ensureDir(filepath: string) {
   await mkdir(dir, { recursive: true })
 }
 
+/**
+ * Read an image file and decode it to ImageData
+ */
+async function readImage(input: string | Buffer): Promise<{ imageData: ImageData, originalSize: number }> {
+  let inputBuffer: Uint8Array
+  let originalSize: number
+
+  if (typeof input === 'string') {
+    inputBuffer = await readFile(input)
+    const stats = await stat(input)
+    originalSize = stats.size
+  }
+  else {
+    inputBuffer = new Uint8Array(input)
+    originalSize = input.length
+  }
+
+  const imageData = await decode(inputBuffer)
+  return { imageData, originalSize }
+}
+
+/**
+ * Encode ImageData and optionally write to file
+ */
+async function writeImage(
+  imageData: ImageData,
+  format: string,
+  output?: string,
+  options: { quality?: number, progressive?: boolean, lossless?: boolean, effort?: number } = {},
+): Promise<Uint8Array> {
+  const outputBuffer = await encode(imageData, format, options)
+
+  if (output) {
+    await ensureDir(output)
+    await writeFile(output, outputBuffer)
+  }
+
+  return outputBuffer
+}
+
 export async function processImage(options: ProcessOptions): Promise<OptimizeResult> {
-  const { input, output, quality = 80, resize, format, progressive = true } = options
+  const { input, output, quality = 80, resize: resizeOpt, format, progressive = true } = options
 
   debugLog('process', `Processing image with options: ${JSON.stringify(options)}`)
 
-  let inputBuffer: Buffer
-  let inputSize: number
-
   try {
-    if (typeof input === 'string') {
-      inputBuffer = await readFile(input)
-      const stats = await stat(input)
-      inputSize = stats.size
-    }
-    else {
-      inputBuffer = input
-      inputSize = input.length
-    }
+    const { imageData, originalSize } = await readImage(input)
+    let processedData = imageData
 
-    let pipeline = sharp(inputBuffer)
-
-    if (resize) {
-      const dimensions = parseResize(resize)
+    if (resizeOpt) {
+      const dimensions = parseResize(resizeOpt)
       if (dimensions) {
-        pipeline = pipeline.resize(dimensions.width, dimensions.height)
+        processedData = resize(processedData, {
+          width: dimensions.width,
+          height: dimensions.height,
+        })
       }
     }
 
-    if (format) {
-      pipeline = pipeline[format]({ quality, progressive })
-    }
+    const outputFormat = format || detectFormat(
+      typeof input === 'string' ? await readFile(input) : new Uint8Array(input),
+    ) || 'png'
 
-    const outputBuffer = await pipeline.toBuffer()
-
-    if (output) {
-      await ensureDir(output)
-      await writeFile(output, outputBuffer)
-    }
-
+    const outputBuffer = await writeImage(processedData, outputFormat, output, { quality, progressive })
     const outputSize = outputBuffer.length
-    const saved = inputSize - outputSize
-    const savedPercentage = (saved / inputSize) * 100
+    const saved = originalSize - outputSize
+    const savedPercentage = (saved / originalSize) * 100
 
     debugLog('process', `Processed image: saved ${savedPercentage.toFixed(2)}% (${saved} bytes)`)
 
     return {
       inputPath: typeof input === 'string' ? input : 'buffer',
       outputPath: output || 'buffer',
-      inputSize,
+      inputSize: originalSize,
       outputSize,
       saved,
       savedPercentage,
@@ -453,7 +493,7 @@ export async function imageToSvg(
     background,
     colorCount = 16,
     steps = 4,
-    threshold = 128,
+    threshold: thresholdLevel = 128,
     tolerance = 3,
     optionsSvg = {},
   } = options
@@ -462,17 +502,11 @@ export async function imageToSvg(
 
   try {
     // Process input
-    let inputBuffer: Buffer
-    let inputPath: string
+    const { imageData } = await readImage(input)
+    const inputPath = typeof input === 'string' ? input : 'buffer'
 
-    if (typeof input === 'string') {
-      inputBuffer = await readFile(input)
-      inputPath = input
-    }
-    else {
-      inputBuffer = input
-      inputPath = 'buffer'
-    }
+    const width = imageData.width
+    const height = imageData.height
 
     // Import potrace dynamically to handle environments where it might not be available
     let potrace: any
@@ -483,45 +517,34 @@ export async function imageToSvg(
       throw new Error('Potrace library is required for image to SVG conversion. Please install it with: bun install ts-potrace')
     }
 
-    // Get image metadata for dimensions
-    const metadata = await sharp(inputBuffer).metadata()
-    const width = metadata.width || 0
-    const height = metadata.height || 0
-
     // Process the image based on the mode
-    let processedBuffer: Buffer
+    let processedData = imageData
 
     if (mode === 'bw') {
-      // Convert to 1-bit bitmap for black and white
-      processedBuffer = await sharp(inputBuffer)
-        .grayscale()
-        .threshold(threshold)
-        .toBuffer()
+      // Convert to grayscale then threshold for black and white
+      processedData = grayscale(processedData)
+      processedData = threshold(processedData, thresholdLevel)
     }
     else if (mode === 'grayscale') {
-      // Convert to grayscale with levels
-      processedBuffer = await sharp(inputBuffer)
-        .grayscale()
-        .toBuffer()
+      // Convert to grayscale
+      processedData = grayscale(processedData)
     }
     else if (mode === 'posterized') {
-      // Posterize image (reduce colors) before tracing
-      // Since sharp doesn't have a direct posterize method, we'll use quantization
-      processedBuffer = await sharp(inputBuffer)
-        .toColorspace('srgb')
-        // Quantize colors to simulate posterization
-        .toFormat('png', {
-          colors: steps, // Number of colors in the palette
-          dither: 0, // No dithering for cleaner tracing
-        })
-        .toBuffer()
+      // For posterized, we reduce to a limited number of levels
+      // This is a simple posterization by quantizing color values
+      const levelStep = Math.floor(256 / steps)
+      const posterized = createImageData(width, height)
+      for (let i = 0; i < processedData.data.length; i += 4) {
+        posterized.data[i] = Math.floor(processedData.data[i] / levelStep) * levelStep
+        posterized.data[i + 1] = Math.floor(processedData.data[i + 1] / levelStep) * levelStep
+        posterized.data[i + 2] = Math.floor(processedData.data[i + 2] / levelStep) * levelStep
+        posterized.data[i + 3] = processedData.data[i + 3]
+      }
+      processedData = posterized
     }
-    else {
-      // Color mode - just ensure it's in RGB format
-      processedBuffer = await sharp(inputBuffer)
-        .toColorspace('srgb')
-        .toBuffer()
-    }
+
+    // Encode as PNG for potrace
+    const processedBuffer = await encode(processedData, 'png')
 
     // Trace the image to SVG
     let svgContent: string
@@ -529,7 +552,7 @@ export async function imageToSvg(
     if (mode === 'color' || mode === 'posterized') {
       // Use color tracing for color and posterized modes
       svgContent = await new Promise((resolve, reject) => {
-        potrace.trace(processedBuffer, {
+        potrace.trace(Buffer.from(processedBuffer), {
           color: mode === 'color',
           optTolerance: tolerance,
           turdSize: 5, // Suppress speckles
@@ -547,13 +570,13 @@ export async function imageToSvg(
     else {
       // Use standard tracing for bw and grayscale
       svgContent = await new Promise((resolve, reject) => {
-        potrace.trace(processedBuffer, {
+        potrace.trace(Buffer.from(processedBuffer), {
           turdSize: 5,
           turnPolicy: potrace.Potrace.TURNPOLICY_MINORITY,
           optTolerance: tolerance,
           optCurve: true,
           alphaMax: 1,
-          threshold,
+          threshold: thresholdLevel,
           blackOnWhite: true, // Set to false for white on black
         }, (err: Error | null, svg: string) => {
           if (err)
@@ -642,10 +665,10 @@ export async function generatePlaceholder(
 
   debugLog('processor', `Generating placeholder for ${input} using strategy: ${strategy}`)
 
-  // Get image metadata first
-  const metadata = await sharp(input).metadata()
-  const originalWidth = metadata.width || 0
-  const originalHeight = metadata.height || 0
+  // Read and decode the image
+  const { imageData } = await readImage(input)
+  const originalWidth = imageData.width
+  const originalHeight = imageData.height
   const aspectRatio = (originalWidth || 1) / (originalHeight || 1)
 
   // If using thumbhash, generate it
@@ -665,14 +688,8 @@ export async function generatePlaceholder(
 
   // If using dominant color strategy
   if (strategy === 'dominant-color') {
-    const { dominant } = await sharp(input)
-      .resize(10, 10, { fit: 'inside' })
-      .stats()
-
-    const r = dominant.r
-    const g = dominant.g
-    const b = dominant.b
-    const dominantColor = `rgb(${r}, ${g}, ${b})`
+    const dominantRgb = getDominantColor(imageData)
+    const dominantColor = `rgb(${dominantRgb.r}, ${dominantRgb.g}, ${dominantRgb.b})`
 
     return {
       dataURL: `data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${originalWidth}' height='${originalHeight}' style='background-color:${dominantColor}'/%3E`,
@@ -687,43 +704,35 @@ export async function generatePlaceholder(
   }
 
   // Otherwise, create a standard blurred or pixelated placeholder
-  const image = sharp(input)
-
-  const resizeOptions = {
+  let processedImage = resize(imageData, {
     width,
     height,
-    fit: 'inside' as const,
-  }
-
-  let processedImage = image.resize(resizeOptions)
+    fit: 'inside',
+  })
 
   if (strategy === 'blur') {
-    processedImage = processedImage.blur(blurLevel)
+    // Convert blur level to sigma (approximately)
+    const sigma = blurLevel / 10
+    processedImage = blur(processedImage, sigma)
   }
   else if (strategy === 'pixelate') {
     // To pixelate, we resize small then resize back larger with nearest neighbor
-    processedImage = sharp(await sharp(input)
-      .resize(Math.max(8, Math.floor(width / 8)), null, { fit: 'inside' })
-      .toBuffer())
-      .resize(width, height, { fit: 'inside', kernel: 'nearest' })
+    const pixelSize = Math.max(8, Math.floor(width / 8))
+    const smallImage = resize(imageData, { width: pixelSize, fit: 'inside' })
+    processedImage = resize(smallImage, { width, height, kernel: 'nearest' })
   }
 
   // Apply saturation adjustment if needed
   if (saturation !== 1.0) {
-    processedImage = processedImage.modulate({
-      saturation,
-    })
+    processedImage = modulate(processedImage, { saturation })
   }
 
-  // Set output format
-  processedImage = processedImage.toFormat(format, { quality })
-
-  let buffer: Buffer
+  let buffer: Uint8Array
   let finalPath: string
 
   if (base64Encode) {
-    buffer = await processedImage.toBuffer()
-    const base64 = buffer.toString('base64')
+    buffer = await encode(processedImage, format, { quality })
+    const base64 = Buffer.from(buffer).toString('base64')
     const mimeType = `image/${format === 'jpeg' ? 'jpeg' : format}`
     const dataURL = `data:${mimeType};base64,${base64}`
 
@@ -754,7 +763,7 @@ export async function generatePlaceholder(
   }
   else {
     finalPath = outputPath || input.replace(/\.[^/.]+$/, `.placeholder.${format}`)
-    await processedImage.toFile(finalPath)
+    await writeImage(processedImage, format, finalPath, { quality })
 
     return {
       dataURL: finalPath,
@@ -788,12 +797,9 @@ export async function convertImageFormat(
     progressive = config.conversion?.progressive !== undefined ? config.conversion.progressive : true,
     filenamePrefix = '',
     filenameSuffix = '',
-    resize,
+    resize: resizeOptions,
     preserveMetadata = false,
-    chromaSubsampling = '4:2:0',
-    optimizationLevel = 6,
     effort = 6,
-    smartSubsample = true,
   } = options
 
   debugLog('processor', `Converting ${input} to ${outputFormat}`)
@@ -817,80 +823,26 @@ export async function convertImageFormat(
     await ensureDir(outputPath)
   }
 
-  // Set up sharp instance
-  let imageProcessor = sharp(input)
-
-  // Get original metadata for return value
-  const imageMetadata = await imageProcessor.metadata()
+  // Read and decode the image
+  const { imageData } = await readImage(input)
+  let processedImage = imageData
 
   // Apply resizing if specified
-  if (resize) {
-    // Use original dimensions if not specified
-    const resizeOptions = {
-      width: resize.width || imageMetadata.width,
-      height: resize.height || imageMetadata.height,
-      fit: resize.fit || 'contain',
-    }
-    imageProcessor = imageProcessor.resize({
+  if (resizeOptions) {
+    processedImage = resize(processedImage, {
       width: resizeOptions.width,
       height: resizeOptions.height,
-      fit: resizeOptions.fit as any,
+      fit: resizeOptions.fit as any || 'contain',
     })
   }
 
-  // Apply format-specific options
-  switch (outputFormat) {
-    case 'webp':
-      imageProcessor = imageProcessor.webp({
-        quality,
-        lossless,
-        effort,
-        smartSubsample,
-      })
-      break
-
-    case 'avif':
-      imageProcessor = imageProcessor.avif({
-        quality,
-        lossless,
-        effort,
-      })
-      break
-
-    case 'jpeg':
-      imageProcessor = imageProcessor.jpeg({
-        quality,
-        progressive,
-        chromaSubsampling,
-        optimizeScans: true,
-        mozjpeg: true,
-      })
-      break
-
-    case 'png':
-      imageProcessor = imageProcessor.png({
-        quality,
-        progressive,
-        compressionLevel: optimizationLevel,
-        adaptiveFiltering: true,
-        palette: quality < 100,
-      })
-      break
-
-    case 'gif':
-      imageProcessor = imageProcessor.gif({
-        effort,
-      })
-      break
-  }
-
-  // Preserve metadata if requested
-  if (preserveMetadata) {
-    imageProcessor = imageProcessor.withMetadata()
-  }
-
-  // Process the image
-  await imageProcessor.toFile(outputPath)
+  // Encode to the target format
+  await writeImage(processedImage, outputFormat, outputPath, {
+    quality,
+    lossless,
+    progressive,
+    effort,
+  })
 
   // Get output file size
   const outputStats = await stat(outputPath)
@@ -900,15 +852,12 @@ export async function convertImageFormat(
   const saved = originalSize - convertedSize
   const savedPercentage = (saved / originalSize) * 100
 
-  // Get dimensions from output file to get resized values
-  const outputMetadata = await sharp(outputPath).metadata()
-
   return {
     inputPath: input,
     outputPath,
     format: outputFormat,
-    width: outputMetadata.width || 0,
-    height: outputMetadata.height || 0,
+    width: processedImage.width,
+    height: processedImage.height,
     originalSize,
     convertedSize,
     saved,
@@ -931,7 +880,7 @@ export async function batchProcessImages(
     outputDir = inputDir,
     formats = config.batch?.formats || ['webp'],
     quality = config.batch?.quality || 80,
-    resize = config.batch?.resize,
+    resize: resizeOptions = config.batch?.resize,
     recursive = config.batch?.recursive || false,
     filter = config.batch?.filter ? new RegExp(config.batch.filter, 'i') : /\.(jpe?g|png|gif|bmp|tiff?)$/i,
     skipExisting = config.batch?.skipExisting !== undefined ? config.batch.skipExisting : true,
@@ -1005,7 +954,6 @@ export async function batchProcessImages(
           effort: 6,
           lossless: false,
           progressive: format === 'jpeg' || format === 'png',
-          chromaSubsampling: '4:2:0',
         }
       case 'quality':
         return {
@@ -1013,7 +961,6 @@ export async function batchProcessImages(
           effort: 9,
           lossless: format === 'png' || originalSize < 100 * 1024, // Use lossless for small files
           progressive: format === 'jpeg' || format === 'png',
-          chromaSubsampling: '4:4:4',
         }
       case 'performance':
         return {
@@ -1029,32 +976,32 @@ export async function batchProcessImages(
     }
   }
 
-  // Create a function to apply transformations to a sharp instance
-  const applyTransformations = (image: any): any => {
+  // Create a function to apply transformations to an image
+  const applyTransformations = (image: ImageData): ImageData => {
     let processedImage = image
 
     for (const transform of transformations) {
       switch (transform.type) {
         case 'resize':
-          processedImage = processedImage.resize(transform.options)
+          processedImage = resize(processedImage, transform.options)
           break
         case 'rotate':
-          processedImage = processedImage.rotate(transform.options?.angle || 0, transform.options)
+          processedImage = rotate(processedImage, transform.options?.angle || 0, transform.options)
           break
         case 'flip':
-          processedImage = processedImage.flip()
+          processedImage = flip(processedImage)
           break
         case 'flop':
-          processedImage = processedImage.flop()
+          processedImage = flop(processedImage)
           break
         case 'blur':
-          processedImage = processedImage.blur(transform.options?.sigma || 1)
+          processedImage = blur(processedImage, transform.options?.sigma || 1)
           break
         case 'sharpen':
-          processedImage = processedImage.sharpen(transform.options)
+          processedImage = sharpen(processedImage, transform.options)
           break
         case 'grayscale':
-          processedImage = processedImage.grayscale()
+          processedImage = grayscale(processedImage)
           break
       }
     }
@@ -1111,27 +1058,27 @@ export async function batchProcessImages(
       const originalStats = await stat(filePath)
       summary.originalSize += originalStats.size
 
-      // Get image metadata
-      const imageMetadata = await sharp(filePath).metadata()
+      // Read and decode image
+      const { imageData } = await readImage(filePath)
 
       for (const format of formats) {
         // Create output filename from template
         const outputFilename = filenameTemplate
           .replace(/\[name\]/g, filenameWithoutExt)
           .replace(/\[format\]/g, format)
-          .replace(/\[width\]/g, (imageMetadata.width || 0).toString())
-          .replace(/\[height\]/g, (imageMetadata.height || 0).toString())
+          .replace(/\[width\]/g, imageData.width.toString())
+          .replace(/\[height\]/g, imageData.height.toString())
           .replace(/\[quality\]/g, getQuality(format).toString())
 
-        const outputPath = join(targetDir, outputFilename)
+        const outputFilePath = join(targetDir, outputFilename)
 
         // Skip if the output file exists and skipExisting is true
         if (skipExisting) {
           try {
-            await stat(outputPath)
-            const outputStats = await stat(outputPath)
+            await stat(outputFilePath)
+            const outputStats = await stat(outputFilePath)
             outputs.push({
-              path: outputPath,
+              path: outputFilePath,
               format,
               size: outputStats.size,
               saved: originalStats.size - outputStats.size,
@@ -1146,66 +1093,26 @@ export async function batchProcessImages(
         // Get format-specific options based on preset
         const formatOptions = getFormatOptions(format, originalStats.size)
 
-        // Process the image
-        const processor = sharp(filePath)
-
         // Apply general transformations
-        const transformedImage = applyTransformations(processor)
+        let transformedImage = applyTransformations(imageData)
 
         // Apply resize if specified
-        if (resize) {
-          transformedImage.resize(resize.width, resize.height)
+        if (resizeOptions) {
+          transformedImage = resize(transformedImage, {
+            width: resizeOptions.width,
+            height: resizeOptions.height,
+          })
         }
 
-        // Apply format-specific settings
-        switch (format) {
-          case 'webp':
-            transformedImage.webp({
-              quality: formatOptions.quality,
-              lossless: formatOptions.lossless,
-              effort: formatOptions.effort,
-              smartSubsample: formatOptions.smartSubsample,
-            })
-            break
-          case 'avif':
-            transformedImage.avif({
-              quality: formatOptions.quality,
-              lossless: formatOptions.lossless,
-              effort: formatOptions.effort,
-            })
-            break
-          case 'jpeg':
-            transformedImage.jpeg({
-              quality: formatOptions.quality,
-              progressive: formatOptions.progressive,
-              chromaSubsampling: formatOptions.chromaSubsampling,
-              mozjpeg: true,
-            })
-            break
-          case 'png':
-            transformedImage.png({
-              quality: formatOptions.quality,
-              progressive: formatOptions.progressive,
-              compressionLevel: formatOptions.effort,
-              adaptiveFiltering: true,
-            })
-            break
-        }
-
-        // Preserve metadata if requested
-        if (preserveMetadata) {
-          transformedImage.withMetadata()
-        }
-
-        // Process and save the image
-        await transformedImage.toFile(outputPath)
+        // Encode and write
+        await writeImage(transformedImage, format, outputFilePath, formatOptions)
 
         // Get the output file size
-        const outputStats = await stat(outputPath)
+        const outputStats = await stat(outputFilePath)
         const savedBytes = originalStats.size - outputStats.size
 
         outputs.push({
-          path: outputPath,
+          path: outputFilePath,
           format,
           size: outputStats.size,
           saved: savedBytes,
@@ -1285,7 +1192,7 @@ export async function batchProcessImages(
 }
 
 /**
- * Optimizes an image using sharp with best practices for the format
+ * Optimizes an image using best practices for the format
  *
  * @param input Path to the input image
  * @param output Path to save the optimized image
@@ -1330,60 +1237,35 @@ export async function optimizeImage(
     const inputStats = await stat(input)
     const originalSize = inputStats.size
 
-    const image = sharp(input)
-    const imageMetadata = await image.metadata()
-    const format = imageMetadata.format || 'unknown'
+    // Read and decode the image
+    const inputBuffer = await readFile(input)
+    const format = detectFormat(inputBuffer) || 'png'
+    const { imageData } = await readImage(input)
 
-    // Apply appropriate options based on the format
-    let optimizedImage = metadata ? image.withMetadata() : image
-
+    // Get format-specific quality from config if available
+    let outputQuality = quality
     switch (format) {
-      case 'jpeg': {
-        const jpegConfig = config.optimization?.jpeg
-        optimizedImage = optimizedImage.jpeg({
-          quality: options.quality || jpegConfig?.quality || quality,
-          progressive: options.progressive !== undefined ? options.progressive : jpegConfig?.progressive || progressive,
-          optimizeCoding: jpegConfig?.optimizeCoding || true,
-          mozjpeg: jpegConfig?.mozjpeg || true,
-        })
+      case 'jpeg':
+        outputQuality = options.quality || config.optimization?.jpeg?.quality || quality
         break
-      }
-      case 'png': {
-        const pngConfig = config.optimization?.png
-        optimizedImage = optimizedImage.png({
-          quality: options.quality || pngConfig?.quality || quality,
-          progressive: options.progressive !== undefined ? options.progressive : pngConfig?.progressive || progressive,
-          compressionLevel: pngConfig?.compressionLevel || 9,
-          effort: options.effort || pngConfig?.effort || effort,
-          palette: pngConfig?.palette || true,
-        })
+      case 'png':
+        outputQuality = options.quality || config.optimization?.png?.quality || quality
         break
-      }
-      case 'webp': {
-        const webpConfig = config.optimization?.webp
-        optimizedImage = optimizedImage.webp({
-          quality: options.quality || webpConfig?.quality || quality,
-          lossless: options.lossless !== undefined ? options.lossless : webpConfig?.lossless || lossless,
-          effort: options.effort || webpConfig?.effort || effort,
-          smartSubsample: webpConfig?.smartSubsample || true,
-        })
+      case 'webp':
+        outputQuality = options.quality || config.optimization?.webp?.quality || quality
         break
-      }
-      case 'avif': {
-        const avifConfig = config.optimization?.avif
-        optimizedImage = optimizedImage.avif({
-          quality: options.quality || avifConfig?.quality || quality,
-          lossless: options.lossless !== undefined ? options.lossless : avifConfig?.lossless || lossless,
-          effort: options.effort || avifConfig?.effort || effort,
-        })
+      case 'avif':
+        outputQuality = options.quality || config.optimization?.avif?.quality || quality
         break
-      }
-      default:
-        // For other formats, just copy the image in its original format
-        optimizedImage = image
     }
 
-    await optimizedImage.toFile(output)
+    // Encode to the same format with optimization settings
+    await writeImage(imageData, format, output, {
+      quality: outputQuality,
+      lossless,
+      progressive,
+      effort,
+    })
 
     // Get the optimized file size
     const outputStats = await stat(output)
@@ -1438,7 +1320,7 @@ export async function applyWatermark(
     margin = config.watermark?.margin || 20,
     opacity = config.watermark?.opacity || 0.5,
     scale = config.watermark?.scale || 0.2,
-    rotate = 0,
+    rotate: rotateAngle = 0,
     tiled = false,
     textOptions = {},
   } = options
@@ -1451,24 +1333,11 @@ export async function applyWatermark(
   const watermarkType = text ? 'text' : 'image'
   debugLog('processor', `Applying ${watermarkType} watermark to ${typeof input === 'string' ? input : 'buffer'}`)
 
-  // Process input image
-  let inputBuffer: Buffer
-  let inputPath: string
-
-  if (typeof input === 'string') {
-    inputBuffer = await readFile(input)
-    inputPath = input
-  }
-  else {
-    inputBuffer = input
-    inputPath = 'buffer'
-  }
-
-  // Create the sharp instance for the input image
-  const mainImage = sharp(inputBuffer)
-  const inputMetadata = await mainImage.metadata()
-  const inputWidth = inputMetadata.width || 0
-  const inputHeight = inputMetadata.height || 0
+  // Read the main image
+  const { imageData } = await readImage(input)
+  const inputPath = typeof input === 'string' ? input : 'buffer'
+  const inputWidth = imageData.width
+  const inputHeight = imageData.height
 
   // Calculate watermark placement coordinates
   const getPosition = (watermarkWidth: number, watermarkHeight: number) => {
@@ -1514,162 +1383,98 @@ export async function applyWatermark(
     return positions[position] || positions['bottom-right']
   }
 
-  // Create the composite operations array for Sharp
-  const compositeOps: Array<sharp.OverlayOptions> = []
+  let resultImage = imageData
 
   if (text) {
-    // Text watermark settings
+    // Text watermark - create a simple text overlay using a solid color rectangle for now
+    // Full text rendering would require a font rendering library
     const defaultTextOptions = config.watermark?.textOptions || {}
     const {
-      font = defaultTextOptions.font || 'sans-serif',
       fontSize = defaultTextOptions.fontSize || 24,
       color = defaultTextOptions.color || 'rgba(255, 255, 255, 0.5)',
-      background = defaultTextOptions.background || 'rgba(0, 0, 0, 0)',
-      padding = defaultTextOptions.padding || 10,
-      width = Math.floor(inputWidth * 0.8),
     } = textOptions
 
-    // Create an SVG watermark with the text
-    const svgText = text.replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;')
+    // Parse color (simplified - assumes rgba format)
+    const colorMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
+    const r = colorMatch ? parseInt(colorMatch[1]) : 255
+    const g = colorMatch ? parseInt(colorMatch[2]) : 255
+    const b = colorMatch ? parseInt(colorMatch[3]) : 255
+    const a = colorMatch && colorMatch[4] ? Math.floor(parseFloat(colorMatch[4]) * 255) : 128
 
-    const svgWidth = width
-    // We make a rough estimate of the height based on font size and padding
-    const svgHeight = fontSize + (padding * 2)
+    // Create a placeholder watermark (simple rectangle for now)
+    const watermarkWidth = Math.min(Math.floor(inputWidth * 0.3), text.length * fontSize * 0.6)
+    const watermarkHeight = fontSize + 20
+    const watermarkData = createImageData(watermarkWidth, watermarkHeight, {
+      fill: { r, g, b, a: Math.floor(a * opacity) },
+    })
 
-    const svgBuffer = Buffer.from(`
-      <svg width="${svgWidth}" height="${svgHeight}">
-        <rect width="100%" height="100%" fill="${background}"/>
-        <text
-          x="50%"
-          y="50%"
-          font-family="${font}"
-          font-size="${fontSize}"
-          fill="${color}"
-          text-anchor="middle"
-          dominant-baseline="middle"
-        >
-          ${svgText}
-        </text>
-      </svg>
-    `)
+    const { left, top } = getPosition(watermarkWidth, watermarkHeight)
 
-    // Create a sharp instance for the watermark to apply transformations
-    let watermarkImage = sharp(svgBuffer)
-
-    if (rotate !== 0) {
-      watermarkImage = watermarkImage.rotate(rotate)
-    }
-
-    const watermarkBuffer = await watermarkImage.toBuffer()
-    const watermarkMetadata = await sharp(watermarkBuffer).metadata()
-    const watermarkWidth = watermarkMetadata.width || 0
-    const watermarkHeight = watermarkMetadata.height || 0
-
-    if (tiled) {
-      // For tiled watermarks, we need both left and top even though they will be ignored
-      const { left, top } = getPosition(watermarkWidth, watermarkHeight)
-      compositeOps.push({
-        input: watermarkBuffer,
-        left,
-        top,
-        tile: true,
-      })
-    }
-    else {
-      const { left, top } = getPosition(watermarkWidth, watermarkHeight)
-      compositeOps.push({
-        input: watermarkBuffer,
-        left,
-        top,
-      })
-    }
+    // Composite the watermark onto the main image
+    resultImage = composite(imageData, watermarkData, {
+      left,
+      top,
+      blend: 'normal',
+    })
   }
   else if (image) {
     // Image watermark
-    let watermarkBuffer: Buffer
+    const { imageData: watermarkImageData } = await readImage(image)
 
-    if (typeof image === 'string') {
-      watermarkBuffer = await readFile(image)
-    }
-    else {
-      watermarkBuffer = image
-    }
+    // Scale the watermark
+    const scaledWidth = Math.floor(inputWidth * scale)
+    const scaledHeight = Math.floor(scaledWidth * (watermarkImageData.height / watermarkImageData.width))
 
-    // Process watermark image
-    let watermarkImage = sharp(watermarkBuffer)
-
-    // Apply scaling if needed
-    if (scale !== 1) {
-      const watermarkMetadata = await watermarkImage.metadata()
-      const origWidth = watermarkMetadata.width || 0
-      const origHeight = watermarkMetadata.height || 0
-
-      // Calculate new dimensions based on scale
-      // Use scaling relative to main image dimensions
-      const newWidth = Math.floor(inputWidth * scale)
-      const aspectRatio = origWidth / origHeight
-      const newHeight = Math.floor(newWidth / aspectRatio)
-
-      watermarkImage = watermarkImage.resize(newWidth, newHeight)
-    }
+    let scaledWatermark = resize(watermarkImageData, {
+      width: scaledWidth,
+      height: scaledHeight,
+    })
 
     // Apply rotation if needed
-    if (rotate !== 0) {
-      watermarkImage = watermarkImage.rotate(rotate)
+    if (rotateAngle !== 0) {
+      scaledWatermark = rotate(scaledWatermark, rotateAngle)
     }
 
-    // Apply opacity using negate() twice with a threshold
+    // Apply opacity
     if (opacity < 1) {
-      watermarkImage = watermarkImage.composite([{
-        input: Buffer.from([0, 0, 0, Math.round(255 * (1 - opacity))]),
-        raw: {
-          width: 1,
-          height: 1,
-          channels: 4,
-        },
-        tile: true,
-        blend: 'dest-in',
-      }])
+      const opacityValue = Math.floor(opacity * 255)
+      for (let i = 3; i < scaledWatermark.data.length; i += 4) {
+        scaledWatermark.data[i] = Math.floor(scaledWatermark.data[i] * opacity)
+      }
     }
 
-    const processedWatermarkBuffer = await watermarkImage.toBuffer()
-    const watermarkMetadata = await sharp(processedWatermarkBuffer).metadata()
-    const watermarkWidth = watermarkMetadata.width || 0
-    const watermarkHeight = watermarkMetadata.height || 0
+    const { left, top } = getPosition(scaledWatermark.width, scaledWatermark.height)
 
     if (tiled) {
-      // For tiled watermarks, we need both left and top even though they will be ignored
-      const { left, top } = getPosition(watermarkWidth, watermarkHeight)
-      compositeOps.push({
-        input: processedWatermarkBuffer,
-        left,
-        top,
-        tile: true,
-      })
+      // Tile the watermark across the image
+      let tiledImage = imageData
+      for (let y = 0; y < inputHeight; y += scaledWatermark.height + margin * 2) {
+        for (let x = 0; x < inputWidth; x += scaledWatermark.width + margin * 2) {
+          tiledImage = composite(tiledImage, scaledWatermark, {
+            left: x,
+            top: y,
+            blend: 'normal',
+          })
+        }
+      }
+      resultImage = tiledImage
     }
     else {
-      const { left, top } = getPosition(watermarkWidth, watermarkHeight)
-      compositeOps.push({
-        input: processedWatermarkBuffer,
+      resultImage = composite(imageData, scaledWatermark, {
         left,
         top,
+        blend: 'normal',
       })
     }
   }
-
-  // Apply the watermark to the main image
-  const resultImage = await mainImage.composite(compositeOps)
 
   // Save the result or return as buffer
   let outputPath = output
 
   if (outputPath) {
     await ensureDir(outputPath)
-    await resultImage.toFile(outputPath)
+    const format = extname(outputPath).slice(1) || 'png'
+    await writeImage(resultImage, format, outputPath)
   }
   else if (typeof input === 'string') {
     // Default output path based on input
@@ -1678,11 +1483,10 @@ export async function applyWatermark(
       new RegExp(`${inputExt}$`),
       `.watermarked${inputExt}`,
     )
-    await resultImage.toFile(outputPath)
+    const format = inputExt.slice(1) || 'png'
+    await writeImage(resultImage, format, outputPath)
   }
   else {
-    // If no output path and input is buffer, just use 'buffer' as the path
-    const _resultBuffer = await resultImage.toBuffer()
     outputPath = 'buffer'
   }
 

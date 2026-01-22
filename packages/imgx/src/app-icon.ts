@@ -1,8 +1,9 @@
 import type { AppIconResult, AppIconSize } from './types'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import sharp from 'sharp'
 import { config } from './config'
+import { resize } from './core'
+import { decode, encode } from './codecs'
 import { debugLog } from './utils'
 
 // macOS App Icon sizes based on Apple's requirements
@@ -69,15 +70,19 @@ export async function generateMacOSAppIcons(
 
   const results = []
 
+  // Read and decode the source image
+  const inputBuffer = await readFile(input)
+  const imageData = await decode(inputBuffer)
+
   // Generate all icon sizes
   for (const { size, scale, filename } of macOSSizes) {
     const pixelSize = size * scale
     const outputPath = join(fullOutputDir, filename)
 
-    await sharp(input)
-      .resize(pixelSize, pixelSize)
-      .png()
-      .toFile(outputPath)
+    // Resize and encode as PNG
+    const resized = resize(imageData, { width: pixelSize, height: pixelSize })
+    const pngBuffer = await encode(resized, 'png')
+    await writeFile(outputPath, pngBuffer)
 
     results.push({
       size: pixelSize,
@@ -119,15 +124,19 @@ export async function generateIOSAppIcons(
 
   const results = []
 
+  // Read and decode the source image
+  const inputBuffer = await readFile(input)
+  const imageData = await decode(inputBuffer)
+
   // Generate all icon sizes
   for (const { size, scale, filename } of iOSSizes) {
     const pixelSize = Math.round(size * scale)
     const outputPath = join(fullOutputDir, filename)
 
-    await sharp(input)
-      .resize(pixelSize, pixelSize)
-      .png()
-      .toFile(outputPath)
+    // Resize and encode as PNG
+    const resized = resize(imageData, { width: pixelSize, height: pixelSize })
+    const pngBuffer = await encode(resized, 'png')
+    await writeFile(outputPath, pngBuffer)
 
     results.push({
       size: pixelSize,

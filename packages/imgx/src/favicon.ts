@@ -1,5 +1,7 @@
+import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import sharp from 'sharp'
+import { resize } from './core'
+import { decode, encode } from './codecs'
 import { debugLog } from './utils'
 
 export async function generateFavicons(
@@ -11,12 +13,17 @@ export async function generateFavicons(
   const sizes = [16, 32, 48, 96, 144, 192, 512]
   const results = []
 
+  // Read and decode the source image
+  const inputBuffer = await readFile(input)
+  const imageData = await decode(inputBuffer)
+
   for (const size of sizes) {
     const outputPath = join(outputDir, `favicon-${size}x${size}.png`)
-    await sharp(input)
-      .resize(size, size)
-      .png()
-      .toFile(outputPath)
+
+    // Resize and encode as PNG
+    const resized = resize(imageData, { width: size, height: size })
+    const pngBuffer = await encode(resized, 'png')
+    await writeFile(outputPath, pngBuffer)
 
     results.push({ size, path: outputPath })
   }
@@ -25,7 +32,7 @@ export async function generateFavicons(
   const icoPath = join(outputDir, 'favicon.ico')
 
   // For ico format, we need to use a temporary PNG and manually rename it
-  // This is a workaround since Sharp doesn't directly support ICO format
+  // This is a workaround since we don't directly support ICO format
   const tempPngPath = join(outputDir, 'favicon-32x32.png')
 
   // The favicon-32x32.png was already created in the loop above

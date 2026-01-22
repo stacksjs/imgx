@@ -1,7 +1,9 @@
 import type { ProcessOptions } from './types'
-import { readFile } from 'node:fs/promises'
+import { readFile, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import sharp from 'sharp'
+import { resize } from './core'
+import type { ImageData } from './core'
+import { decode, encode } from './codecs'
 import { debugLog } from './utils'
 
 interface ResponsiveImageOptions extends ProcessOptions {
@@ -44,8 +46,9 @@ export async function generateResponsiveImages(
   debugLog('responsive', `Generating responsive images for ${input}`)
 
   const inputBuffer = await readFile(input)
-  const metadata = await sharp(inputBuffer).metadata()
-  const originalWidth = metadata.width || 0
+  const imageData = await decode(inputBuffer)
+  const originalWidth = imageData.width
+  const originalHeight = imageData.height
 
   const variants: Array<{
     path: string
@@ -71,17 +74,18 @@ export async function generateResponsiveImages(
 
       const outputPath = join(outputDir, filename)
 
-      await sharp(inputBuffer)
-        .resize(width)[format]({ quality })
-        .toFile(outputPath)
+      // Resize the image
+      const resized = resize(imageData, { width })
 
-      const { size } = await sharp(outputPath).metadata()
+      // Encode to the target format
+      const outputBuffer = await encode(resized, format, { quality })
+      await writeFile(outputPath, outputBuffer)
 
       variants.push({
         path: outputPath,
         width,
         format,
-        size: size || 0,
+        size: outputBuffer.length,
       })
 
       if (generateSrcset) {
@@ -105,7 +109,7 @@ export async function generateResponsiveImages(
     loading="lazy"
     decoding="async"
     width="${variants[0]?.width || 0}"
-    height="${Math.round((variants[0]?.width || 0) * ((metadata.height || 0) / (metadata.width || 1)))}"
+    height="${Math.round((variants[0]?.width || 0) * (originalHeight / (originalWidth || 1)))}"
   />
 </picture>`.trim()
 
@@ -134,6 +138,10 @@ export async function generateImageSet(options: ImageSetOptions): Promise<Array<
 
   debugLog('imageset', `Generating image set for ${input}`)
 
+  // Read and decode the source image
+  const inputBuffer = await readFile(input)
+  const imageData = await decode(inputBuffer)
+
   const results: Array<{
     size: { width: number, height?: number, suffix?: string }
     path: string
@@ -143,9 +151,12 @@ export async function generateImageSet(options: ImageSetOptions): Promise<Array<
     const suffix = size.suffix || `${size.width}x${size.height || size.width}`
     const outputPath = join(outputDir, `${name}-${suffix}.${format}`)
 
-    await sharp(input)
-      .resize(size.width, size.height)[format]({ quality })
-      .toFile(outputPath)
+    // Resize the image
+    const resized = resize(imageData, { width: size.width, height: size.height })
+
+    // Encode to the target format
+    const outputBuffer = await encode(resized, format, { quality })
+    await writeFile(outputPath, outputBuffer)
 
     results.push({
       size,

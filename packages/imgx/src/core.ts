@@ -3,6 +3,9 @@ import { extname } from 'node:path'
 import { processImage, processSvg } from './processor'
 import { debugLog } from './utils'
 
+// Re-export all image processing primitives from core/
+export * from './core/index'
+
 const SVG_EXTENSIONS = new Set(['.svg'])
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif'])
 

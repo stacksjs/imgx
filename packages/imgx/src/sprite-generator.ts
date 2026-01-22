@@ -1,6 +1,8 @@
-import { writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import sharp from 'sharp'
+import { composite, createImageData, resize } from './core'
+import type { ImageData } from './core'
+import { decode, encode } from './codecs'
 import { debugLog } from './utils'
 
 interface SpriteConfig {
@@ -45,23 +47,22 @@ export async function generateSprite(
   // Load and process all images
   const sprites = await Promise.all(
     images.map(async ({ path, name }) => {
-      const image = sharp(path)
-      const metadata = await image.metadata()
+      const buffer = await readFile(path)
+      const imageData = await decode(buffer)
 
       // Apply scaling if needed
-      let processedImage = image
+      let processedData = imageData
       if (scale !== 1) {
-        const width = Math.ceil((metadata.width || 0) * scale)
-        const height = Math.ceil((metadata.height || 0) * scale)
-        processedImage = processedImage.resize(width, height)
+        const width = Math.ceil(imageData.width * scale)
+        const height = Math.ceil(imageData.height * scale)
+        processedData = resize(imageData, { width, height })
       }
 
-      const buffer = await processedImage.toBuffer()
       return {
         name,
-        buffer,
-        width: Math.ceil((metadata.width || 0) * scale),
-        height: Math.ceil((metadata.height || 0) * scale),
+        imageData: processedData,
+        width: processedData.width,
+        height: processedData.height,
       }
     }),
   )
@@ -95,24 +96,27 @@ export async function generateSprite(
     return position
   })
 
-  // Create sprite sheet
-  const composite = positions.map((pos, i) => ({
-    input: sprites[i].buffer,
-    left: pos.x,
-    top: pos.y,
-  }))
+  // Create sprite sheet canvas with transparent background
+  let spriteSheet = createImageData(spriteWidth, maxHeight, {
+    fill: { r: 0, g: 0, b: 0, a: 0 },
+  })
 
-  const spriteSheet = sharp({
-    create: {
-      width: spriteWidth,
-      height: maxHeight,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  }).composite(composite)[format]({ quality })
+  // Composite each sprite onto the sheet
+  for (let i = 0; i < sprites.length; i++) {
+    const sprite = sprites[i]
+    const pos = positions[i]
 
+    spriteSheet = composite(spriteSheet, sprite.imageData, {
+      left: pos.x,
+      top: pos.y,
+      blend: 'normal',
+    })
+  }
+
+  // Encode and save the sprite sheet
   const spritePath = join(outputDir, `${prefix}-sprite.${format}`)
-  await spriteSheet.toFile(spritePath)
+  const outputBuffer = await encode(spriteSheet, format, { quality })
+  await writeFile(spritePath, outputBuffer)
 
   // Generate CSS
   const spriteData = positions.map((pos, i) => ({

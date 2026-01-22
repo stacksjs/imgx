@@ -1,6 +1,6 @@
 import { readFile, stat } from 'node:fs/promises'
 import sizeOf from 'image-size'
-import sharp from 'sharp'
+import { decode, detectFormat } from './codecs'
 
 export interface ImageStats {
   path: string
@@ -26,7 +26,25 @@ export async function analyzeImage(path: string): Promise<ImageStats> {
   const fileStats = await stat(path)
   const buffer = await readFile(path)
   const dimensions = sizeOf(buffer)
-  const metadata = await sharp(buffer).metadata()
+
+  // Detect format from buffer
+  const format = detectFormat(buffer) || dimensions.type || 'unknown'
+
+  // Decode to get image data
+  let imageData
+  let hasAlpha = false
+  let colorSpace = 'srgb'
+  let channels = 4
+
+  try {
+    imageData = await decode(buffer)
+    hasAlpha = imageData.hasAlpha
+    colorSpace = imageData.colorSpace
+    channels = 4 // RGBA
+  }
+  catch {
+    // If decode fails, use defaults
+  }
 
   // Analyze optimization potential
   let optimizationPotential: 'low' | 'medium' | 'high' = 'low'
@@ -51,30 +69,33 @@ export async function analyzeImage(path: string): Promise<ImageStats> {
     optimizationPotential = 'high'
   }
 
-  if (metadata.format === 'jpeg' && !metadata.isProgressive) {
-    warnings.push('JPEG is not progressive')
-  }
-
-  if (metadata.format === 'png' && metadata.channels === 4 && !metadata.hasAlpha) {
+  // Format-specific warnings
+  if (format === 'png' && channels === 4 && !hasAlpha) {
     warnings.push('PNG has alpha channel but no transparency')
   }
 
   return {
     path,
     size: fileStats.size,
-    format: metadata.format,
+    format,
     width: dimensions.width,
     height: dimensions.height,
     aspectRatio: dimensions.width / dimensions.height,
-    hasAlpha: metadata.hasAlpha,
-    isAnimated: metadata.pages > 1,
-    colorSpace: metadata.space,
-    channels: metadata.channels,
-    density: metadata.density,
-    compression: metadata.compression,
-    quality: metadata.quality,
+    hasAlpha,
+    isAnimated: false, // Would need format-specific detection
+    colorSpace,
+    channels,
+    density: 72, // Default DPI
+    compression: undefined,
+    quality: undefined,
     optimizationPotential,
-    metadata,
+    metadata: {
+      format,
+      width: dimensions.width,
+      height: dimensions.height,
+      hasAlpha,
+      colorSpace,
+    },
     warnings,
   }
 }

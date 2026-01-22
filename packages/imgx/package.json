@@ -1,5 +1,5 @@
 {
-  "name": "@stacksjs/imgx",
+  "name": "ts-images",
   "type": "module",
   "version": "0.1.6",
   "description": "Modern image optimizations & manipulations.",
@@ -69,15 +69,30 @@
     "zip:darwin-x64": "zip -j bin/imgx-darwin-x64.zip bin/imgx-darwin-x64",
     "zip:darwin-arm64": "zip -j bin/imgx-darwin-arm64.zip bin/imgx-darwin-arm64"
   },
+  "dependencies": {
+    "ts-jpeg": "^0.2.0",
+    "ts-png": "^0.1.1",
+    "ts-gif": "^0.1.2",
+    "ts-bmp": "^0.1.0",
+    "ts-webp": "^0.1.0",
+    "ts-avif": "^0.1.0"
+  },
   "devDependencies": {
     "bun-plugin-dtsx": "^0.21.12",
     "bunfig": "^0.15.0",
     "cac": "^6.7.14",
     "changelogen": "^0.6.2",
     "image-size": "^2.0.2",
-    "sharp": "^0.34.4",
     "svgo": "^4.0.0",
     "ts-potrace": "^0.1.0"
+  },
+  "peerDependencies": {
+    "sharp": "^0.34.0"
+  },
+  "peerDependenciesMeta": {
+    "sharp": {
+      "optional": true
+    }
   },
   "simple-git-hooks": {
     "pre-commit": "bunx lint-staged"
