@@ -33,8 +33,8 @@
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
     "prepublishOnly": "bun --bun run build",
     "test": "bun test",
-    "lint": "bunx --bun eslint .",
-    "lint:fix": "bunx --bun eslint . --fix",
+    "lint": "bunx --bun pickier lint .",
+    "lint:fix": "bunx --bun pickier lint . --fix",
     "changelog": "bunx logsmith --verbose",
     "changelog:generate": "bunx logsmith --output CHANGELOG.md",
     "release": "bun run changelog:generate && bunx bumpx prompt --recursive",
@@ -43,7 +43,9 @@
     "dev:docs": "bun --bun bunpress dev docs",
     "deploy:docs": "bun --bun bunpress deploy docs",
     "build:docs": "bun --bun bunpress build docs",
-    "preview:docs": "bun --bun bunpress preview docs"
+    "preview:docs": "bun --bun bunpress preview docs",
+    "format": "bunx --bun pickier format .",
+    "format:fix": "bunx --bun pickier format . --write"
   },
   "devDependencies": {
     "better-dx": "^0.2.5"
