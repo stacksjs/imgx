@@ -26,12 +26,12 @@ export interface ImageMetadata {
 }
 
 // Magic bytes for format detection
-const SIGNATURES = {
+const _SIGNATURES = {
   jpeg: [0xFF, 0xD8, 0xFF],
   png: [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
-  gif: [0x47, 0x49, 0x46], // "GIF"
+  gif: [0x47, 0x49, 0x46], // 'GIF'
   webp: null, // RIFF....WEBP (need special handling)
-  bmp: [0x42, 0x4D], // "BM"
+  bmp: [0x42, 0x4D], // 'BM'
   avif: null, // ftypavif or ftypmif1 (need special handling)
   tiff: null, // II or MM (need special handling)
 }

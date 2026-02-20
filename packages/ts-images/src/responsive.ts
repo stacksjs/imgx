@@ -99,17 +99,17 @@ export async function generateResponsiveImages(
 <picture>
   ${formats.map(format => `
   <source
-    type="image/${format}"
-    srcset="${srcset[format].join(', ')}"
-    sizes="(max-width: ${Math.max(...breakpoints)}px) 100vw, ${Math.max(...breakpoints)}px"
+    type='image/${format}'
+    srcset='${srcset[format].join(', ')}'
+    sizes='(max-width: ${Math.max(...breakpoints)}px) 100vw, ${Math.max(...breakpoints)}px'
   />`).join('\n')}
   <img
-    src="${variants[0]?.path || ''}"
-    alt=""
-    loading="lazy"
-    decoding="async"
-    width="${variants[0]?.width || 0}"
-    height="${Math.round((variants[0]?.width || 0) * (originalHeight / (originalWidth || 1)))}"
+    src='${variants[0]?.path || ''}'
+    alt=''
+    loading='lazy'
+    decoding='async'
+    width='${variants[0]?.width || 0}'
+    height='${Math.round((variants[0]?.width || 0) * (originalHeight / (originalWidth || 1)))}'
   />
 </picture>`.trim()
 
@@ -130,6 +130,7 @@ interface ImageSetOptions {
   quality?: number
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export async function generateImageSet(options: ImageSetOptions): Promise<Array<{
   size: { width: number, height?: number, suffix?: string }
   path: string

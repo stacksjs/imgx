@@ -284,7 +284,7 @@ export interface ProcessOptions extends ImageOptions, SvgOptions {
   isSvg?: boolean
 }
 
-export type ProcessFunction = (options: ProcessOptions) => Promise<OptimizeResult>
+export type ProcessFunction = (_options: ProcessOptions) => Promise<OptimizeResult>
 
 export interface ScanOptions {
   /**

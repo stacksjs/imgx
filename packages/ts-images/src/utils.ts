@@ -75,7 +75,7 @@ export async function getFiles(
 export async function watchFiles(
   path: string,
   patterns: string[],
-  callback: (file: string) => void,
+  _callback: (file: string) => void,
   options: GetFilesOptions = {},
 ): Promise<() => void> {
   const files = await getFiles(path, {

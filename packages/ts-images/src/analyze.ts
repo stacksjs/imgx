@@ -100,6 +100,7 @@ export async function analyzeImage(path: string): Promise<ImageStats> {
   }
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export async function generateReport(paths: string[]): Promise<{
   stats: ImageStats[]
   summary: {

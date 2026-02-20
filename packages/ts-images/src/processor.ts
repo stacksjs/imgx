@@ -469,6 +469,7 @@ export async function optimizeSvg(
  * @param options.optionsSvg Additional SVG optimization options
  * @returns Path to the output SVG and metadata
  */
+// eslint-disable-next-line pickier/no-unused-vars
 export async function imageToSvg(
   input: string | Buffer,
   options: {
@@ -1204,6 +1205,7 @@ export async function batchProcessImages(
  * @param options.metadata Preserve image metadata
  * @returns Result of the optimization
  */
+// eslint-disable-next-line pickier/no-unused-vars
 export async function optimizeImage(
   input: string,
   output: string,
@@ -1454,7 +1456,7 @@ export async function applyWatermark(
 
     // Apply opacity
     if (opacity < 1) {
-      const opacityValue = Math.floor(opacity * 255)
+      const _opacityValue = Math.floor(opacity * 255)
       for (let i = 3; i < scaledWatermark.data.length; i += 4) {
         scaledWatermark.data[i] = Math.floor(scaledWatermark.data[i] * opacity)
       }

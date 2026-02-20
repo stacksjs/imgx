@@ -195,7 +195,7 @@ export async function generateAppIcons(
 /**
  * Generate Contents.json file for Xcode asset catalogs
  */
-function generateContentsJson(platform: 'ios' | 'macos', sizes: AppIconSize[]): string {
+function generateContentsJson(_platform: 'ios' | 'macos', sizes: AppIconSize[]): string {
   const images = sizes.map(({ size, scale, idiom, filename }) => ({
     size: `${size}x${size}`,
     idiom,
