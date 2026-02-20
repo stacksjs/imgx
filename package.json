@@ -48,7 +48,9 @@
     "format:fix": "bunx --bun pickier format . --write"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5"
+    "@stacksjs/clarity": "^0.3.24",
+    "better-dx": "^0.2.5",
+    "sharp": "^0.34.5"
   },
   "workspaces": [
     "packages/*"

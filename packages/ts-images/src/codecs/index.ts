@@ -37,6 +37,136 @@ const _SIGNATURES = {
 }
 
 /**
+ * Cache for dynamic module imports.
+ * In bun, re-importing a broken symlink module can hang forever,
+ * so we must cache the result of the first import attempt.
+ */
+const _codecCache: Record<string, { module: any, available: boolean }> = {}
+
+async function tryImportCodec(name: string): Promise<any | null> {
+  if (name in _codecCache) {
+    return _codecCache[name].available ? _codecCache[name].module : null
+  }
+  try {
+    const mod = await import(name)
+    _codecCache[name] = { module: mod, available: true }
+    return mod
+  }
+  catch {
+    _codecCache[name] = { module: null, available: false }
+    return null
+  }
+}
+
+/**
+ * Try to get the sharp module. Returns null if not available.
+ */
+async function getSharp(): Promise<any> {
+  const mod = await tryImportCodec('sharp')
+  return mod ? mod.default : null
+}
+
+/**
+ * Decode any image buffer to RGBA ImageData using sharp as fallback
+ */
+async function decodeWithSharp(buffer: Uint8Array, format: string): Promise<ImageData> {
+  const sharpLib = await getSharp()
+  if (!sharpLib) {
+    throw new Error(`No codec available for ${format}. Install sharp or the ts-${format} package.`)
+  }
+
+  // Create a copy of the input buffer to ensure clean ownership
+  const inputBuffer = Buffer.from(new Uint8Array(buffer))
+  const { data, info } = await sharpLib(inputBuffer)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+
+  // Create a fresh copy of the output data to avoid shared buffer references
+  const pixelData = new Uint8Array(data.length)
+  pixelData.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength))
+
+  const imageData = fromCodecData(
+    pixelData,
+    info.width,
+    info.height,
+    { channels: 4 },
+  )
+
+  // JPEG never has alpha
+  if (format === 'jpeg') {
+    imageData.hasAlpha = false
+  }
+
+  return imageData
+}
+
+/**
+ * Encode ImageData to a specific format using sharp as fallback
+ */
+async function encodeWithSharp(imageData: ImageData, format: string, options: EncodeOptions = {}): Promise<Uint8Array> {
+  const sharpLib = await getSharp()
+  if (!sharpLib) {
+    throw new Error(`No codec available for ${format}. Install sharp or the ts-${format} package.`)
+  }
+
+  const rawData = toCodecData(imageData, { channels: 4 })
+  // Create a completely independent Buffer copy to avoid bun/sharp shared ArrayBuffer issues
+  const inputBuffer = Buffer.allocUnsafe(rawData.length)
+  inputBuffer.set(rawData)
+  let pipeline = sharpLib(inputBuffer, {
+    raw: {
+      width: imageData.width,
+      height: imageData.height,
+      channels: 4,
+    },
+  })
+
+  switch (format) {
+    case 'jpeg':
+    case 'jpg':
+      pipeline = pipeline.jpeg({
+        quality: options.quality ?? 80,
+        progressive: options.progressive ?? false,
+      })
+      break
+    case 'png':
+      pipeline = pipeline.png({
+        effort: options.effort ?? 9,
+        progressive: options.progressive ?? false,
+      })
+      break
+    case 'webp':
+      pipeline = pipeline.webp({
+        quality: options.quality ?? 80,
+        lossless: options.lossless ?? false,
+        effort: options.effort ?? 6,
+      })
+      break
+    case 'avif':
+      pipeline = pipeline.avif({
+        quality: options.quality ?? 50,
+        lossless: options.lossless ?? false,
+        effort: options.effort ?? 4,
+      })
+      break
+    case 'gif':
+      pipeline = pipeline.gif()
+      break
+    case 'bmp':
+      // Sharp doesn't support BMP output natively; encode as PNG as fallback
+      pipeline = pipeline.png()
+      break
+    default:
+      pipeline = pipeline.png()
+      break
+  }
+
+  const outputBuffer = await pipeline.toBuffer()
+  return new Uint8Array(outputBuffer.buffer, outputBuffer.byteOffset, outputBuffer.byteLength)
+}
+
+/**
  * Detect image format from buffer
  */
 export function detectFormat(buffer: Uint8Array): string | null {
@@ -183,8 +313,27 @@ export async function getMetadata(buffer: Uint8Array): Promise<ImageMetadata> {
     throw new Error('Unknown image format')
   }
 
-  // For now, decode and get dimensions
-  // TODO: Implement lightweight metadata reading for each format
+  // Try sharp first for fast metadata reading
+  const sharpLib = await getSharp()
+  if (sharpLib) {
+    try {
+      const metadata = await sharpLib(Buffer.from(buffer)).metadata()
+      return {
+        width: metadata.width || 0,
+        height: metadata.height || 0,
+        format,
+        channels: metadata.channels || 4,
+        bitDepth: (metadata.depth === 16 ? 16 : 8) as 8 | 16,
+        hasAlpha: metadata.hasAlpha || false,
+        colorSpace: 'srgb',
+      }
+    }
+    catch {
+      // Fall through to decode-based approach
+    }
+  }
+
+  // Fallback: decode and get dimensions
   const imageData = await decode(buffer)
 
   return {
@@ -198,28 +347,27 @@ export async function getMetadata(buffer: Uint8Array): Promise<ImageMetadata> {
   }
 }
 
-// Codec implementations - these will be dynamically imported when available
+// Codec implementations - try ts-* packages first, then fall back to sharp
+// IMPORTANT: We use tryImportCodec() to cache import results because in bun,
+// re-importing a broken symlink module on second call hangs forever.
 
 async function decodeJpeg(buffer: Uint8Array, options: DecodeOptions): Promise<ImageData> {
-  try {
-    const tsJpeg = await import('ts-jpeg')
+  const tsJpeg = await tryImportCodec('ts-jpeg')
+  if (tsJpeg) {
     const result = tsJpeg.decode(buffer, {
       colorTransform: options.colorTransform,
       formatAsRGBA: options.formatAsRGBA ?? true,
     })
-    // JPEG never has alpha - use channels: 3 to indicate no alpha even though data is RGBA
     const imageData = fromCodecData(result.data, result.width, result.height, { channels: 4 })
-    imageData.hasAlpha = false // JPEG does not support alpha
+    imageData.hasAlpha = false
     return imageData
   }
-  catch {
-    throw new Error('JPEG codec (ts-jpeg) not available. Install with: bun add ts-jpeg')
-  }
+  return decodeWithSharp(buffer, 'jpeg')
 }
 
 async function encodeJpeg(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  try {
-    const tsJpeg = await import('ts-jpeg')
+  const tsJpeg = await tryImportCodec('ts-jpeg')
+  if (tsJpeg) {
     const data = toCodecData(imageData, { channels: 4 })
     const result = tsJpeg.encode({
       width: imageData.width,
@@ -228,27 +376,23 @@ async function encodeJpeg(imageData: ImageData, options: EncodeOptions): Promise
     }, options.quality ?? 80)
     return new Uint8Array(result.data)
   }
-  catch {
-    throw new Error('JPEG codec (ts-jpeg) not available. Install with: bun add ts-jpeg')
-  }
+  return encodeWithSharp(imageData, 'jpeg', options)
 }
 
 async function decodePng(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  try {
-    const { png } = await import('ts-png')
-    const result = png.sync.read(Buffer.from(buffer))
+  const tsPng = await tryImportCodec('ts-png')
+  if (tsPng) {
+    const result = tsPng.png.sync.read(Buffer.from(buffer))
     return fromCodecData(result.data, result.width, result.height, { channels: 4 })
   }
-  catch (err) {
-    throw new Error(`PNG codec (ts-png) not available: ${err}`)
-  }
+  return decodeWithSharp(buffer, 'png')
 }
 
 async function encodePng(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  try {
-    const { png } = await import('ts-png')
+  const tsPng = await tryImportCodec('ts-png')
+  if (tsPng) {
     const data = Buffer.from(toCodecData(imageData, { channels: 4 }))
-    const outputBuffer = png.sync.write({
+    const outputBuffer = tsPng.png.sync.write({
       width: imageData.width,
       height: imageData.height,
       data,
@@ -257,60 +401,47 @@ async function encodePng(imageData: ImageData, options: EncodeOptions): Promise<
     })
     return new Uint8Array(outputBuffer)
   }
-  catch (err) {
-    throw new Error(`PNG codec (ts-png) not available: ${err}`)
-  }
+  return encodeWithSharp(imageData, 'png', options)
 }
 
 async function decodeGif(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  try {
-    const gif = await import('ts-gif')
+  const gif = await tryImportCodec('ts-gif')
+  if (gif) {
     const reader = new gif.Reader(Buffer.from(buffer))
     const frameInfo = reader.frameInfo(0)
     const pixels = new Uint8Array(frameInfo.width * frameInfo.height * 4)
     reader.decodeAndBlitFrameRGBA(0, pixels)
     return fromCodecData(pixels, frameInfo.width, frameInfo.height, { channels: 4 })
   }
-  catch {
-    throw new Error('GIF codec (ts-gif) not available. Install with: bun add ts-gif')
-  }
+  return decodeWithSharp(buffer, 'gif')
 }
 
-async function encodeGif(imageData: ImageData, _options: EncodeOptions): Promise<Uint8Array> {
-  try {
-    const gif = await import('ts-gif')
-
-    // Convert RGBA to indexed colors (simple quantization)
+async function encodeGif(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
+  const gif = await tryImportCodec('ts-gif')
+  if (gif) {
     const { indexedPixels, palette } = quantizeImage(imageData)
-
     const bufSize = imageData.width * imageData.height + 1000
     const buf = Buffer.alloc(bufSize)
-
     const writer = new gif.Writer(buf, imageData.width, imageData.height, { palette })
     writer.addFrame(0, 0, imageData.width, imageData.height, indexedPixels)
     const finalSize = writer.end()
-
     return new Uint8Array(buf.slice(0, finalSize))
   }
-  catch {
-    throw new Error('GIF codec (ts-gif) not available. Install with: bun add ts-gif')
-  }
+  return encodeWithSharp(imageData, 'gif', options)
 }
 
 async function decodeBmp(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  try {
-    const bmp = await import('ts-bmp')
+  const bmp = await tryImportCodec('ts-bmp')
+  if (bmp) {
     const result = bmp.decode(buffer)
     return fromCodecData(result.data, result.width, result.height, { channels: 4 })
   }
-  catch {
-    throw new Error('BMP codec (ts-bmp) not available. Install with: bun add ts-bmp')
-  }
+  return decodeWithSharp(buffer, 'bmp')
 }
 
-async function encodeBmp(imageData: ImageData, _options: EncodeOptions): Promise<Uint8Array> {
-  try {
-    const bmp = await import('ts-bmp')
+async function encodeBmp(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
+  const bmp = await tryImportCodec('ts-bmp')
+  if (bmp) {
     const data = toCodecData(imageData, { channels: 4 })
     return bmp.encode({
       width: imageData.width,
@@ -318,25 +449,21 @@ async function encodeBmp(imageData: ImageData, _options: EncodeOptions): Promise
       data,
     })
   }
-  catch {
-    throw new Error('BMP codec (ts-bmp) not available. Install with: bun add ts-bmp')
-  }
+  return encodeWithSharp(imageData, 'bmp', options)
 }
 
 async function decodeWebp(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  try {
-    const webp = await import('ts-webp')
+  const webp = await tryImportCodec('ts-webp')
+  if (webp) {
     const result = webp.decode(buffer)
     return fromCodecData(result.data, result.width, result.height, { channels: 4 })
   }
-  catch {
-    throw new Error('WebP codec (ts-webp) not available. Install with: bun add ts-webp')
-  }
+  return decodeWithSharp(buffer, 'webp')
 }
 
 async function encodeWebp(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  try {
-    const webp = await import('ts-webp')
+  const webp = await tryImportCodec('ts-webp')
+  if (webp) {
     const data = toCodecData(imageData, { channels: 4 })
     return webp.encode({
       width: imageData.width,
@@ -344,25 +471,21 @@ async function encodeWebp(imageData: ImageData, options: EncodeOptions): Promise
       data,
     }, options)
   }
-  catch {
-    throw new Error('WebP codec (ts-webp) not available. Install with: bun add ts-webp')
-  }
+  return encodeWithSharp(imageData, 'webp', options)
 }
 
 async function decodeAvif(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  try {
-    const avif = await import('ts-avif')
+  const avif = await tryImportCodec('ts-avif')
+  if (avif) {
     const result = avif.decode(buffer)
     return fromCodecData(result.data, result.width, result.height, { channels: 4 })
   }
-  catch {
-    throw new Error('AVIF codec (ts-avif) not available. Install with: bun add ts-avif')
-  }
+  return decodeWithSharp(buffer, 'avif')
 }
 
 async function encodeAvif(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  try {
-    const avif = await import('ts-avif')
+  const avif = await tryImportCodec('ts-avif')
+  if (avif) {
     const data = toCodecData(imageData, { channels: 4 })
     return avif.encode({
       width: imageData.width,
@@ -370,9 +493,7 @@ async function encodeAvif(imageData: ImageData, options: EncodeOptions): Promise
       data,
     }, options)
   }
-  catch {
-    throw new Error('AVIF codec (ts-avif) not available. Install with: bun add ts-avif')
-  }
+  return encodeWithSharp(imageData, 'avif', options)
 }
 
 // Simple color quantization for GIF encoding

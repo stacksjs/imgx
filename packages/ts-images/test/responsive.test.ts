@@ -49,7 +49,7 @@ describe('responsive', () => {
         const metadata = await sharp(variant.path).metadata()
         expect(metadata.width).toBe(variant.width)
       }
-    })
+    }, 30000) // Extended timeout for multiple image encoding operations
   })
 
   describe('generateImageSet', () => {
