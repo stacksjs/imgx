@@ -69,13 +69,9 @@
     "zip:darwin-x64": "zip -j bin/imgx-darwin-x64.zip bin/imgx-darwin-x64",
     "zip:darwin-arm64": "zip -j bin/imgx-darwin-arm64.zip bin/imgx-darwin-arm64"
   },
-  "dependencies": {
-    "ts-jpeg": "link:ts-jpeg",
-    "ts-png": "link:ts-png",
-    "ts-gif": "link:ts-gif",
-    "ts-bmp": "link:ts-bmp",
-    "ts-webp": "link:ts-webp",
-    "ts-avif": "link:ts-avif"
+  "optionalDependencies": {
+    "ts-jpeg": "^0.1.0",
+    "ts-gif": "^0.1.2"
   },
   "devDependencies": {
     "bun-plugin-dtsx": "^0.21.12",
