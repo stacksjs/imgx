@@ -18,6 +18,22 @@
     "isolatedDeclarations": true,
     "verbatimModuleSyntax": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "paths": {
+      "ts-potrace": ["./packages/ts-images/src/ts-potrace.d.ts"],
+      "ts-images": ["./packages/ts-images/src/index.ts"],
+      "sharp": ["./packages/ts-images/src/ambient.d.ts"],
+      "buddy-bot": ["./packages/ts-images/src/ambient.d.ts"],
+      "bunpress": ["./packages/ts-images/src/ambient.d.ts"],
+      "@stacksjs/clarity": ["./packages/ts-images/src/ambient.d.ts"],
+      "ts-jpeg": ["./packages/ts-images/src/ambient.d.ts"],
+      "ts-png": ["./packages/ts-images/src/ambient.d.ts"],
+      "ts-gif": ["./packages/ts-images/src/ambient.d.ts"],
+      "ts-bmp": ["./packages/ts-images/src/ambient.d.ts"],
+      "ts-webp": ["./packages/ts-images/src/ambient.d.ts"],
+      "ts-avif": ["./packages/ts-images/src/ambient.d.ts"],
+      "vite": ["./packages/ts-images/src/ambient.d.ts"]
+    }
+  },
+  "exclude": ["pickier.config.ts", "buddy-bot.config.ts", "docs/bunpress.config.ts", "imgx.config.ts"]
 }

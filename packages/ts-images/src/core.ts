@@ -46,7 +46,8 @@ export async function processMultiple(
         })
       }
       catch (error) {
-        debugLog('error', `Failed to process ${file}: ${error.message}`)
+        const err = error instanceof Error ? error : new Error(String(error))
+        debugLog('error', `Failed to process ${file}: ${err.message}`)
         return {
           inputPath: file,
           outputPath: file,
@@ -54,8 +55,8 @@ export async function processMultiple(
           outputSize: 0,
           saved: 0,
           savedPercentage: 0,
-          error,
-        }
+          error: err,
+        } satisfies OptimizeResult
       }
     }),
   )

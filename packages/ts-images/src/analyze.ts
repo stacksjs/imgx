@@ -115,10 +115,10 @@ export async function generateReport(paths: string[]): Promise<{
   const stats = await Promise.all(paths.map(analyzeImage))
   const totalSize = stats.reduce((sum, stat) => sum + stat.size, 0)
 
-  const formatBreakdown = stats.reduce((acc, stat) => {
+  const formatBreakdown = stats.reduce((acc: Record<string, number>, stat) => {
     acc[stat.format] = (acc[stat.format] || 0) + 1
     return acc
-  }, {})
+  }, {} as Record<string, number>)
 
   const warnings = Array.from(new Set(stats.flatMap(s => s.warnings)))
 

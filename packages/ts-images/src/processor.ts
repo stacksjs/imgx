@@ -984,7 +984,7 @@ export async function batchProcessImages(
     for (const transform of transformations) {
       switch (transform.type) {
         case 'resize':
-          processedImage = resize(processedImage, transform.options)
+          processedImage = resize(processedImage, transform.options ?? {})
           break
         case 'rotate':
           processedImage = rotate(processedImage, transform.options?.angle || 0, transform.options)

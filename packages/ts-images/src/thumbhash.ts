@@ -59,11 +59,11 @@ export function rgbaToThumbHash(w: number, h: number, rgba: ArrayLike<number>): 
   }
 
   // Encode using the DCT into DC (constant) and normalized AC (varying) terms
-  const encodeChannel = (channel: any, nx: any, ny: any) => {
+  const encodeChannel = (channel: number[], nx: number, ny: number): [number, number[], number] => {
     let dc = 0
-    const ac = []
+    const ac: number[] = []
     let scale = 0
-    const fx = []
+    const fx: number[] = []
     for (let cy = 0; cy < ny; cy++) {
       for (let cx = 0; cx * ny < nx * (ny - cy); cx++) {
         let f = 0
@@ -92,12 +92,12 @@ export function rgbaToThumbHash(w: number, h: number, rgba: ArrayLike<number>): 
   const [l_dc, l_ac, l_scale] = encodeChannel(l, max(3, lx), max(3, ly))
   const [p_dc, p_ac, p_scale] = encodeChannel(p, 3, 3)
   const [q_dc, q_ac, q_scale] = encodeChannel(q, 3, 3)
-  const [a_dc, a_ac, a_scale] = hasAlpha ? encodeChannel(a, 5, 5) : []
+  const [a_dc, a_ac, a_scale] = hasAlpha ? encodeChannel(a, 5, 5) : [0, [] as number[], 0] as [number, number[], number]
 
   // Write the constants
   const isLandscape = w > h
-  const header24 = round(63 * l_dc) | (round(31.5 + 31.5 * p_dc) << 6) | (round(31.5 + 31.5 * q_dc) << 12) | (round(31 * l_scale) << 18) | (hasAlpha << 23)
-  const header16 = (isLandscape ? ly : lx) | (round(63 * p_scale) << 3) | (round(63 * q_scale) << 9) | (isLandscape << 15)
+  const header24 = round(63 * l_dc) | (round(31.5 + 31.5 * p_dc) << 6) | (round(31.5 + 31.5 * q_dc) << 12) | (round(31 * l_scale) << 18) | (Number(hasAlpha) << 23)
+  const header16 = (isLandscape ? ly : lx) | (round(63 * p_scale) << 3) | (round(63 * q_scale) << 9) | (Number(isLandscape) << 15)
   const hash = [header24 & 255, (header24 >> 8) & 255, header24 >> 16, header16 & 255, header16 >> 8]
   const ac_start = hasAlpha ? 6 : 5
   let ac_index = 0
@@ -140,8 +140,8 @@ export function thumbHashToRGBA(hash: ArrayLike<number>): { w: number, h: number
   // Read the varying factors (boost saturation by 1.25x to compensate for quantization)
   const ac_start = hasAlpha ? 6 : 5
   let ac_index = 0
-  const decodeChannel = (nx, ny, scale) => {
-    const ac = []
+  const decodeChannel = (nx: number, ny: number, scale: number): number[] => {
+    const ac: number[] = []
     for (let cy = 0; cy < ny; cy++) {
       for (let cx = cy ? 0 : 1; cx * ny < nx * (ny - cy); cx++)
         ac.push((((hash[ac_start + (ac_index >> 1)] >> ((ac_index++ & 1) << 2)) & 15) / 7.5 - 1) * scale)
@@ -151,7 +151,7 @@ export function thumbHashToRGBA(hash: ArrayLike<number>): { w: number, h: number
   const l_ac = decodeChannel(lx, ly, l_scale)
   const p_ac = decodeChannel(3, 3, p_scale * 1.25)
   const q_ac = decodeChannel(3, 3, q_scale * 1.25)
-  const a_ac = hasAlpha && decodeChannel(5, 5, a_scale)
+  const a_ac: number[] | false = hasAlpha ? decodeChannel(5, 5, a_scale) : false
 
   // Decode using the DCT into RGB
   const ratio = thumbHashToApproximateAspectRatio(hash)
@@ -189,7 +189,7 @@ export function thumbHashToRGBA(hash: ArrayLike<number>): { w: number, h: number
       }
 
       // Decode A
-      if (hasAlpha) {
+      if (hasAlpha && a_ac) {
         for (let cy = 0, j = 0; cy < 5; cy++) {
           for (let cx = cy ? 0 : 1, fy2 = fy[cy] * 2; cx < 5 - cy; cx++, j++)
             a += a_ac[j] * fx[cx] * fy2

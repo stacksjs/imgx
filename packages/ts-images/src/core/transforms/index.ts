@@ -249,7 +249,7 @@ export function crop(
 /**
  * Extract a region from an image (alias for crop)
  */
-export const extract = crop
+export const extract: typeof crop = crop
 
 /**
  * Extend an image with padding

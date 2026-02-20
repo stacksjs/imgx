@@ -127,14 +127,14 @@ export const KERNELS = {
     [0, 0, 0],
     [0, 1, 0],
     [0, 0, 0],
-  ],
+  ] as const,
 
   /** 3x3 box blur */
   boxBlur3x3: [
     [1, 1, 1],
     [1, 1, 1],
     [1, 1, 1],
-  ],
+  ] as const,
 
   /** 5x5 Gaussian blur approximation */
   gaussian5x5: [
@@ -143,29 +143,29 @@ export const KERNELS = {
     [6, 24, 36, 24, 6],
     [4, 16, 24, 16, 4],
     [1, 4, 6, 4, 1],
-  ],
+  ] as const,
 
   /** Sharpen kernel */
   sharpen: [
     [0, -1, 0],
     [-1, 5, -1],
     [0, -1, 0],
-  ],
+  ] as const,
 
   /** Edge detection (Laplacian) */
   laplacian: [
     [0, 1, 0],
     [1, -4, 1],
     [0, 1, 0],
-  ],
+  ] as const,
 
   /** Emboss */
   emboss: [
     [-2, -1, 0],
     [-1, 1, 1],
     [0, 1, 2],
-  ],
-}
+  ] as const,
+} as const
 
 function clamp(value: number): number {
   return Math.min(255, Math.max(0, Math.round(value)))
