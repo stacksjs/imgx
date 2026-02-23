@@ -45,7 +45,7 @@ export async function generateResponsiveImages(
 
   debugLog('responsive', `Generating responsive images for ${input}`)
 
-  const inputBuffer = await readFile(input)
+  const inputBuffer = new Uint8Array(await readFile(input))
   const imageData = await decode(inputBuffer)
   const originalWidth = imageData.width
   const originalHeight = imageData.height
@@ -140,7 +140,7 @@ export async function generateImageSet(options: ImageSetOptions): Promise<Array<
   debugLog('imageset', `Generating image set for ${input}`)
 
   // Read and decode the source image
-  const inputBuffer = await readFile(input)
+  const inputBuffer = new Uint8Array(await readFile(input))
   const imageData = await decode(inputBuffer)
 
   const results: Array<{

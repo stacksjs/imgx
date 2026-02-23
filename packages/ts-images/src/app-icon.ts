@@ -71,7 +71,7 @@ export async function generateMacOSAppIcons(
   const results = []
 
   // Read and decode the source image
-  const inputBuffer = await readFile(input)
+  const inputBuffer = new Uint8Array(await readFile(input))
   const imageData = await decode(inputBuffer)
 
   // Generate all icon sizes
@@ -125,7 +125,7 @@ export async function generateIOSAppIcons(
   const results = []
 
   // Read and decode the source image
-  const inputBuffer = await readFile(input)
+  const inputBuffer = new Uint8Array(await readFile(input))
   const imageData = await decode(inputBuffer)
 
   // Generate all icon sizes

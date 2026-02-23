@@ -388,7 +388,7 @@ export function thumbHashToDataURL(hash: ArrayLike<number>): string {
 
 export async function generateThumbHash(input: string): Promise<{ hash: Uint8Array, dataUrl: string }> {
   // Read and decode the image
-  const inputBuffer = await readFile(input)
+  const inputBuffer = new Uint8Array(await readFile(input))
   const imageData = await decode(inputBuffer)
 
   // Resize to fit within 100x100

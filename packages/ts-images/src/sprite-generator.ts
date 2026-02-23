@@ -47,7 +47,7 @@ export async function generateSprite(
   // Load and process all images
   const sprites = await Promise.all(
     images.map(async ({ path, name }) => {
-      const buffer = await readFile(path)
+      const buffer = new Uint8Array(await readFile(path))
       const imageData = await decode(buffer)
 
       // Apply scaling if needed

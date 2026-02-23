@@ -26,7 +26,7 @@ export async function generateSocialImages(
   const results: Record<string, string> = {}
 
   // Read and decode the source image
-  const inputBuffer = await readFile(input)
+  const inputBuffer = new Uint8Array(await readFile(input))
   const imageData = await decode(inputBuffer)
 
   for (const [name, size] of Object.entries(sizes)) {

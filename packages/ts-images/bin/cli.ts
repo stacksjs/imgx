@@ -459,7 +459,7 @@ async function processFile(input: string, output: string, options: ProcessFileOp
       const thumbPath = `${output}.thumb.png`
       const hashPath = `${output}.thumb.hash`
 
-      await writeFile(thumbPath, Buffer.from(dataUrl.split(',')[1], 'base64'))
+      await writeFile(thumbPath, new Uint8Array(Buffer.from(dataUrl.split(',')[1], 'base64')))
       await writeFile(hashPath, hash)
 
       console.log(`Generated ThumbHash: ${thumbPath}`)
@@ -506,7 +506,7 @@ cli
         port: options?.port || 3000,
         hostname: options?.host || 'localhost',
         fetch: async (req) => {
-          const url = new URL(req.url)
+          const url = new URL((req as unknown as { url: string }).url)
           const path = join(directory, url.pathname)
 
           // Check if path matches image extension
@@ -520,7 +520,7 @@ cli
 
               // Add cache headers if enabled
               if (options?.cache) {
-                response.headers.set('Cache-Control', 'public, max-age=31536000')
+                ;(response.headers as any).set('Cache-Control', 'public, max-age=31536000')
               }
 
               return response
@@ -549,11 +549,11 @@ cli
 
             // Set content type based on format
             const outputFormat = format || path.split('.').pop() || 'jpeg'
-            response.headers.set('Content-Type', `image/${outputFormat}`)
+            ;(response.headers as any).set('Content-Type', `image/${outputFormat}`)
 
             // Add cache headers if enabled
             if (options?.cache) {
-              response.headers.set('Cache-Control', 'public, max-age=31536000')
+              ;(response.headers as any).set('Cache-Control', 'public, max-age=31536000')
             }
 
             return response

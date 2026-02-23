@@ -25,10 +25,11 @@ export async function analyzeImage(path: string): Promise<ImageStats> {
   const warnings = []
   const fileStats = await stat(path)
   const buffer = await readFile(path)
-  const dimensions = sizeOf(buffer)
+  const uint8Buffer = new Uint8Array(buffer)
+  const dimensions = sizeOf(uint8Buffer)
 
   // Detect format from buffer
-  const format = detectFormat(buffer) || dimensions.type || 'unknown'
+  const format = detectFormat(uint8Buffer) || dimensions.type || 'unknown'
 
   // Decode to get image data
   let imageData
@@ -37,7 +38,7 @@ export async function analyzeImage(path: string): Promise<ImageStats> {
   let channels = 4
 
   try {
-    imageData = await decode(buffer)
+    imageData = await decode(uint8Buffer)
     hasAlpha = imageData.hasAlpha
     colorSpace = imageData.colorSpace
     channels = 4 // RGBA

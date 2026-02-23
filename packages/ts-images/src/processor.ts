@@ -61,7 +61,7 @@ async function readImage(input: string | Buffer): Promise<{ imageData: ImageData
   let originalSize: number
 
   if (typeof input === 'string') {
-    inputBuffer = await readFile(input)
+    inputBuffer = new Uint8Array(await readFile(input))
     const stats = await stat(input)
     originalSize = stats.size
   }
@@ -113,7 +113,7 @@ export async function processImage(options: ProcessOptions): Promise<OptimizeRes
     }
 
     const outputFormat = format || detectFormat(
-      typeof input === 'string' ? await readFile(input) : new Uint8Array(input),
+      typeof input === 'string' ? new Uint8Array(await readFile(input)) : new Uint8Array(input),
     ) || 'png'
 
     const outputBuffer = await writeImage(processedData, outputFormat, output, { quality, progressive })
@@ -1241,7 +1241,7 @@ export async function optimizeImage(
 
     // Read and decode the image
     const inputBuffer = await readFile(input)
-    const format = detectFormat(inputBuffer) || 'png'
+    const format = detectFormat(new Uint8Array(inputBuffer)) || 'png'
     const { imageData } = await readImage(input)
 
     // Get format-specific quality from config if available
@@ -1276,7 +1276,7 @@ export async function optimizeImage(
     // If the "optimized" output is larger than the original, use the original instead
     if (optimizedSize >= originalSize) {
       // Copy original file to output location
-      await writeFile(output, inputBuffer)
+      await writeFile(output, new Uint8Array(inputBuffer))
       optimizedSize = originalSize
       debugLog('processor', `Optimization complete: saved 0.00% (0 bytes) - original was already optimal`)
 

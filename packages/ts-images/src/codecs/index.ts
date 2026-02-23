@@ -391,7 +391,7 @@ async function decodePng(buffer: Uint8Array, _options: DecodeOptions): Promise<I
 async function encodePng(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
   const tsPng = await tryImportCodec('ts-png')
   if (tsPng) {
-    const data = Buffer.from(toCodecData(imageData, { channels: 4 }))
+    const data = Buffer.from(Uint8Array.from(toCodecData(imageData, { channels: 4 })))
     const outputBuffer = tsPng.png.sync.write({
       width: imageData.width,
       height: imageData.height,

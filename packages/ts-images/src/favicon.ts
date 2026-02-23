@@ -14,7 +14,7 @@ export async function generateFavicons(
   const results = []
 
   // Read and decode the source image
-  const inputBuffer = await readFile(input)
+  const inputBuffer = new Uint8Array(await readFile(input))
   const imageData = await decode(inputBuffer)
 
   for (const size of sizes) {
