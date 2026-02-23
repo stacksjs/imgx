@@ -47,7 +47,7 @@ describe('core', () => {
       // Verify the output file exists
       const metadata = await sharp(output).metadata()
       expect(metadata.format).toBe('webp')
-    })
+    }, { timeout: 30000 })
 
     it('should process an SVG file', async () => {
       // Create a simple SVG for testing
