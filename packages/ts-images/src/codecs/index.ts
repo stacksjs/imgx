@@ -358,7 +358,13 @@ async function decodeJpeg(buffer: Uint8Array, options: DecodeOptions): Promise<I
       colorTransform: options.colorTransform,
       formatAsRGBA: options.formatAsRGBA ?? true,
     })
-    const imageData = fromCodecData(result.data, result.width, result.height, { channels: 4 })
+    // Detect actual channel count from data length, since ts-jpeg may return
+    // RGB data (3 bytes/pixel) even when formatAsRGBA is true due to a bug
+    // where the output buffer is allocated from getData() which uses
+    // component count rather than the requested RGBA format
+    const expectedRGBA = result.width * result.height * 4
+    const actualChannels = result.data.length === expectedRGBA ? 4 : 3
+    const imageData = fromCodecData(result.data, result.width, result.height, { channels: actualChannels })
     imageData.hasAlpha = false
     return imageData
   }
