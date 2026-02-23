@@ -46,8 +46,8 @@ declare module '@stacksjs/clarity' {
 }
 
 declare module 'ts-jpeg' {
-  export function decode(data: Uint8Array, options?: any): { data: Uint8Array, width: number, height: number }
-  export function encode(image: { width: number, height: number, data: Uint8Array | Uint8ClampedArray }, quality?: number): { data: Uint8Array }
+  export function decode(data: Uint8Array, _options?: any): { data: Uint8Array, width: number, height: number }
+  export function encode(_image: { width: number, height: number, data: Uint8Array | Uint8ClampedArray }, _quality?: number): { data: Uint8Array }
 }
 
 declare module 'ts-png' {
@@ -74,17 +74,17 @@ declare module 'ts-gif' {
 
 declare module 'ts-bmp' {
   export function decode(data: Uint8Array): { data: Uint8Array, width: number, height: number }
-  export function encode(image: { width: number, height: number, data: Uint8Array | Uint8ClampedArray }): Uint8Array
+  export function encode(_image: { width: number, height: number, data: Uint8Array | Uint8ClampedArray }): Uint8Array
 }
 
 declare module 'ts-webp' {
   export function decode(data: Uint8Array): { data: Uint8Array, width: number, height: number }
-  export function encode(image: { width: number, height: number, data: Uint8Array | Uint8ClampedArray }, options?: any): Uint8Array
+  export function encode(_image: { width: number, height: number, data: Uint8Array | Uint8ClampedArray }, _options?: any): Uint8Array
 }
 
 declare module 'ts-avif' {
   export function decode(data: Uint8Array): { data: Uint8Array, width: number, height: number }
-  export function encode(image: { width: number, height: number, data: Uint8Array | Uint8ClampedArray }, options?: any): Uint8Array
+  export function encode(_image: { width: number, height: number, data: Uint8Array | Uint8ClampedArray }, _options?: any): Uint8Array
 }
 
 declare module 'vite' {
