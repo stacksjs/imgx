@@ -27,11 +27,11 @@
       },
       "devDependencies": {
         "bun-plugin-dtsx": "^0.21.12",
-        "bunfig": "^0.15.0",
+        "bunfig": "^0.15.6",
         "cac": "^6.7.14",
         "changelogen": "^0.6.2",
         "image-size": "^2.0.2",
-        "svgo": "^4.0.0",
+        "svgo": "^4.0.1",
         "ts-potrace": "^0.1.0",
       },
       "optionalDependencies": {
@@ -52,7 +52,7 @@
         "ts-images": "workspace:*",
       },
       "devDependencies": {
-        "bun-plugin-dtsx": "^0.21.12",
+        "bun-plugin-dtsx": "^0.21.17",
       },
     },
     "packages/vscode": {
