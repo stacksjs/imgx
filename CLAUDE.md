@@ -2,7 +2,7 @@
 
 ## About
 
-Modern image optimizations & manipulations.
+A powerful image optimization toolkit (imgx) for modern web development. It supports lossy and lossless compression, format conversion (WebP, AVIF, JPEG, PNG, SVG), responsive image generation, sprite sheets, ThumbHash/LQIP placeholders, image watermarking, app icon generation, and image-to-SVG tracing. It works both as a CLI and as a library, includes a dev server for on-the-fly optimization, and provides batch processing with progress tracking.
 
 ## Linting
 
