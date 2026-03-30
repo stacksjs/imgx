@@ -96,7 +96,7 @@ jobs:
         uses: home-lang/pantry/packages/action@main
 
       - name: Install Dependencies
-        run: bun install
+        run: pantry install
 
       - name: Publish Commit
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
