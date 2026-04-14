@@ -221,12 +221,12 @@ function LazyImage({ src, placeholderDataUrl, alt, ...props }) {
     <div className="image-container">
       <img
         src={placeholderDataUrl}
-        className={`placeholder ${loaded ? 'hidden' : ''}`}
+        className={`placeholder : ? ''} 'hidden' ${loaded`}
         alt={alt}
       />
       <img
         src={src}
-        className={`full-image ${loaded ? 'visible' : ''}`}
+        className={`: ? ''} 'visible' ${loaded full-image`}
         alt={alt}
         loading="lazy"
         onLoad={() => setLoaded(true)}
