@@ -8,70 +8,92 @@ import type { ImgxConfig } from '@stacksjs/imgx'
 
 const config: ImgxConfig = {
   /**
-   * Enable verbose logging
-   * Default: true
+
+   _ Enable verbose logging
+   _ Default: true
+
    */
   verbose: true,
 
   /**
-   * Enable caching of processed images
-   * Default: true
+
+   _ Enable caching of processed images
+   _ Default: true
+
    */
   cache: true,
 
   /**
-   * Directory to store cached images
-   * Default: '.imgx-cache'
+
+   _ Directory to store cached images
+   _ Default: '.imgx-cache'
+
    */
   cacheDir: '.imgx-cache',
 
   /**
-   * Number of concurrent processing operations
-   * Default: 4
+
+   _ Number of concurrent processing operations
+   _ Default: 4
+
    */
   concurrent: 4,
 
   /**
-   * Skip already optimized images
-   * Default: false
+
+   _ Skip already optimized images
+   _ Default: false
+
    */
   skipOptimized: false,
 
   /**
-   * Default quality setting for images
-   * Default: 80
+
+   _ Default quality setting for images
+   _ Default: 80
+
    */
   quality: 80,
 
   /**
-   * Default output format
-   * Default: 'webp'
+
+   _ Default output format
+   _ Default: 'webp'
+
    */
   format: 'webp',
 
   /**
-   * Enable progressive image loading
-   * Default: true
+
+   _ Enable progressive image loading
+   _ Default: true
+
    */
   progressive: true,
 
   /**
-   * Preserve image metadata
-   * Default: false
+
+   _ Preserve image metadata
+   _ Default: false
+
    */
   preserveMetadata: false,
 
   /**
-   * App icon generation settings
-   */
+
+   _ App icon generation settings
+
+   _/
   appIcon: {
     outputDir: 'assets/app-icons',
     platform: 'all', // 'macos', 'ios', or 'all'
   },
 
   /**
-   * Responsive image generation settings
-   */
+
+   _ Responsive image generation settings
+
+   _/
   responsive: {
     sizes: [320, 640, 960, 1280, 1920],
     formats: ['webp', 'jpeg'],
@@ -81,8 +103,10 @@ const config: ImgxConfig = {
   },
 
   /**
-   * Placeholder generation settings
-   */
+
+   _ Placeholder generation settings
+
+   _/
   placeholders: {
     width: 20,
     quality: 50,
@@ -94,8 +118,10 @@ const config: ImgxConfig = {
   },
 
   /**
-   * SVG optimization settings
-   */
+
+   _ SVG optimization settings
+
+   _/
   svg: {
     prettify: false,
     removeComments: true,

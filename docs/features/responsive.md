@@ -117,6 +117,7 @@ await generateResponsive('path/to/image.jpg', {
 ```
 
 Available placeholders:
+
 - `[name]`: Original filename without extension
 - `[width]`: Width of the generated image
 - `[height]`: Height of the generated image

@@ -120,22 +120,22 @@ While both plugins provide similar functionality, there are some differences:
 
 You can verify that the plugins are working correctly:
 
-### For Vite:
+### For Vite
 
 ```bash
 # Run a production build
 npm run build
 
 # Check the size of optimized images in your dist folder
-du -sh dist/assets/*.{jpg,png,webp,avif,svg}
+du -sh dist/assets/_.{jpg,png,webp,avif,svg}
 ```
 
-### For Bun:
+### For Bun
 
 ```bash
 # Run a production build
 bun run build
 
 # Check the size of optimized images in your output folder
-du -sh dist/assets/*.{jpg,png,webp,avif,svg}
+du -sh dist/assets/_.{jpg,png,webp,avif,svg}
 ```

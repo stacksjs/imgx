@@ -1,6 +1,5 @@
 # Changelog
 
-
 ## v0.1.5...main
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.5...main)
@@ -66,7 +65,6 @@
 - Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
 
 ## ...main
-
 
 ### 🚀 Enhancements
 
@@ -467,7 +465,6 @@
 - Chris <chrisbreuer93@gmail.com>
 
 ## ...main
-
 
 ### 🏡 Chore
 

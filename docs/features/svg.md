@@ -2,7 +2,7 @@
 
 imgx provides powerful tools for optimizing and transforming SVG files, helping you reduce file sizes while maintaining quality and functionality.
 
-## Why Optimize SVGs?
+## Why Optimize SVGs
 
 SVG files often contain unnecessary information that increases file size without adding visual value:
 

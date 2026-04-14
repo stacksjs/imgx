@@ -587,6 +587,7 @@ export default config
 ## Configuration Loading
 
 imgx automatically looks for a configuration file in the following order:
+
 1. `imgx.config.ts` in the current directory
 2. `imgx.config.js` in the current directory
 3. `imgx` property in `package.json`

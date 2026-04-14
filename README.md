@@ -118,7 +118,7 @@ Development server:
 # Start dev server with on-the-fly optimization
 imgx serve ./public -p 3000
 
-# Access optimized images:
+# Access optimized images
 # http://localhost:3000/image.jpg?format=webp&quality=75&size=800x600
 ```
 

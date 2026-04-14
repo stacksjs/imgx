@@ -13,12 +13,14 @@ imgx optimize image.jpg -f webp
 ```
 
 **Characteristics:**
+
 - 25-35% smaller than JPEG at same quality
 - Supports transparency (like PNG)
 - Supports animation (like GIF)
 - 95%+ browser support
 
 **Best for:**
+
 - General web images
 - Photos with transparency needs
 - Replacing both JPEG and PNG
@@ -32,12 +34,14 @@ imgx optimize image.jpg -f avif
 ```
 
 **Characteristics:**
+
 - 30-50% smaller than WebP
 - Excellent quality at low file sizes
 - Growing browser support (~85%)
 - Slower encoding
 
 **Best for:**
+
 - Maximum compression
 - High-quality hero images
 - Sites where performance is critical
@@ -51,12 +55,14 @@ imgx optimize image.png -f jpeg
 ```
 
 **Characteristics:**
+
 - Universal browser support
 - Good for photographs
 - Progressive loading support
 - No transparency
 
 **Best for:**
+
 - Fallback format
 - Email images
 - Maximum compatibility
@@ -70,12 +76,14 @@ imgx optimize image.jpg -f png
 ```
 
 **Characteristics:**
+
 - Lossless compression
 - Full transparency support
 - Larger file sizes
 - Best for graphics/icons
 
 **Best for:**
+
 - Screenshots
 - Graphics with sharp edges
 - Icons and logos

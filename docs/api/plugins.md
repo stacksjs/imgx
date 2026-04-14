@@ -38,6 +38,7 @@ interface ProcessOptions {
 ```
 
 **Parameters:**
+
 - `options`: Optional configuration object extending imgx's ProcessOptions with plugin-specific options
   - `include`: Array of glob patterns for files to include (default: `['**/*.{jpg,jpeg,png,webp,avif,svg}']`)
   - `exclude`: Array of glob patterns for files to exclude (default: `['node_modules/**']`)
@@ -113,6 +114,7 @@ interface ImgxPluginOptions extends Partial<ProcessOptions> {
 ```
 
 **Parameters:**
+
 - `options`: Optional configuration object with the same options as the Vite plugin
   - `include`: Array of glob patterns for files to include (default: `['**/*.{jpg,jpeg,png,webp,avif,svg}']`)
   - `exclude`: Array of glob patterns for files to exclude (default: `['node_modules/**']`)

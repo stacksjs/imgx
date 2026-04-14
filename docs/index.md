@@ -53,5 +53,3 @@ features:
     icon: "🔒"
     details: "Optional metadata stripping and privacy-focused optimization."
 ---
-
-<Home />

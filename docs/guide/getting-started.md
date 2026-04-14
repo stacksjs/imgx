@@ -62,7 +62,7 @@ Start an on-the-fly optimization server:
 ```bash
 imgx serve ./public -p 3000
 
-# Access optimized images via URL:
+# Access optimized images via URL
 # http://localhost:3000/image.jpg?format=webp&quality=75&size=800x600
 ```
 

@@ -24,9 +24,11 @@ imgx optimize <input> [options]
 ```
 
 **Arguments:**
+
 - `input`: File path or glob pattern for images to optimize
 
 **Options:**
+
 - `--output, -o <path>`: Output file or directory
 - `--quality, -q <number>`: Quality setting (1-100) (default: 80)
 - `--format, -f <format>`: Output format (jpeg, png, webp, avif)
@@ -59,9 +61,11 @@ imgx convert <input> --format <format> [options]
 ```
 
 **Arguments:**
+
 - `input`: File path or glob pattern for images to convert
 
 **Options:**
+
 - `--format, -f <format>`: Output format (required)
 - `--output, -o <path>`: Output file or directory
 - `--quality, -q <number>`: Quality setting (1-100) (default: 80)
@@ -90,9 +94,11 @@ imgx responsive <input> [options]
 ```
 
 **Arguments:**
+
 - `input`: Image file path
 
 **Options:**
+
 - `--sizes <sizes>`: Comma-separated list of widths (default: 320,640,960,1280,1920)
 - `--formats, -f <formats>`: Comma-separated list of formats (default: webp,jpeg)
 - `--quality, -q <number>`: Quality setting (1-100) (default: 80)
@@ -121,9 +127,11 @@ imgx app-icon <input> [options]
 ```
 
 **Arguments:**
+
 - `input`: Source image file path (should be high-res, at least 1024x1024px)
 
 **Options:**
+
 - `--platform <platform>`: Target platform (ios, macos, all) (default: all)
 - `--output-dir, -o <path>`: Output directory
 
@@ -145,9 +153,11 @@ imgx placeholder <input> [options]
 ```
 
 **Arguments:**
+
 - `input`: Image file path
 
 **Options:**
+
 - `--width, -w <number>`: Width of placeholder (default: 20)
 - `--quality, -q <number>`: Quality setting (1-100) (default: 50)
 - `--format, -f <format>`: Output format (webp, jpeg, png) (default: webp)
@@ -180,9 +190,11 @@ imgx svg <input> [options]
 ```
 
 **Arguments:**
+
 - `input`: SVG file path or glob pattern
 
 **Options:**
+
 - `--output, -o <path>`: Output file or directory
 - `--prettify`: Format SVG code for readability
 - `--remove-comments`: Remove comments
@@ -211,9 +223,11 @@ imgx batch <input> [options]
 ```
 
 **Arguments:**
+
 - `input`: Directory or glob pattern for images to process
 
 **Options:**
+
 - `--formats, -f <formats>`: Comma-separated list of output formats (default: webp)
 - `--quality, -q <number>`: Quality setting (1-100) (default: 80)
 - `--output-dir, -o <path>`: Output directory
@@ -244,9 +258,11 @@ imgx watch <directory> [options]
 ```
 
 **Arguments:**
+
 - `directory`: Directory to watch for changes
 
 **Options:**
+
 - `--formats, -f <formats>`: Comma-separated list of output formats (default: webp)
 - `--quality, -q <number>`: Quality setting (1-100) (default: 80)
 - `--output-dir, -o <path>`: Output directory

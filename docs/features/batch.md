@@ -220,6 +220,7 @@ const result = await batchProcess('./images')
 
 console.log(`
 Summary:
+
 - Total files: ${result.summary.totalFiles}
 - Success: ${result.summary.successCount}
 - Errors: ${result.summary.errorCount}
@@ -227,6 +228,7 @@ Summary:
 - Optimized size: ${formatBytes(result.summary.optimizedSize)}
 - Saved: ${formatBytes(result.summary.saved)} (${result.summary.savedPercentage.toFixed(2)}%)
 - Time: ${result.summary.timeElapsed}ms
+
 `)
 
 // Function to format bytes to readable format
@@ -298,13 +300,17 @@ catch (error) {
 optimize-images:
   runs-on: ubuntu-latest
   steps:
+
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
+
       with:
         node-version: 16
+
     - run: npm ci
     - run: npm install -g @stacksjs/imgx
     - run: imgx batch ./src/assets/images --formats webp,avif --output-dir ./public/images
+
 ```
 
 ## Configuration

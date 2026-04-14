@@ -144,6 +144,7 @@ await createAppIcon('icon.png', {
 ```
 
 Available placeholders:
+
 - `[size]`: Icon size (e.g., 20, 29, 40)
 - `[scale]`: Scale factor (1, 2, 3)
 - `[ext]`: File extension (png)

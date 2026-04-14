@@ -2,7 +2,7 @@
 
 imgx provides several techniques for generating lightweight image placeholders that can be used for lazy loading, improving perceived performance and user experience.
 
-## Why Use Placeholders?
+## Why Use Placeholders
 
 Image placeholders serve several important purposes:
 

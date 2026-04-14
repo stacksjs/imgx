@@ -22,6 +22,7 @@ async function optimize(
 ```
 
 **Parameters:**
+
 - `input`: Path to the image file or a Buffer containing the image data
 - `options`: Optional configuration options
   - `quality`: Output quality, 1-100
@@ -31,6 +32,7 @@ async function optimize(
   - `preserveMetadata`: Whether to preserve image metadata
 
 **Returns:** Promise resolving to `OptimizeResult` with properties:
+
 - `inputPath`: Path to input file
 - `outputPath`: Path to output file
 - `inputSize`: Size of input file in bytes
@@ -69,6 +71,7 @@ async function convert(
 ```
 
 **Parameters:**
+
 - `input`: Path to the image file or a Buffer containing the image data
 - `options`: Configuration options
   - `format`: Output format (required)
@@ -79,6 +82,7 @@ async function convert(
   - `preserveMetadata`: Whether to preserve image metadata
 
 **Returns:** Promise resolving to `ConversionResult` with properties:
+
 - `inputPath`: Path to input file
 - `outputPath`: Path to output file
 - `format`: Output format
@@ -123,6 +127,7 @@ async function generateResponsive(
 ```
 
 **Parameters:**
+
 - `input`: Path to the image file
 - `options`: Optional configuration options
   - `sizes`: Array of widths to generate
@@ -164,6 +169,7 @@ async function createAppIcon(
 ```
 
 **Parameters:**
+
 - `input`: Path to the source image (should be high resolution, ideally 1024x1024 or larger)
 - `options`: Optional configuration options
   - `platform`: Target platform ('macos', 'ios', or 'all')
@@ -205,6 +211,7 @@ async function createPlaceholder(
 ```
 
 **Parameters:**
+
 - `input`: Path to the image file
 - `options`: Optional configuration options
   - `width`: Width of the placeholder image
@@ -250,6 +257,7 @@ async function optimizeSvg(
 ```
 
 **Parameters:**
+
 - `input`: Path to the SVG file or a Buffer containing the SVG data
 - `options`: Optional SVG optimization options
 
@@ -281,6 +289,7 @@ async function batchProcess(
 ```
 
 **Parameters:**
+
 - `inputPattern`: Glob pattern string or array of file paths
 - `options`: Optional batch processing options
 
