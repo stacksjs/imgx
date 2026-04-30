@@ -26,7 +26,7 @@
       },
       "dependencies": {
         "@stacksjs/ts-png": "^0.1.2",
-        "@stacksjs/ts-svg": "^0.1.0",
+        "@stacksjs/ts-svg": "^0.5.1",
         "@stacksjs/ts-webp": "^0.1.0",
         "ts-gif": "^0.1.2",
         "ts-jpeg": "^0.3.1",
@@ -37,7 +37,7 @@
       },
       "optionalDependencies": {
         "@stacksjs/ts-avif": "^0.1.0",
-        "@stacksjs/ts-bmp": "^0.0.1",
+        "@stacksjs/ts-bmp": "^0.1.0",
       },
     },
     "packages/vite-plugin": {
@@ -47,7 +47,7 @@
         "ts-images": "workspace:*",
       },
       "devDependencies": {
-        "bun-plugin-dtsx": "^0.21.12",
+        "bun-plugin-dtsx": "^0.21.17",
       },
     },
     "packages/vscode": {
@@ -91,6 +91,8 @@
 
     "@stacksjs/ts-avif": ["@stacksjs/ts-avif@0.1.0", "", {}, "sha512-ytcta6ZhZeZwXJTcWlTraNLBsqL4imOfruSkJ2PwEp5RjHb4eSoqb21W4u7HLILRcILr7B1nOkIMeQct4Pozbw=="],
 
+    "@stacksjs/ts-bmp": ["@stacksjs/ts-bmp@0.1.0", "", {}, "sha512-O02r5q35OaoLRkTLOcFCylQzY3Oeji6QebdzLBfuWt77MoS/gY/4igY53N++pUjA4uS34cHHd/P651LlCKoBeA=="],
+
     "@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.2.3", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.0", "@ts-cloud/aws-types": "0.2.3", "@ts-cloud/core": "0.2.3" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-KHBwsIGgeTYT3f+OF7pU+EcpqKZRICmv6u8MnZz6Tk7wBFb2CPFIRgZvQarpDxxmK0R9KOFEaOV2gFIBa4AgxA=="],
 
     "@stacksjs/ts-craft": ["@stacksjs/ts-craft@0.0.2", "", { "dependencies": { "archiver": "^7.0.1" }, "bin": { "craft": "./bin/cli.ts" } }, "sha512-09vAI4BJuXXNClFoOE6f1acrKqV77U7lObmOjnRteSqDoX7WZJU0HnMhrjaX96lF9EdPIozfIp59kPq7EZwLYQ=="],
@@ -99,7 +101,7 @@
 
     "@stacksjs/ts-png": ["@stacksjs/ts-png@0.1.2", "", {}, "sha512-NT9AVCAlZiOMzcBH+OlAAUAbfTzakm/6Ibp5S31JInrpTDd+Qe3arEfatPLuMasFR9tyO+NMAFsF84MT6TK1vA=="],
 
-    "@stacksjs/ts-svg": ["@stacksjs/ts-svg@0.1.0", "", { "dependencies": { "@stacksjs/ts-png": "^0.1.2" }, "bin": { "svg": "dist/cli.js" } }, "sha512-pz/nPlx77vQVMuaNgaM4asaBybSmm++bNZxbE+z/QacbHvb77p2QZyflwVDbVEgx64jCk74hFWx6IU90HwCoeg=="],
+    "@stacksjs/ts-svg": ["@stacksjs/ts-svg@0.5.1", "", { "dependencies": { "@stacksjs/ts-png": "^0.1.2" }, "bin": { "svg": "dist/cli.js" } }, "sha512-QCrypIKBIEZrz5SLmgc8wNhI+2nqqf08dPjNGFAm1tQ6Aakb43RWu06q8JhXfksOJJWx0AJUssyWVD3n5xRW6g=="],
 
     "@stacksjs/ts-webp": ["@stacksjs/ts-webp@0.1.0", "", {}, "sha512-wWA+HEmRszZg4av8jzSa1l2eDPEu06Cdy/c9gjlP/7rqUb7K5ETzK5rZt9DgDe28treKGy/vGo/1YS4yiUvtUA=="],
 
