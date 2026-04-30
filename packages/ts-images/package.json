@@ -74,21 +74,9 @@
     "ts-gif": "^0.1.2"
   },
   "devDependencies": {
-    "bun-plugin-dtsx": "^0.21.12",
-    "bunfig": "^0.15.0",
     "@stacksjs/clapp": "^0.2.0",
-    "changelogen": "^0.6.2",
-    "image-size": "^2.0.2",
-    "svgo": "^4.0.0",
-    "ts-potrace": "^0.1.0"
-  },
-  "peerDependencies": {
-    "sharp": "^0.34.0"
-  },
-  "peerDependenciesMeta": {
-    "sharp": {
-      "optional": true
-    }
+    "bunfig": "^0.15.9",
+    "image-size": "^2.0.2"
   },
   "simple-git-hooks": {
     "pre-commit": "bunx lint-staged"

@@ -48,9 +48,7 @@
     "format:fix": "bunx --bun pickier . --format --write"
   },
   "devDependencies": {
-    "better-dx": "^0.2.7",
-    "cac": "^7.0.0",
-    "sharp": "^0.34.5"
+    "better-dx": "^0.2.7"
   },
   "workspaces": [
     "packages/*"

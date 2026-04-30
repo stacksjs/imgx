@@ -10,6 +10,7 @@ bin/imgx*
 lib-cov
 logs
 node_modules
+pantry
 temp
 docs/.vitepress/cache
 storage
