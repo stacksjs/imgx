@@ -18,7 +18,12 @@
     "isolatedDeclarations": true,
     "verbatimModuleSyntax": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "ts-images": ["./packages/ts-images/src/index.ts"],
+      "ts-images/*": ["./packages/ts-images/src/*"]
+    }
   },
   "exclude": [
     "pickier.config.ts",
