@@ -15,7 +15,7 @@ import type {
 import { Buffer } from 'node:buffer'
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { dirname, extname, join } from 'node:path'
-import { optimize } from 'svgo'
+import { optimize, traceImage } from '@stacksjs/ts-svg'
 import { config } from './config'
 import {
   blur,
@@ -495,105 +495,36 @@ export async function imageToSvg(
     colorCount = 16,
     steps = 4,
     threshold: thresholdLevel = 128,
-    tolerance = 3,
+    tolerance: _tolerance = 3,
     optionsSvg = {},
   } = options
 
   debugLog('processor', `Converting image to SVG using ${mode} mode`)
 
   try {
-    // Process input
     const { imageData } = await readImage(input)
     const inputPath = typeof input === 'string' ? input : 'buffer'
 
     const width = imageData.width
     const height = imageData.height
 
-    // Import potrace dynamically to handle environments where it might not be available
-    let potrace: any
-    try {
-      potrace = await import('ts-potrace')
-    }
-    catch {
-      throw new Error('Potrace library is required for image to SVG conversion. Please install it with: bun install ts-potrace')
-    }
-
-    // Process the image based on the mode
-    let processedData = imageData
-
-    if (mode === 'bw') {
-      // Convert to grayscale then threshold for black and white
-      processedData = grayscale(processedData)
-      processedData = threshold(processedData, thresholdLevel)
-    }
-    else if (mode === 'grayscale') {
-      // Convert to grayscale
-      processedData = grayscale(processedData)
-    }
-    else if (mode === 'posterized') {
-      // For posterized, we reduce to a limited number of levels
-      // This is a simple posterization by quantizing color values
-      const levelStep = Math.floor(256 / steps)
-      const posterized = createImageData(width, height)
-      for (let i = 0; i < processedData.data.length; i += 4) {
-        posterized.data[i] = Math.floor(processedData.data[i] / levelStep) * levelStep
-        posterized.data[i + 1] = Math.floor(processedData.data[i + 1] / levelStep) * levelStep
-        posterized.data[i + 2] = Math.floor(processedData.data[i + 2] / levelStep) * levelStep
-        posterized.data[i + 3] = processedData.data[i + 3]
-      }
-      processedData = posterized
-    }
-
-    // Encode as PNG for potrace
-    const processedBuffer = await encode(processedData, 'png')
-
-    // Trace the image to SVG
-    let svgContent: string
-
-    if (mode === 'color' || mode === 'posterized') {
-      // Use color tracing for color and posterized modes
-      svgContent = await new Promise((resolve, reject) => {
-        potrace.trace(Buffer.from(processedBuffer), {
-          color: mode === 'color',
-          optTolerance: tolerance,
-          turdSize: 5, // Suppress speckles
-          turnPolicy: potrace.Potrace.TURNPOLICY_MINORITY,
-          pathomit: 8, // Higher threshold for omitting paths
-          colorQuantization: true,
-          colorCount,
-        }, (err: Error | null, svg: string) => {
-          if (err)
-            reject(err)
-          else resolve(svg)
-        })
-      })
-    }
-    else {
-      // Use standard tracing for bw and grayscale
-      svgContent = await new Promise((resolve, reject) => {
-        potrace.trace(Buffer.from(processedBuffer), {
-          turdSize: 5,
-          turnPolicy: potrace.Potrace.TURNPOLICY_MINORITY,
-          optTolerance: tolerance,
-          optCurve: true,
-          alphaMax: 1,
-          threshold: thresholdLevel,
-          blackOnWhite: true, // Set to false for white on black
-        }, (err: Error | null, svg: string) => {
-          if (err)
-            reject(err)
-          else resolve(svg)
-        })
-      })
-    }
-
-    // Add background if specified
-    if (background) {
-      const bgRect = `<rect width="100%" height="100%" fill="${background}"/>`
-      const svgOpenTag = svgContent.indexOf('<svg')
-      const svgAfterOpenTag = svgContent.indexOf('>', svgOpenTag) + 1
-      svgContent = svgContent.slice(0, svgAfterOpenTag) + bgRect + svgContent.slice(svgAfterOpenTag)
-    }
+    // ts-svg's traceImage is the pure-TypeScript replacement for
+    // shelling out to potrace. It's run-length-rectangle based, not
+    // curve-fitting — great for pixel-art and quantized images,
+    // verbose for photographs (use `optimizeSvg` afterwards if size
+    // matters). See ~/Code/Libraries/ts-svg/src/trace.ts.
+    const traced = traceImage({
+      data: imageData.data,
+      width,
+      height,
+    }, {
+      mode,
+      threshold: thresholdLevel,
+      colorCount,
+      steps,
+      background,
+    })
+    let svgContent = traced.svg
 
     // Optimize the SVG if requested
     if (Object.keys(optionsSvg).length > 0) {

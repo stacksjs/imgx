@@ -1,6 +1,5 @@
 import { readFile, stat } from 'node:fs/promises'
-import sizeOf from 'image-size'
-import { decode, detectFormat } from './codecs'
+import { decode, detectFormat, getMetadata, readDimensions } from './codecs'
 
 export interface ImageStats {
   path: string
@@ -22,45 +21,57 @@ export interface ImageStats {
 }
 
 export async function analyzeImage(path: string): Promise<ImageStats> {
-  const warnings = []
+  const warnings: string[] = []
   const fileStats = await stat(path)
   const buffer = await readFile(path)
   const uint8Buffer = new Uint8Array(buffer)
-  const dimensions = sizeOf(uint8Buffer)
 
-  // Detect format from buffer
-  const format = detectFormat(uint8Buffer) || dimensions.type || 'unknown'
+  const format = detectFormat(uint8Buffer) ?? 'unknown'
 
-  // Decode to get image data
-  let imageData
+  // Try the cheap path first — header-only dimension read. Falls through to
+  // a metadata call (which may decode) only if the header read fails.
+  let width = 0
+  let height = 0
+  const dims = readDimensions(uint8Buffer)
+  if (dims) {
+    width = dims.width
+    height = dims.height
+  }
+  else {
+    try {
+      const meta = await getMetadata(uint8Buffer)
+      width = meta.width
+      height = meta.height
+    }
+    catch {
+      // Leave width/height at 0; downstream consumers see zeroed stats.
+    }
+  }
+
   let hasAlpha = false
   let colorSpace = 'srgb'
-  let channels = 4
+  const channels = 4
 
   try {
-    imageData = await decode(uint8Buffer)
+    const imageData = await decode(uint8Buffer)
     hasAlpha = imageData.hasAlpha
     colorSpace = imageData.colorSpace
-    channels = 4 // RGBA
+    if (!width) width = imageData.width
+    if (!height) height = imageData.height
   }
   catch {
-    // If decode fails, use defaults
+    // Decode failures are non-fatal at the analyze layer — we surface the
+    // warning instead of throwing, since callers may be running in batch.
   }
 
-  // Analyze optimization potential
   let optimizationPotential: 'low' | 'medium' | 'high' = 'low'
-
-  // Check file size relative to dimensions
-  const pixelCount = dimensions.width * dimensions.height
+  const pixelCount = (width || 1) * (height || 1)
   const bytesPerPixel = fileStats.size / pixelCount
 
-  if (bytesPerPixel > 4)
-    optimizationPotential = 'high'
-  else if (bytesPerPixel > 2)
-    optimizationPotential = 'medium'
+  if (bytesPerPixel > 4) optimizationPotential = 'high'
+  else if (bytesPerPixel > 2) optimizationPotential = 'medium'
 
-  // Check for common issues
-  if (dimensions.width > 2000 || dimensions.height > 2000) {
+  if (width > 2000 || height > 2000) {
     warnings.push('Image dimensions are very large')
     optimizationPotential = 'high'
   }
@@ -70,7 +81,6 @@ export async function analyzeImage(path: string): Promise<ImageStats> {
     optimizationPotential = 'high'
   }
 
-  // Format-specific warnings
   if (format === 'png' && channels === 4 && !hasAlpha) {
     warnings.push('PNG has alpha channel but no transparency')
   }
@@ -79,21 +89,21 @@ export async function analyzeImage(path: string): Promise<ImageStats> {
     path,
     size: fileStats.size,
     format,
-    width: dimensions.width,
-    height: dimensions.height,
-    aspectRatio: dimensions.width / dimensions.height,
+    width,
+    height,
+    aspectRatio: height ? width / height : 0,
     hasAlpha,
-    isAnimated: false, // Would need format-specific detection
+    isAnimated: false,
     colorSpace,
     channels,
-    density: 72, // Default DPI
+    density: 72,
     compression: undefined,
     quality: undefined,
     optimizationPotential,
     metadata: {
       format,
-      width: dimensions.width,
-      height: dimensions.height,
+      width,
+      height,
       hasAlpha,
       colorSpace,
     },
@@ -114,21 +124,20 @@ export async function generateReport(paths: string[]): Promise<{
   }
 }> {
   const stats = await Promise.all(paths.map(analyzeImage))
-  const totalSize = stats.reduce((sum, stat) => sum + stat.size, 0)
+  const totalSize = stats.reduce((sum, s) => sum + s.size, 0)
 
-  const formatBreakdown = stats.reduce((acc: Record<string, number>, stat) => {
-    acc[stat.format] = (acc[stat.format] || 0) + 1
+  const formatBreakdown = stats.reduce((acc: Record<string, number>, s) => {
+    acc[s.format] = (acc[s.format] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
   const warnings = Array.from(new Set(stats.flatMap(s => s.warnings)))
 
-  // Estimate potential savings
-  const potentialSavings = stats.reduce((sum, stat) => {
-    switch (stat.optimizationPotential) {
-      case 'high': return sum + stat.size * 0.7
-      case 'medium': return sum + stat.size * 0.4
-      case 'low': return sum + stat.size * 0.1
+  const potentialSavings = stats.reduce((sum, s) => {
+    switch (s.optimizationPotential) {
+      case 'high': return sum + s.size * 0.7
+      case 'medium': return sum + s.size * 0.4
+      case 'low': return sum + s.size * 0.1
       default: return sum
     }
   }, 0)
@@ -137,7 +146,7 @@ export async function generateReport(paths: string[]): Promise<{
     stats,
     summary: {
       totalSize,
-      averageSize: totalSize / stats.length,
+      averageSize: stats.length ? totalSize / stats.length : 0,
       totalImages: stats.length,
       formatBreakdown,
       potentialSavings: `${Math.round(potentialSavings / 1024)}KB`,

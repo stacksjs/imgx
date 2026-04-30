@@ -6,7 +6,6 @@ export interface EncodeOptions {
   progressive?: boolean
   lossless?: boolean
   effort?: number
-  // Format-specific options
   [key: string]: any
 }
 
@@ -25,259 +24,209 @@ export interface ImageMetadata {
   colorSpace?: string
 }
 
-// Magic bytes for format detection
-const _SIGNATURES = {
-  jpeg: [0xFF, 0xD8, 0xFF],
-  png: [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],
-  gif: [0x47, 0x49, 0x46], // 'GIF'
-  webp: null, // RIFF....WEBP (need special handling)
-  bmp: [0x42, 0x4D], // 'BM'
-  avif: null, // ftypavif or ftypmif1 (need special handling)
-  tiff: null, // II or MM (need special handling)
-}
-
 /**
- * Cache for dynamic module imports.
- * In bun, re-importing a broken symlink module can hang forever,
- * so we must cache the result of the first import attempt.
+ * Codec resolution.
+ *
+ * ts-images is built on top of our own pure-TypeScript image libraries.
+ * Each codec is loaded lazily on first use so a consumer that only ever
+ * touches PNGs doesn't pay the parse cost of the AVIF + AV1 stack at
+ * startup. We cache the import result because in bun, re-importing a
+ * broken-symlink module on a second call hangs forever — caching the
+ * first attempt (success or failure) avoids that.
  */
-const _codecCache: Record<string, { module: any, available: boolean }> = {}
+const _codecCache: Record<string, { module: any, available: boolean, error?: unknown }> = Object.create(null)
 
-async function tryImportCodec(name: string): Promise<any | null> {
-  if (name in _codecCache) {
-    return _codecCache[name].available ? _codecCache[name].module : null
+async function loadCodec(name: string): Promise<any> {
+  const cached = _codecCache[name]
+  if (cached) {
+    if (cached.available) return cached.module
+    throw new Error(
+      `ts-images: codec package "${name}" failed to load. `
+      + `Install it with \`bun add ${name}\` (or \`npm install ${name}\`).`,
+      { cause: cached.error },
+    )
   }
   try {
+    // eslint-disable-next-line ts/no-require-imports
     const mod = await import(name)
     _codecCache[name] = { module: mod, available: true }
     return mod
   }
-  catch {
-    _codecCache[name] = { module: null, available: false }
-    return null
+  catch (err) {
+    _codecCache[name] = { module: null, available: false, error: err }
+    throw new Error(
+      `ts-images: codec package "${name}" is not installed. `
+      + `Install it with \`bun add ${name}\` (or \`npm install ${name}\`).`,
+      { cause: err },
+    )
   }
 }
 
 /**
- * Try to get the sharp module. Returns null if not available.
- */
-async function getSharp(): Promise<any> {
-  const mod = await tryImportCodec('sharp')
-  return mod ? mod.default : null
-}
-
-/**
- * Decode any image buffer to RGBA ImageData using sharp as fallback
- */
-async function decodeWithSharp(buffer: Uint8Array, format: string): Promise<ImageData> {
-  const sharpLib = await getSharp()
-  if (!sharpLib) {
-    throw new Error(`No codec available for ${format}. Install sharp or the ts-${format} package.`)
-  }
-
-  // Create a copy of the input buffer to ensure clean ownership
-  const inputBuffer = Buffer.from(new Uint8Array(buffer))
-  const { data, info } = await sharpLib(inputBuffer)
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true })
-
-  // Create a fresh copy of the output data to avoid shared buffer references
-  const pixelData = new Uint8Array(data.length)
-  pixelData.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength))
-
-  const imageData = fromCodecData(
-    pixelData,
-    info.width,
-    info.height,
-    { channels: 4 },
-  )
-
-  // JPEG never has alpha
-  if (format === 'jpeg') {
-    imageData.hasAlpha = false
-  }
-
-  return imageData
-}
-
-/**
- * Encode ImageData to a specific format using sharp as fallback
- */
-async function encodeWithSharp(imageData: ImageData, format: string, options: EncodeOptions = {}): Promise<Uint8Array> {
-  const sharpLib = await getSharp()
-  if (!sharpLib) {
-    throw new Error(`No codec available for ${format}. Install sharp or the ts-${format} package.`)
-  }
-
-  const rawData = toCodecData(imageData, { channels: 4 })
-  // Create a completely independent Buffer copy to avoid bun/sharp shared ArrayBuffer issues
-  const inputBuffer = Buffer.allocUnsafe(rawData.length)
-  inputBuffer.set(rawData)
-  let pipeline = sharpLib(inputBuffer, {
-    raw: {
-      width: imageData.width,
-      height: imageData.height,
-      channels: 4,
-    },
-  })
-
-  switch (format) {
-    case 'jpeg':
-    case 'jpg':
-      pipeline = pipeline.jpeg({
-        quality: options.quality ?? 80,
-        progressive: options.progressive ?? false,
-      })
-      break
-    case 'png':
-      pipeline = pipeline.png({
-        effort: options.effort ?? 9,
-        progressive: options.progressive ?? false,
-      })
-      break
-    case 'webp':
-      pipeline = pipeline.webp({
-        quality: options.quality ?? 80,
-        lossless: options.lossless ?? false,
-        effort: options.effort ?? 6,
-      })
-      break
-    case 'avif':
-      pipeline = pipeline.avif({
-        quality: options.quality ?? 50,
-        lossless: options.lossless ?? false,
-        effort: options.effort ?? 4,
-      })
-      break
-    case 'gif':
-      pipeline = pipeline.gif()
-      break
-    case 'bmp':
-      // Sharp doesn't support BMP output natively; encode as PNG as fallback
-      pipeline = pipeline.png()
-      break
-    default:
-      pipeline = pipeline.png()
-      break
-  }
-
-  const outputBuffer = await pipeline.toBuffer()
-  return new Uint8Array(outputBuffer.buffer, outputBuffer.byteOffset, outputBuffer.byteLength)
-}
-
-/**
- * Detect image format from buffer
+ * Detect image format from buffer magic bytes.
+ *
+ * Returns null when the buffer is too short or doesn't match a known
+ * signature — caller decides whether to treat that as an error.
  */
 export function detectFormat(buffer: Uint8Array): string | null {
-  if (buffer.length < 12) {
-    return null
-  }
+  if (buffer.length < 12) return null
 
-  // Check JPEG
-  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
-    return 'jpeg'
-  }
+  // JPEG: FF D8 FF
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) return 'jpeg'
 
-  // Check PNG
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
   if (
-    buffer[0] === 0x89
-    && buffer[1] === 0x50
-    && buffer[2] === 0x4E
-    && buffer[3] === 0x47
-    && buffer[4] === 0x0D
-    && buffer[5] === 0x0A
-    && buffer[6] === 0x1A
-    && buffer[7] === 0x0A
-  ) {
-    return 'png'
-  }
+    buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47
+    && buffer[4] === 0x0D && buffer[5] === 0x0A && buffer[6] === 0x1A && buffer[7] === 0x0A
+  ) return 'png'
 
-  // Check GIF
-  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) {
-    return 'gif'
-  }
+  // GIF: "GIF"
+  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) return 'gif'
 
-  // Check BMP
-  if (buffer[0] === 0x42 && buffer[1] === 0x4D) {
-    return 'bmp'
-  }
+  // BMP: "BM"
+  if (buffer[0] === 0x42 && buffer[1] === 0x4D) return 'bmp'
 
-  // Check WebP (RIFF....WEBP)
+  // WebP: RIFF....WEBP
   if (
-    buffer[0] === 0x52
-    && buffer[1] === 0x49
-    && buffer[2] === 0x46
-    && buffer[3] === 0x46
-    && buffer[8] === 0x57
-    && buffer[9] === 0x45
-    && buffer[10] === 0x42
-    && buffer[11] === 0x50
-  ) {
-    return 'webp'
-  }
+    buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46
+    && buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50
+  ) return 'webp'
 
-  // Check AVIF/HEIF (ftyp box)
-  if (
-    buffer[4] === 0x66
-    && buffer[5] === 0x74
-    && buffer[6] === 0x79
-    && buffer[7] === 0x70
-  ) {
-    // Check brand
+  // AVIF/HEIF: ftypXXXX at offset 4
+  if (buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70) {
     const brand = String.fromCharCode(buffer[8], buffer[9], buffer[10], buffer[11])
-    if (brand === 'avif' || brand === 'avis' || brand === 'mif1' || brand === 'miaf') {
-      return 'avif'
-    }
-    if (brand === 'heic' || brand === 'heix' || brand === 'hevc' || brand === 'hevx') {
-      return 'heif'
-    }
+    if (brand === 'avif' || brand === 'avis' || brand === 'mif1' || brand === 'miaf') return 'avif'
+    if (brand === 'heic' || brand === 'heix' || brand === 'hevc' || brand === 'hevx') return 'heif'
   }
 
-  // Check TIFF (II or MM)
+  // TIFF: "II*\0" or "MM\0*"
   if (
     (buffer[0] === 0x49 && buffer[1] === 0x49 && buffer[2] === 0x2A && buffer[3] === 0x00)
     || (buffer[0] === 0x4D && buffer[1] === 0x4D && buffer[2] === 0x00 && buffer[3] === 0x2A)
-  ) {
-    return 'tiff'
-  }
+  ) return 'tiff'
 
   return null
 }
 
 /**
- * Decode an image buffer to ImageData
+ * Read width and height from a buffer header without doing a full decode.
+ *
+ * Falls back to a full decode for formats whose dimension fields aren't at
+ * a fixed offset (currently AVIF; the ISOBMFF box walk is cheaper than the
+ * AV1 decode but still needs the codec).
+ */
+export function readDimensions(buffer: Uint8Array): { width: number, height: number } | null {
+  const fmt = detectFormat(buffer)
+  if (!fmt) return null
+  const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength)
+
+  switch (fmt) {
+    case 'png':
+      // IHDR chunk starts at byte 8 (after signature) — width/height are
+      // big-endian uint32 at bytes 16 and 20.
+      if (buffer.length < 24) return null
+      return { width: view.getUint32(16, false), height: view.getUint32(20, false) }
+
+    case 'gif':
+      // Logical Screen Descriptor — little-endian uint16 width@6, height@8.
+      if (buffer.length < 10) return null
+      return { width: view.getUint16(6, true), height: view.getUint16(8, true) }
+
+    case 'bmp':
+      // BITMAPINFOHEADER width@18 (int32 LE), height@22 (int32 LE, may be negative).
+      if (buffer.length < 26) return null
+      return { width: view.getInt32(18, true), height: Math.abs(view.getInt32(22, true)) }
+
+    case 'webp': {
+      // RIFF/WEBP at byte 12 we have the four-CC of the first chunk.
+      // Three sub-formats: VP8, VP8L, VP8X.
+      const fourCC = String.fromCharCode(buffer[12], buffer[13], buffer[14], buffer[15])
+      if (fourCC === 'VP8 ') {
+        // 3-byte start code at 23, then width+height at 26 (uint16 LE, low 14 bits).
+        if (buffer.length < 30) return null
+        const w = view.getUint16(26, true) & 0x3FFF
+        const h = view.getUint16(28, true) & 0x3FFF
+        return { width: w, height: h }
+      }
+      if (fourCC === 'VP8L') {
+        // After 5-byte VP8L chunk header, width-1 and height-1 are packed
+        // into 14-bit little-endian fields starting at byte 21.
+        if (buffer.length < 25) return null
+        const b1 = buffer[21]
+        const b2 = buffer[22]
+        const b3 = buffer[23]
+        const b4 = buffer[24]
+        const w = 1 + (((b2 & 0x3F) << 8) | b1)
+        const h = 1 + (((b4 & 0x0F) << 10) | (b3 << 2) | ((b2 & 0xC0) >> 6))
+        return { width: w, height: h }
+      }
+      if (fourCC === 'VP8X') {
+        // Canvas size minus-1, 24-bit LE at offsets 24 and 27.
+        if (buffer.length < 30) return null
+        const w = 1 + (buffer[24] | (buffer[25] << 8) | (buffer[26] << 16))
+        const h = 1 + (buffer[27] | (buffer[28] << 8) | (buffer[29] << 16))
+        return { width: w, height: h }
+      }
+      return null
+    }
+
+    case 'jpeg': {
+      // Walk SOFn markers (0xFFC0..0xFFCF except DHT 0xC4, JPG 0xC8, DAC 0xCC).
+      let p = 2
+      const len = buffer.length
+      while (p < len - 8) {
+        if (buffer[p] !== 0xFF) return null
+        // Skip fill bytes (the spec lets encoders pad markers with 0xFF).
+        while (p < len && buffer[p] === 0xFF) p++
+        const marker = buffer[p++]
+        // Standalone markers (no length): SOI/EOI/RSTn — shouldn't appear here
+        // mid-file. Everything else has a uint16 BE length right after.
+        if (marker === 0xD8 || marker === 0xD9) return null
+        if (marker >= 0xD0 && marker <= 0xD7) continue
+        const segLen = (buffer[p] << 8) | buffer[p + 1]
+        // SOFn (frame headers carry dimensions). Excludes DHT/JPG/DAC.
+        if (
+          (marker >= 0xC0 && marker <= 0xCF)
+          && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC
+        ) {
+          // Layout after segLen: [precision:1][height:2 BE][width:2 BE][...]
+          const h = (buffer[p + 3] << 8) | buffer[p + 4]
+          const w = (buffer[p + 5] << 8) | buffer[p + 6]
+          return { width: w, height: h }
+        }
+        p += segLen
+      }
+      return null
+    }
+
+    default:
+      return null
+  }
+}
+
+/**
+ * Decode an image buffer to RGBA ImageData.
  */
 export async function decode(
   buffer: Uint8Array,
   options: DecodeOptions = {},
 ): Promise<ImageData> {
   const format = detectFormat(buffer)
-
-  if (!format) {
-    throw new Error('Unknown image format')
-  }
+  if (!format) throw new Error('ts-images: unknown image format (no matching magic bytes)')
 
   switch (format) {
-    case 'jpeg':
-      return decodeJpeg(buffer, options)
-    case 'png':
-      return decodePng(buffer, options)
-    case 'gif':
-      return decodeGif(buffer, options)
-    case 'bmp':
-      return decodeBmp(buffer, options)
-    case 'webp':
-      return decodeWebp(buffer, options)
-    case 'avif':
-      return decodeAvif(buffer, options)
-    default:
-      throw new Error(`Unsupported format: ${format}`)
+    case 'jpeg': return decodeJpeg(buffer, options)
+    case 'png': return decodePng(buffer, options)
+    case 'gif': return decodeGif(buffer, options)
+    case 'bmp': return decodeBmp(buffer, options)
+    case 'webp': return decodeWebp(buffer, options)
+    case 'avif': return decodeAvif(buffer, options)
+    default: throw new Error(`ts-images: unsupported format "${format}"`)
   }
 }
 
 /**
- * Encode ImageData to a specific format
+ * Encode RGBA ImageData to a specific format.
  */
 export async function encode(
   imageData: ImageData,
@@ -286,56 +235,43 @@ export async function encode(
 ): Promise<Uint8Array> {
   switch (format) {
     case 'jpeg':
-    case 'jpg':
-      return encodeJpeg(imageData, options)
-    case 'png':
-      return encodePng(imageData, options)
-    case 'gif':
-      return encodeGif(imageData, options)
-    case 'bmp':
-      return encodeBmp(imageData, options)
-    case 'webp':
-      return encodeWebp(imageData, options)
-    case 'avif':
-      return encodeAvif(imageData, options)
-    default:
-      throw new Error(`Unsupported format: ${format}`)
+    case 'jpg': return encodeJpeg(imageData, options)
+    case 'png': return encodePng(imageData, options)
+    case 'gif': return encodeGif(imageData, options)
+    case 'bmp': return encodeBmp(imageData, options)
+    case 'webp': return encodeWebp(imageData, options)
+    case 'avif': return encodeAvif(imageData, options)
+    default: throw new Error(`ts-images: unsupported format "${format}"`)
   }
 }
 
 /**
- * Get image metadata without fully decoding
+ * Read image metadata (dimensions, format, alpha info) without doing a
+ * full pixel decode where possible.
  */
 export async function getMetadata(buffer: Uint8Array): Promise<ImageMetadata> {
   const format = detectFormat(buffer)
+  if (!format) throw new Error('ts-images: unknown image format (no matching magic bytes)')
 
-  if (!format) {
-    throw new Error('Unknown image format')
-  }
-
-  // Try sharp first for fast metadata reading
-  const sharpLib = await getSharp()
-  if (sharpLib) {
-    try {
-      const metadata = await sharpLib(Buffer.from(buffer)).metadata()
-      return {
-        width: metadata.width || 0,
-        height: metadata.height || 0,
-        format,
-        channels: metadata.channels || 4,
-        bitDepth: (metadata.depth === 16 ? 16 : 8) as 8 | 16,
-        hasAlpha: metadata.hasAlpha || false,
-        colorSpace: 'srgb',
-      }
-    }
-    catch {
-      // Fall through to decode-based approach
+  const dims = readDimensions(buffer)
+  if (dims) {
+    // Cheap path: dimensions came from the header.
+    // For most callers `hasAlpha` won't matter at metadata-time, so we
+    // return a sensible default and only do a full decode when dims fail.
+    return {
+      width: dims.width,
+      height: dims.height,
+      format,
+      channels: 4,
+      bitDepth: 8,
+      hasAlpha: format !== 'jpeg' && format !== 'bmp',
+      colorSpace: 'srgb',
     }
   }
 
-  // Fallback: decode and get dimensions
+  // Fallback: decode (covers AVIF and any future format without a header
+  // dimension reader).
   const imageData = await decode(buffer)
-
   return {
     width: imageData.width,
     height: imageData.height,
@@ -347,167 +283,162 @@ export async function getMetadata(buffer: Uint8Array): Promise<ImageMetadata> {
   }
 }
 
-// Codec implementations - try ts-* packages first, then fall back to sharp
-// IMPORTANT: We use tryImportCodec() to cache import results because in bun,
-// re-importing a broken symlink module on second call hangs forever.
+// -----------------------------------------------------------------------
+// Codec adapters — each thin wrapper translates the codec library's data
+// layout to/from our internal `ImageData`. All packages are loaded lazily
+// via `loadCodec` so a caller that only needs PNG never imports AVIF.
+// -----------------------------------------------------------------------
 
 async function decodeJpeg(buffer: Uint8Array, options: DecodeOptions): Promise<ImageData> {
-  const tsJpeg = await tryImportCodec('ts-jpeg')
-  if (tsJpeg) {
-    const result = tsJpeg.decode(buffer, {
-      colorTransform: options.colorTransform,
-      formatAsRGBA: options.formatAsRGBA ?? true,
-    })
-    // Detect actual channel count from data length, since ts-jpeg may return
-    // RGB data (3 bytes/pixel) even when formatAsRGBA is true due to a bug
-    // where the output buffer is allocated from getData() which uses
-    // component count rather than the requested RGBA format
-    const expectedRGBA = result.width * result.height * 4
-    const actualChannels = result.data.length === expectedRGBA ? 4 : 3
-    const imageData = fromCodecData(result.data, result.width, result.height, { channels: actualChannels })
-    imageData.hasAlpha = false
-    return imageData
-  }
-  return decodeWithSharp(buffer, 'jpeg')
+  const tsJpeg = await loadCodec('ts-jpeg')
+  const result = tsJpeg.decode(buffer, {
+    colorTransform: options.colorTransform,
+    formatAsRGBA: options.formatAsRGBA ?? true,
+  })
+  // ts-jpeg≤0.2 sometimes returned RGB even when formatAsRGBA was set;
+  // detect by buffer length so we stay correct against older releases.
+  const expectedRGBA = result.width * result.height * 4
+  const channels = result.data.length === expectedRGBA ? 4 : 3
+  const imageData = fromCodecData(result.data, result.width, result.height, { channels })
+  imageData.hasAlpha = false
+  return imageData
 }
 
 async function encodeJpeg(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  const tsJpeg = await tryImportCodec('ts-jpeg')
-  if (tsJpeg) {
-    const data = toCodecData(imageData, { channels: 4 })
-    const result = tsJpeg.encode({
-      width: imageData.width,
-      height: imageData.height,
-      data,
-    }, options.quality ?? 80)
-    return new Uint8Array(result.data)
-  }
-  return encodeWithSharp(imageData, 'jpeg', options)
+  const tsJpeg = await loadCodec('ts-jpeg')
+  // ts-jpeg encoder takes RGBA. Quality is 0..100 with 80 as a sane default.
+  const data = toCodecData(imageData, { channels: 4 })
+  const result = tsJpeg.encode({
+    width: imageData.width,
+    height: imageData.height,
+    data,
+  }, options.quality ?? 80)
+  return new Uint8Array(result.data)
 }
 
 async function decodePng(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  const tsPng = await tryImportCodec('ts-png')
-  if (tsPng) {
-    const result = tsPng.png.sync.read(Buffer.from(buffer))
-    return fromCodecData(result.data, result.width, result.height, { channels: 4 })
-  }
-  return decodeWithSharp(buffer, 'png')
+  const tsPng = await loadCodec('@stacksjs/ts-png')
+  const result = tsPng.png.sync.read(Buffer.from(buffer))
+  return fromCodecData(result.data, result.width, result.height, { channels: 4 })
 }
 
 async function encodePng(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  const tsPng = await tryImportCodec('ts-png')
-  if (tsPng) {
-    const data = Buffer.from(Uint8Array.from(toCodecData(imageData, { channels: 4 })))
-    const outputBuffer = tsPng.png.sync.write({
-      width: imageData.width,
-      height: imageData.height,
-      data,
-    }, {
-      deflateLevel: options.effort ?? 9,
-    })
-    return new Uint8Array(outputBuffer)
-  }
-  return encodeWithSharp(imageData, 'png', options)
+  const tsPng = await loadCodec('@stacksjs/ts-png')
+  const data = Buffer.from(Uint8Array.from(toCodecData(imageData, { channels: 4 })))
+  const out = tsPng.png.sync.write({
+    width: imageData.width,
+    height: imageData.height,
+    data,
+  }, {
+    deflateLevel: options.effort ?? 9,
+  })
+  return new Uint8Array(out)
 }
 
 async function decodeGif(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  const gif = await tryImportCodec('ts-gif')
-  if (gif) {
-    const reader = new gif.Reader(Buffer.from(buffer))
-    const frameInfo = reader.frameInfo(0)
-    const pixels = new Uint8Array(frameInfo.width * frameInfo.height * 4)
-    reader.decodeAndBlitFrameRGBA(0, pixels)
-    return fromCodecData(pixels, frameInfo.width, frameInfo.height, { channels: 4 })
-  }
-  return decodeWithSharp(buffer, 'gif')
+  const gif = await loadCodec('ts-gif')
+  const reader = new gif.Reader(Buffer.from(buffer))
+  const info = reader.frameInfo(0)
+  const pixels = new Uint8Array(info.width * info.height * 4)
+  reader.decodeAndBlitFrameRGBA(0, pixels)
+  return fromCodecData(pixels, info.width, info.height, { channels: 4 })
 }
 
-async function encodeGif(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  const gif = await tryImportCodec('ts-gif')
-  if (gif) {
-    const { indexedPixels, palette } = quantizeImage(imageData)
-    const bufSize = imageData.width * imageData.height + 1000
-    const buf = Buffer.alloc(bufSize)
-    const writer = new gif.Writer(buf, imageData.width, imageData.height, { palette })
-    writer.addFrame(0, 0, imageData.width, imageData.height, indexedPixels)
-    const finalSize = writer.end()
-    return new Uint8Array(buf.slice(0, finalSize))
-  }
-  return encodeWithSharp(imageData, 'gif', options)
+async function encodeGif(imageData: ImageData, _options: EncodeOptions): Promise<Uint8Array> {
+  const gif = await loadCodec('ts-gif')
+  const { indexedPixels, palette } = quantizeImage(imageData)
+  // Worst-case GIF size for an indexed image is roughly w*h plus per-block
+  // overhead; allocate generously and slice to actual size on close.
+  const bufSize = imageData.width * imageData.height + 1024
+  const buf = Buffer.alloc(bufSize)
+  const writer = new gif.Writer(buf, imageData.width, imageData.height, { palette })
+  writer.addFrame(0, 0, imageData.width, imageData.height, indexedPixels)
+  const finalSize = writer.end()
+  return new Uint8Array(buf.slice(0, finalSize))
 }
 
 async function decodeBmp(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  const bmp = await tryImportCodec('ts-bmp')
-  if (bmp) {
-    const result = bmp.decode(buffer)
-    return fromCodecData(result.data, result.width, result.height, { channels: 4 })
-  }
-  return decodeWithSharp(buffer, 'bmp')
+  const bmp = await loadCodec('@stacksjs/ts-bmp')
+  const result = bmp.decode(buffer)
+  return fromCodecData(result.data, result.width, result.height, { channels: 4 })
 }
 
-async function encodeBmp(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  const bmp = await tryImportCodec('ts-bmp')
-  if (bmp) {
-    const data = toCodecData(imageData, { channels: 4 })
-    return bmp.encode({
-      width: imageData.width,
-      height: imageData.height,
-      data,
-    })
-  }
-  return encodeWithSharp(imageData, 'bmp', options)
+async function encodeBmp(imageData: ImageData, _options: EncodeOptions): Promise<Uint8Array> {
+  const bmp = await loadCodec('@stacksjs/ts-bmp')
+  const data = toCodecData(imageData, { channels: 4 })
+  return bmp.encode({
+    width: imageData.width,
+    height: imageData.height,
+    data,
+  })
 }
 
 async function decodeWebp(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  const webp = await tryImportCodec('ts-webp')
-  if (webp) {
-    const result = webp.decode(buffer)
-    return fromCodecData(result.data, result.width, result.height, { channels: 4 })
-  }
-  return decodeWithSharp(buffer, 'webp')
+  const webp = await loadCodec('@stacksjs/ts-webp')
+  const result = webp.decode(buffer)
+  const channels = 4
+  const imageData = fromCodecData(result.data, result.width, result.height, { channels })
+  if (typeof result.hasAlpha === 'boolean') imageData.hasAlpha = result.hasAlpha
+  return imageData
 }
 
 async function encodeWebp(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  const webp = await tryImportCodec('ts-webp')
-  if (webp) {
-    const data = toCodecData(imageData, { channels: 4 })
-    return webp.encode({
-      width: imageData.width,
-      height: imageData.height,
-      data,
-    }, options)
+  const webp = await loadCodec('@stacksjs/ts-webp')
+  const data = toCodecData(imageData, { channels: 4 })
+  // ts-webp's lossy (VP8) path is unimplemented; fall back to VP8L
+  // lossless on demand. VP8L handles full RGBA without quality loss, so
+  // file size is the only thing the caller "loses" by not getting VP8.
+  const tryEncode = (lossless: boolean): Uint8Array => webp.encode({
+    width: imageData.width,
+    height: imageData.height,
+    data: data instanceof Uint8Array ? data : new Uint8Array(data),
+    hasAlpha: imageData.hasAlpha,
+  }, {
+    quality: options.quality,
+    lossless,
+    effort: options.effort,
+  })
+  try {
+    return tryEncode(options.lossless ?? false)
   }
-  return encodeWithSharp(imageData, 'webp', options)
+  catch (err) {
+    if (err instanceof Error && /lossy.*not implemented/i.test(err.message)) {
+      return tryEncode(true)
+    }
+    throw err
+  }
 }
 
 async function decodeAvif(buffer: Uint8Array, _options: DecodeOptions): Promise<ImageData> {
-  const avif = await tryImportCodec('ts-avif')
-  if (avif) {
-    const result = avif.decode(buffer)
-    return fromCodecData(result.data, result.width, result.height, { channels: 4 })
-  }
-  return decodeWithSharp(buffer, 'avif')
+  const avif = await loadCodec('@stacksjs/ts-avif')
+  const result = avif.decode(buffer)
+  return fromCodecData(result.data, result.width, result.height, { channels: 4 })
 }
 
 async function encodeAvif(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
-  const avif = await tryImportCodec('ts-avif')
-  if (avif) {
-    const data = toCodecData(imageData, { channels: 4 })
-    return avif.encode({
-      width: imageData.width,
-      height: imageData.height,
-      data,
-    }, options)
-  }
-  return encodeWithSharp(imageData, 'avif', options)
+  const avif = await loadCodec('@stacksjs/ts-avif')
+  const data = toCodecData(imageData, { channels: 4 })
+  return avif.encode({
+    width: imageData.width,
+    height: imageData.height,
+    data: data instanceof Uint8Array ? data : new Uint8Array(data),
+    hasAlpha: imageData.hasAlpha,
+  }, {
+    quality: options.quality,
+    lossless: options.lossless,
+    effort: options.effort,
+  })
 }
 
-// Simple color quantization for GIF encoding
+/**
+ * Quantize an RGBA image to a 256-entry palette suitable for GIF.
+ *
+ * Uses a fixed 6×6×6 RGB cube + 40 grayscale entries. Not perceptually
+ * tuned — for production-quality GIF output, callers should pre-process
+ * with a dedicated palette algorithm (median-cut / Wu / NeuQuant).
+ */
 function quantizeImage(imageData: ImageData): { indexedPixels: Uint8Array, palette: number[] } {
-  // Build a simple 256-color palette using color cube
   const palette: number[] = []
-
-  // Use a 6x6x6 color cube (216 colors) plus 40 grayscale
   for (let r = 0; r < 6; r++) {
     for (let g = 0; g < 6; g++) {
       for (let b = 0; b < 6; b++) {
@@ -518,26 +449,16 @@ function quantizeImage(imageData: ImageData): { indexedPixels: Uint8Array, palet
       }
     }
   }
-
-  // Add grayscale values
   for (let i = 0; i < 40; i++) {
     const gray = Math.round(i * 255 / 39)
     palette.push((gray << 16) | (gray << 8) | gray)
   }
 
-  // Map each pixel to the closest palette index
   const indexedPixels = new Uint8Array(imageData.width * imageData.height)
-
   for (let i = 0, j = 0; i < imageData.data.length; i += 4, j++) {
-    const r = imageData.data[i]
-    const g = imageData.data[i + 1]
-    const b = imageData.data[i + 2]
-
-    // Find closest color in palette (using color cube mapping)
-    const ri = Math.round(r * 5 / 255)
-    const gi = Math.round(g * 5 / 255)
-    const bi = Math.round(b * 5 / 255)
-
+    const ri = Math.round(imageData.data[i] * 5 / 255)
+    const gi = Math.round(imageData.data[i + 1] * 5 / 255)
+    const bi = Math.round(imageData.data[i + 2] * 5 / 255)
     indexedPixels[j] = ri * 36 + gi * 6 + bi
   }
 
