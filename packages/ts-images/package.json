@@ -1,7 +1,7 @@
 {
   "name": "ts-images",
   "type": "module",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Modern image optimizations & manipulations.",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
@@ -43,7 +43,10 @@
   "bin": {
     "imgx": "./dist/bin/cli.js"
   },
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts && bun run compile",
     "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/imgx",

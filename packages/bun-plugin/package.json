@@ -1,7 +1,7 @@
 {
   "name": "bun-plugin-imgx",
   "type": "module",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Bun plugin for imgx",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
@@ -38,7 +38,10 @@
   },
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "lint": "bunx --bun eslint .",

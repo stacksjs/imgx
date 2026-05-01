@@ -1,4 +1,232 @@
 # Changelog
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.6...v0.1.7)
+
+### 🐛 Bug Fixes
+
+- restore tests with sharp-free rewrite + fix imgx→ts-images rename ([8c6b50d](https://github.com/stacksjs/ts-images/commit/8c6b50d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- typecheck + lint clean (no cac, no sharp) ([7326372](https://github.com/stacksjs/ts-images/commit/7326372)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- add setup-bun to publish-commit job ([a2dc0b3](https://github.com/stacksjs/ts-images/commit/a2dc0b3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- normalize actions/checkout version tags ([c15c114](https://github.com/stacksjs/ts-images/commit/c15c114)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- use pantry install in publish-commit job ([cc41964](https://github.com/stacksjs/ts-images/commit/cc41964)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- chain pantry publish:commit calls for single-arg CLI ([83dd6b2](https://github.com/stacksjs/ts-images/commit/83dd6b2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- resolve typecheck errors ([78d832f](https://github.com/stacksjs/ts-images/commit/78d832f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### 🤖 Continuous Integration
+
+- drop redundant setup-bun (pantry installs bun via deps.yaml) ([80ff965](https://github.com/stacksjs/ts-images/commit/80ff965)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.1.7 ([28ec1fe](https://github.com/stacksjs/ts-images/commit/28ec1fe)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- update package.json URLs from stacksjs/imgx to stacksjs/ts-images ([278f3dd](https://github.com/stacksjs/ts-images/commit/278f3dd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- minor updates ([918ac9d](https://github.com/stacksjs/ts-images/commit/918ac9d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([ddfaaf5](https://github.com/stacksjs/ts-images/commit/ddfaaf5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([2086ffe](https://github.com/stacksjs/ts-images/commit/2086ffe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- fix CI errors ([a032bef](https://github.com/stacksjs/ts-images/commit/a032bef)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- fresh install to pick up dtsx 0.9.14 and bunfig 0.15.9 ([4506769](https://github.com/stacksjs/ts-images/commit/4506769)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- fresh install to pick up pickier 0.1.21 ([20d90f6](https://github.com/stacksjs/ts-images/commit/20d90f6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- fix lint errors ([a294b96](https://github.com/stacksjs/ts-images/commit/a294b96)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- auto-fix lint errors ([9ca5828](https://github.com/stacksjs/ts-images/commit/9ca5828)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- include md in pickier lint extensions ([34a29ec](https://github.com/stacksjs/ts-images/commit/34a29ec)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- update vscode config ([01d647f](https://github.com/stacksjs/ts-images/commit/01d647f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- update dependencies ([acb0e7a](https://github.com/stacksjs/ts-images/commit/acb0e7a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- repo cleanup and modernization ([61eefbd](https://github.com/stacksjs/ts-images/commit/61eefbd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- remove .zed and .cursor folders ([faf2984](https://github.com/stacksjs/ts-images/commit/faf2984)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- remove redundant docs/.vitepress ([aecf191](https://github.com/stacksjs/ts-images/commit/aecf191)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- use Pantry action for publish-commit and add job dependencies ([e1be7ba](https://github.com/stacksjs/ts-images/commit/e1be7ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+- update better-dx to ^0.2.7 ([7532937](https://github.com/stacksjs/ts-images/commit/7532937)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- enrich CLAUDE.md with detailed project context from README ([00ee475](https://github.com/stacksjs/ts-images/commit/00ee475)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- replace cac with @stacksjs/clapp and update CLAUDE.md ([df03c76](https://github.com/stacksjs/ts-images/commit/df03c76)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- add proper claude code guidelines ([65f006a](https://github.com/stacksjs/ts-images/commit/65f006a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- use pantry monorepo action instead of pantry-setup ([c02da00](https://github.com/stacksjs/ts-images/commit/c02da00)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([9d14679](https://github.com/stacksjs/ts-images/commit/9d14679)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([f6d3bde](https://github.com/stacksjs/ts-images/commit/f6d3bde)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([bb0c859](https://github.com/stacksjs/ts-images/commit/bb0c859)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([a937c15](https://github.com/stacksjs/ts-images/commit/a937c15)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([ebd4be7](https://github.com/stacksjs/ts-images/commit/ebd4be7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([fb77acc](https://github.com/stacksjs/ts-images/commit/fb77acc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([5a5e793](https://github.com/stacksjs/ts-images/commit/5a5e793)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([6cf3222](https://github.com/stacksjs/ts-images/commit/6cf3222)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([b806f9d](https://github.com/stacksjs/ts-images/commit/b806f9d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([1056aff](https://github.com/stacksjs/ts-images/commit/1056aff)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: update dependency actions/cache to v5.0.2 (#207) ([d8d92f5](https://github.com/stacksjs/ts-images/commit/d8d92f5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#207](https://github.com/stacksjs/ts-images/issues/207), [#207](https://github.com/stacksjs/ts-images/issues/207))
+- wip ([9e1e405](https://github.com/stacksjs/ts-images/commit/9e1e405)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([93b3932](https://github.com/stacksjs/ts-images/commit/93b3932)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([bb87dd8](https://github.com/stacksjs/ts-images/commit/bb87dd8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([701ac98](https://github.com/stacksjs/ts-images/commit/701ac98)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([0d7548e](https://github.com/stacksjs/ts-images/commit/0d7548e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([6d69546](https://github.com/stacksjs/ts-images/commit/6d69546)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([0b1b1f5](https://github.com/stacksjs/ts-images/commit/0b1b1f5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([1034f2f](https://github.com/stacksjs/ts-images/commit/1034f2f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([8444315](https://github.com/stacksjs/ts-images/commit/8444315)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([2db44c4](https://github.com/stacksjs/ts-images/commit/2db44c4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([c7696c4](https://github.com/stacksjs/ts-images/commit/c7696c4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([96d9aa6](https://github.com/stacksjs/ts-images/commit/96d9aa6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([0749673](https://github.com/stacksjs/ts-images/commit/0749673)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([823c44a](https://github.com/stacksjs/ts-images/commit/823c44a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([da2b4aa](https://github.com/stacksjs/ts-images/commit/da2b4aa)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([2498ac3](https://github.com/stacksjs/ts-images/commit/2498ac3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([a8c407b](https://github.com/stacksjs/ts-images/commit/a8c407b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([e107d5e](https://github.com/stacksjs/ts-images/commit/e107d5e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- update cover & og-image ([9274f61](https://github.com/stacksjs/ts-images/commit/9274f61)) _(by cab-mikee <mike.cabz32@gmail.com>)_
+- add clarity and improve logging ([6016922](https://github.com/stacksjs/ts-images/commit/6016922)) _(by cab-mikee <mike.cabz32@gmail.com>)_
+- **deps**: update dependency bunfig to ^0.15.0 (#21) ([a145e2a](https://github.com/stacksjs/ts-images/commit/a145e2a)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#21](https://github.com/stacksjs/ts-images/issues/21), [#21](https://github.com/stacksjs/ts-images/issues/21))
+- **deps**: update actions/checkout action to v5 ([c328df5](https://github.com/stacksjs/ts-images/commit/c328df5)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_
+- **deps**: update dependency buddy-bot to 0.9.7 (updated) ([69d77e8](https://github.com/stacksjs/ts-images/commit/69d77e8)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency svgo to v4 ([e4c754d](https://github.com/stacksjs/ts-images/commit/e4c754d)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_
+- **deps**: update all non-major dependencies (updated) ([573f076](https://github.com/stacksjs/ts-images/commit/573f076)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([cdf9260](https://github.com/stacksjs/ts-images/commit/cdf9260)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency actions/checkout to v5.0.0 (updated) ([d31c62e](https://github.com/stacksjs/ts-images/commit/d31c62e)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([556dcbd](https://github.com/stacksjs/ts-images/commit/556dcbd)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([9488c6b](https://github.com/stacksjs/ts-images/commit/9488c6b)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([c9557bf](https://github.com/stacksjs/ts-images/commit/c9557bf)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([cf7895d](https://github.com/stacksjs/ts-images/commit/cf7895d)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([ad52a61](https://github.com/stacksjs/ts-images/commit/ad52a61)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency buddy-bot to 0.9.7 (updated) ([e599b8d](https://github.com/stacksjs/ts-images/commit/e599b8d)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([725a201](https://github.com/stacksjs/ts-images/commit/725a201)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([694fca3](https://github.com/stacksjs/ts-images/commit/694fca3)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([9db173f](https://github.com/stacksjs/ts-images/commit/9db173f)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency buddy-bot to 0.9.5 (updated) ([c89d3ba](https://github.com/stacksjs/ts-images/commit/c89d3ba)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([19c1c89](https://github.com/stacksjs/ts-images/commit/19c1c89)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([a3ed368](https://github.com/stacksjs/ts-images/commit/a3ed368)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies ([137da85](https://github.com/stacksjs/ts-images/commit/137da85)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency buddy-bot to 0.9.4 ([e89c58d](https://github.com/stacksjs/ts-images/commit/e89c58d)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency actions/checkout to v5.0.0 ([d2f463a](https://github.com/stacksjs/ts-images/commit/d2f463a)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- update tooling ([2823950](https://github.com/stacksjs/ts-images/commit/2823950)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- add bun-git-hooks with gitlint ([af2b139](https://github.com/stacksjs/ts-images/commit/af2b139)) _(by cab-mikee <mike.cabz32@gmail.com>)_
+
+### 📄 Miscellaneous
+
+- Merge pull request #20 from stacksjs/buddy-bot/update-non-major-updates-1759140383563 ([624bdd9](https://github.com/stacksjs/ts-images/commit/624bdd9)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#20](https://github.com/stacksjs/ts-images/issues/20), [#20](https://github.com/stacksjs/ts-images/issues/20))
+- Merge pull request #11 from stacksjs/renovate/actions-checkout-5.x ([8eb435f](https://github.com/stacksjs/ts-images/commit/8eb435f)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#11](https://github.com/stacksjs/ts-images/issues/11), [#11](https://github.com/stacksjs/ts-images/issues/11))
+- Merge pull request #10 from stacksjs/renovate/svgo-4.x ([0ff0f91](https://github.com/stacksjs/ts-images/commit/0ff0f91)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#10](https://github.com/stacksjs/ts-images/issues/10), [#10](https://github.com/stacksjs/ts-images/issues/10))
+- Merge pull request #18 from stacksjs/buddy-bot/update-major-update---buddy-bot-1756793293034 ([69b845b](https://github.com/stacksjs/ts-images/commit/69b845b)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#18](https://github.com/stacksjs/ts-images/issues/18), [#18](https://github.com/stacksjs/ts-images/issues/18))
+- Merge branch 'main' into buddy-bot/update-major-update---buddy-bot-1756793293034 ([cd488d3](https://github.com/stacksjs/ts-images/commit/cd488d3)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_
+- Merge pull request #13 from stacksjs/buddy-bot/update-major-update---actions/checkout-1756224859769 ([35ffea5](https://github.com/stacksjs/ts-images/commit/35ffea5)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#13](https://github.com/stacksjs/ts-images/issues/13), [#13](https://github.com/stacksjs/ts-images/issues/13))
+- Merge pull request #19 from stacksjs/buddy-bot/update-non-major-updates-1756829200926 ([bd28057](https://github.com/stacksjs/ts-images/commit/bd28057)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#19](https://github.com/stacksjs/ts-images/issues/19), [#19](https://github.com/stacksjs/ts-images/issues/19))
+
+### Contributors
+
+- _Adelino Ngomacha <adelinob335@gmail.com>_
+- _Chris <chrisbreuer93@gmail.com>_
+- _Michael Vincent Caballero <mike.cabz32@gmail.com>_
+- _[renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot])_
+- _cab-mikee <mike.cabz32@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.6...HEAD)
+
+### 🐛 Bug Fixes
+
+- restore tests with sharp-free rewrite + fix imgx→ts-images rename ([8c6b50d](https://github.com/stacksjs/ts-images/commit/8c6b50d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- typecheck + lint clean (no cac, no sharp) ([7326372](https://github.com/stacksjs/ts-images/commit/7326372)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- add setup-bun to publish-commit job ([a2dc0b3](https://github.com/stacksjs/ts-images/commit/a2dc0b3)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- normalize actions/checkout version tags ([c15c114](https://github.com/stacksjs/ts-images/commit/c15c114)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- use pantry install in publish-commit job ([cc41964](https://github.com/stacksjs/ts-images/commit/cc41964)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- chain pantry publish:commit calls for single-arg CLI ([83dd6b2](https://github.com/stacksjs/ts-images/commit/83dd6b2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- resolve typecheck errors ([78d832f](https://github.com/stacksjs/ts-images/commit/78d832f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### 🤖 Continuous Integration
+
+- drop redundant setup-bun (pantry installs bun via deps.yaml) ([80ff965](https://github.com/stacksjs/ts-images/commit/80ff965)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+### 🧹 Chores
+
+- update package.json URLs from stacksjs/imgx to stacksjs/ts-images ([278f3dd](https://github.com/stacksjs/ts-images/commit/278f3dd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- minor updates ([918ac9d](https://github.com/stacksjs/ts-images/commit/918ac9d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([ddfaaf5](https://github.com/stacksjs/ts-images/commit/ddfaaf5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([2086ffe](https://github.com/stacksjs/ts-images/commit/2086ffe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- fix CI errors ([a032bef](https://github.com/stacksjs/ts-images/commit/a032bef)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- fresh install to pick up dtsx 0.9.14 and bunfig 0.15.9 ([4506769](https://github.com/stacksjs/ts-images/commit/4506769)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- fresh install to pick up pickier 0.1.21 ([20d90f6](https://github.com/stacksjs/ts-images/commit/20d90f6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- fix lint errors ([a294b96](https://github.com/stacksjs/ts-images/commit/a294b96)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- auto-fix lint errors ([9ca5828](https://github.com/stacksjs/ts-images/commit/9ca5828)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- include md in pickier lint extensions ([34a29ec](https://github.com/stacksjs/ts-images/commit/34a29ec)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- update vscode config ([01d647f](https://github.com/stacksjs/ts-images/commit/01d647f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- update dependencies ([acb0e7a](https://github.com/stacksjs/ts-images/commit/acb0e7a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- repo cleanup and modernization ([61eefbd](https://github.com/stacksjs/ts-images/commit/61eefbd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- remove .zed and .cursor folders ([faf2984](https://github.com/stacksjs/ts-images/commit/faf2984)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- remove redundant docs/.vitepress ([aecf191](https://github.com/stacksjs/ts-images/commit/aecf191)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- use Pantry action for publish-commit and add job dependencies ([e1be7ba](https://github.com/stacksjs/ts-images/commit/e1be7ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+- update better-dx to ^0.2.7 ([7532937](https://github.com/stacksjs/ts-images/commit/7532937)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- enrich CLAUDE.md with detailed project context from README ([00ee475](https://github.com/stacksjs/ts-images/commit/00ee475)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- replace cac with @stacksjs/clapp and update CLAUDE.md ([df03c76](https://github.com/stacksjs/ts-images/commit/df03c76)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- add proper claude code guidelines ([65f006a](https://github.com/stacksjs/ts-images/commit/65f006a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- use pantry monorepo action instead of pantry-setup ([c02da00](https://github.com/stacksjs/ts-images/commit/c02da00)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([9d14679](https://github.com/stacksjs/ts-images/commit/9d14679)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([f6d3bde](https://github.com/stacksjs/ts-images/commit/f6d3bde)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([bb0c859](https://github.com/stacksjs/ts-images/commit/bb0c859)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([a937c15](https://github.com/stacksjs/ts-images/commit/a937c15)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([ebd4be7](https://github.com/stacksjs/ts-images/commit/ebd4be7)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([fb77acc](https://github.com/stacksjs/ts-images/commit/fb77acc)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([5a5e793](https://github.com/stacksjs/ts-images/commit/5a5e793)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([6cf3222](https://github.com/stacksjs/ts-images/commit/6cf3222)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([b806f9d](https://github.com/stacksjs/ts-images/commit/b806f9d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([1056aff](https://github.com/stacksjs/ts-images/commit/1056aff)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: update dependency actions/cache to v5.0.2 (#207) ([d8d92f5](https://github.com/stacksjs/ts-images/commit/d8d92f5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#207](https://github.com/stacksjs/ts-images/issues/207), [#207](https://github.com/stacksjs/ts-images/issues/207))
+- wip ([9e1e405](https://github.com/stacksjs/ts-images/commit/9e1e405)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([93b3932](https://github.com/stacksjs/ts-images/commit/93b3932)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([bb87dd8](https://github.com/stacksjs/ts-images/commit/bb87dd8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([701ac98](https://github.com/stacksjs/ts-images/commit/701ac98)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([0d7548e](https://github.com/stacksjs/ts-images/commit/0d7548e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([6d69546](https://github.com/stacksjs/ts-images/commit/6d69546)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([0b1b1f5](https://github.com/stacksjs/ts-images/commit/0b1b1f5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([1034f2f](https://github.com/stacksjs/ts-images/commit/1034f2f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([8444315](https://github.com/stacksjs/ts-images/commit/8444315)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([2db44c4](https://github.com/stacksjs/ts-images/commit/2db44c4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([c7696c4](https://github.com/stacksjs/ts-images/commit/c7696c4)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([96d9aa6](https://github.com/stacksjs/ts-images/commit/96d9aa6)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([0749673](https://github.com/stacksjs/ts-images/commit/0749673)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([823c44a](https://github.com/stacksjs/ts-images/commit/823c44a)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- wip ([da2b4aa](https://github.com/stacksjs/ts-images/commit/da2b4aa)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([2498ac3](https://github.com/stacksjs/ts-images/commit/2498ac3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([a8c407b](https://github.com/stacksjs/ts-images/commit/a8c407b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([e107d5e](https://github.com/stacksjs/ts-images/commit/e107d5e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- update cover & og-image ([9274f61](https://github.com/stacksjs/ts-images/commit/9274f61)) _(by cab-mikee <mike.cabz32@gmail.com>)_
+- add clarity and improve logging ([6016922](https://github.com/stacksjs/ts-images/commit/6016922)) _(by cab-mikee <mike.cabz32@gmail.com>)_
+- **deps**: update dependency bunfig to ^0.15.0 (#21) ([a145e2a](https://github.com/stacksjs/ts-images/commit/a145e2a)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#21](https://github.com/stacksjs/ts-images/issues/21), [#21](https://github.com/stacksjs/ts-images/issues/21))
+- **deps**: update actions/checkout action to v5 ([c328df5](https://github.com/stacksjs/ts-images/commit/c328df5)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_
+- **deps**: update dependency buddy-bot to 0.9.7 (updated) ([69d77e8](https://github.com/stacksjs/ts-images/commit/69d77e8)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency svgo to v4 ([e4c754d](https://github.com/stacksjs/ts-images/commit/e4c754d)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_
+- **deps**: update all non-major dependencies (updated) ([573f076](https://github.com/stacksjs/ts-images/commit/573f076)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([cdf9260](https://github.com/stacksjs/ts-images/commit/cdf9260)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency actions/checkout to v5.0.0 (updated) ([d31c62e](https://github.com/stacksjs/ts-images/commit/d31c62e)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([556dcbd](https://github.com/stacksjs/ts-images/commit/556dcbd)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([9488c6b](https://github.com/stacksjs/ts-images/commit/9488c6b)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([c9557bf](https://github.com/stacksjs/ts-images/commit/c9557bf)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([cf7895d](https://github.com/stacksjs/ts-images/commit/cf7895d)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([ad52a61](https://github.com/stacksjs/ts-images/commit/ad52a61)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency buddy-bot to 0.9.7 (updated) ([e599b8d](https://github.com/stacksjs/ts-images/commit/e599b8d)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([725a201](https://github.com/stacksjs/ts-images/commit/725a201)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([694fca3](https://github.com/stacksjs/ts-images/commit/694fca3)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([9db173f](https://github.com/stacksjs/ts-images/commit/9db173f)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency buddy-bot to 0.9.5 (updated) ([c89d3ba](https://github.com/stacksjs/ts-images/commit/c89d3ba)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([19c1c89](https://github.com/stacksjs/ts-images/commit/19c1c89)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies (updated) ([a3ed368](https://github.com/stacksjs/ts-images/commit/a3ed368)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update all non-major dependencies ([137da85](https://github.com/stacksjs/ts-images/commit/137da85)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency buddy-bot to 0.9.4 ([e89c58d](https://github.com/stacksjs/ts-images/commit/e89c58d)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- **deps**: update dependency actions/checkout to v5.0.0 ([d2f463a](https://github.com/stacksjs/ts-images/commit/d2f463a)) _(by [github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>](https://github.com/github-actions[bot]))_
+- update tooling ([2823950](https://github.com/stacksjs/ts-images/commit/2823950)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
+- add bun-git-hooks with gitlint ([af2b139](https://github.com/stacksjs/ts-images/commit/af2b139)) _(by cab-mikee <mike.cabz32@gmail.com>)_
+
+### 📄 Miscellaneous
+
+- Merge pull request #20 from stacksjs/buddy-bot/update-non-major-updates-1759140383563 ([624bdd9](https://github.com/stacksjs/ts-images/commit/624bdd9)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#20](https://github.com/stacksjs/ts-images/issues/20), [#20](https://github.com/stacksjs/ts-images/issues/20))
+- Merge pull request #11 from stacksjs/renovate/actions-checkout-5.x ([8eb435f](https://github.com/stacksjs/ts-images/commit/8eb435f)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#11](https://github.com/stacksjs/ts-images/issues/11), [#11](https://github.com/stacksjs/ts-images/issues/11))
+- Merge pull request #10 from stacksjs/renovate/svgo-4.x ([0ff0f91](https://github.com/stacksjs/ts-images/commit/0ff0f91)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#10](https://github.com/stacksjs/ts-images/issues/10), [#10](https://github.com/stacksjs/ts-images/issues/10))
+- Merge pull request #18 from stacksjs/buddy-bot/update-major-update---buddy-bot-1756793293034 ([69b845b](https://github.com/stacksjs/ts-images/commit/69b845b)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#18](https://github.com/stacksjs/ts-images/issues/18), [#18](https://github.com/stacksjs/ts-images/issues/18))
+- Merge branch 'main' into buddy-bot/update-major-update---buddy-bot-1756793293034 ([cd488d3](https://github.com/stacksjs/ts-images/commit/cd488d3)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_
+- Merge pull request #13 from stacksjs/buddy-bot/update-major-update---actions/checkout-1756224859769 ([35ffea5](https://github.com/stacksjs/ts-images/commit/35ffea5)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#13](https://github.com/stacksjs/ts-images/issues/13), [#13](https://github.com/stacksjs/ts-images/issues/13))
+- Merge pull request #19 from stacksjs/buddy-bot/update-non-major-updates-1756829200926 ([bd28057](https://github.com/stacksjs/ts-images/commit/bd28057)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#19](https://github.com/stacksjs/ts-images/issues/19), [#19](https://github.com/stacksjs/ts-images/issues/19))
+
+### Contributors
+
+- _Adelino Ngomacha <adelinob335@gmail.com>_
+- _Chris <chrisbreuer93@gmail.com>_
+- _Michael Vincent Caballero <mike.cabz32@gmail.com>_
+- _[renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot])_
+- _cab-mikee <mike.cabz32@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
 
 ## v0.1.5...main
 

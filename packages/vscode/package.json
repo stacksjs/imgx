@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/imgx-vscode",
   "type": "module",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "VSCode extension for imgx",
   "author": "Chris Breuer <chris@stacksjs.org>",
@@ -39,7 +39,10 @@
   "bin": {
     "imgx": "./dist/bin/cli.js"
   },
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts && bun run compile",
     "compile": "bun build ./bin/cli.ts --compile --minify --outfile bin/imgx",
