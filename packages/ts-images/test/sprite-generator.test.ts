@@ -1,10 +1,96 @@
-import { describe, it } from 'bun:test'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
+import { mkdir, rm } from 'node:fs/promises'
+import { join } from 'node:path'
+import { generateSprite } from '../src/sprite-generator'
+import { createSolidImage, readMetadata } from './utils/test-helpers'
 
-// TODO: rewrite without sharp.
-// Original tests used sharp({ create: ... }) for fixture generation and
-// sharp(x).metadata() for assertions. Restore once a sharp-free path
-// exists (ts-images' own getMetadata() from src/codecs + pre-committed
-// fixtures, or equivalent).
-describe.skip('sprite-generator (pending sharp-free rewrite)', () => {
-  it.skip('placeholder', () => {})
+// const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
+const OUTPUT_DIR = join(import.meta.dir, 'output')
+
+describe('sprite-generator', () => {
+  beforeAll(async () => {
+    await mkdir(OUTPUT_DIR, { recursive: true })
+  })
+
+  afterAll(async () => {
+    await rm(OUTPUT_DIR, { recursive: true, force: true })
+  })
+
+  afterEach(async () => {
+    await rm(OUTPUT_DIR, { recursive: true, force: true })
+      .catch(() => {})
+    await mkdir(OUTPUT_DIR, { recursive: true })
+  })
+
+  describe('generateSprite', () => {
+    it('should generate a sprite sheet with CSS', async () => {
+      // Create test images for the sprite
+      const img1Path = join(OUTPUT_DIR, 'icon1.png')
+      const img2Path = join(OUTPUT_DIR, 'icon2.png')
+
+      // Create 2 simple square images
+      await createSolidImage(img1Path, 50, 50, { r: 255, g: 0, b: 0 })
+      await createSolidImage(img2Path, 50, 50, { r: 0, g: 0, b: 255 })
+
+      const result = await generateSprite(
+        [
+          { path: img1Path, name: 'icon1' },
+          { path: img2Path, name: 'icon2' },
+        ],
+        OUTPUT_DIR,
+        {
+          prefix: 'test',
+          format: 'png',
+          padding: 2,
+        },
+      )
+
+      expect(result.imagePath).toBe(join(OUTPUT_DIR, 'test-sprite.png'))
+      expect(result.cssPath).toBe(join(OUTPUT_DIR, 'test-sprite.css'))
+      expect(result.sprites.length).toBe(2)
+
+      // Check if files exist
+      expect(await Bun.file(result.imagePath).exists()).toBe(true)
+      expect(await Bun.file(result.cssPath).exists()).toBe(true)
+      expect(await Bun.file(join(OUTPUT_DIR, 'test-sprite.scss')).exists()).toBe(true)
+
+      // Check CSS content
+      const cssContent = await Bun.file(result.cssPath).text()
+      expect(cssContent).toContain('.test-icon1')
+      expect(cssContent).toContain('.test-icon2')
+
+      // Check SCSS content
+      const scssContent = await Bun.file(join(OUTPUT_DIR, 'test-sprite.scss')).text()
+      expect(scssContent).toContain('$test-sprites')
+      expect(scssContent).toContain('\'icon1\'')
+      expect(scssContent).toContain('\'icon2\'')
+    })
+
+    it('should generate a sprite sheet with custom options', async () => {
+      // Create a test image
+      const imgPath = join(OUTPUT_DIR, 'icon.png')
+      await createSolidImage(imgPath, 50, 50, { r: 0, g: 255, b: 0 })
+
+      const result = await generateSprite(
+        [{ path: imgPath, name: 'icon' }],
+        OUTPUT_DIR,
+        {
+          format: 'webp',
+          quality: 90,
+          scale: 0.5, // Downscale the images
+        },
+      )
+
+      expect(result.imagePath).toBe(join(OUTPUT_DIR, 'sprite-sprite.webp'))
+
+      // Check if sprite was created with correct format
+      const metadata = await readMetadata(result.imagePath)
+      expect(metadata.format).toBe('webp')
+
+      // Scale factor should affect the sprite size
+      const sprite = result.sprites[0]
+      expect(sprite.width).toBe(25) // 50 * 0.5 = 25
+      expect(sprite.height).toBe(25)
+    })
+  })
 })

@@ -1,10 +1,47 @@
-import { describe, it } from 'bun:test'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
+import { mkdir, rm } from 'node:fs/promises'
+import { join } from 'node:path'
+import { generateFavicons } from '../src/favicon'
+import { readMetadata } from './utils/test-helpers'
 
-// TODO: rewrite without sharp.
-// Original tests used sharp({ create: ... }) for fixture generation and
-// sharp(x).metadata() for assertions. Restore once a sharp-free path
-// exists (ts-images' own getMetadata() from src/codecs + pre-committed
-// fixtures, or equivalent).
-describe.skip('favicon (pending sharp-free rewrite)', () => {
-  it.skip('placeholder', () => {})
+const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
+const OUTPUT_DIR = join(import.meta.dir, 'output')
+
+describe('favicon', () => {
+  beforeAll(async () => {
+    await mkdir(OUTPUT_DIR, { recursive: true })
+  })
+
+  afterAll(async () => {
+    await rm(OUTPUT_DIR, { recursive: true, force: true })
+  })
+
+  afterEach(async () => {
+    await rm(OUTPUT_DIR, { recursive: true, force: true })
+      .catch(() => {})
+    await mkdir(OUTPUT_DIR, { recursive: true })
+  })
+
+  describe('generateFavicons', () => {
+    it('should generate favicons in multiple sizes', async () => {
+      const input = join(FIXTURES_DIR, 'app-icon.png')
+
+      const results = await generateFavicons(input, OUTPUT_DIR)
+
+      expect(results.length).toBeGreaterThan(0)
+
+      // Check if the .ico file was generated
+      const icoExists = await Bun.file(join(OUTPUT_DIR, 'favicon.ico')).exists()
+      expect(icoExists).toBe(true)
+
+      // Check if the PNG favicons were generated
+      const pngExists = await Bun.file(join(OUTPUT_DIR, 'favicon-32x32.png')).exists()
+      expect(pngExists).toBe(true)
+
+      // Verify dimensions of a favicon
+      const metadata = await readMetadata(join(OUTPUT_DIR, 'favicon-32x32.png'))
+      expect(metadata.width).toBe(32)
+      expect(metadata.height).toBe(32)
+    })
+  })
 })

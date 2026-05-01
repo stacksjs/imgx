@@ -34,10 +34,10 @@ jobs:
         uses: stacksjs/action-releaser@v1.2.9
         with:
           files: |
-            packages/imgx/bin/imgx-linux-x64.zip
-            packages/imgx/bin/imgx-linux-arm64.zip
-            packages/imgx/bin/imgx-windows-x64.zip
-            packages/imgx/bin/imgx-darwin-x64.zip
-            packages/imgx/bin/imgx-darwin-arm64.zip
+            packages/ts-images/bin/imgx-linux-x64.zip
+            packages/ts-images/bin/imgx-linux-arm64.zip
+            packages/ts-images/bin/imgx-windows-x64.zip
+            packages/ts-images/bin/imgx-darwin-x64.zip
+            packages/ts-images/bin/imgx-darwin-arm64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

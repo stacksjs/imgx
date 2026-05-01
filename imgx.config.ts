@@ -1,4 +1,4 @@
-import type { ProxyOptions } from './packages/imgx/src/types'
+import type { ProxyOptions } from './packages/ts-images/src/types'
 
 const config: ProxyOptions = {
   https: true,
