@@ -5,13 +5,13 @@
   "description": "Bun plugin for imgx",
   "author": "Chris Breuer <chris@stacksjs.org>",
   "license": "MIT",
-  "homepage": "https://github.com/stacksjs/imgx",
+  "homepage": "https://github.com/stacksjs/ts-images",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stacksjs/imgx.git"
+    "url": "git+https://github.com/stacksjs/ts-images.git"
   },
   "bugs": {
-    "url": "https://github.com/stacksjs/imgx/issues"
+    "url": "https://github.com/stacksjs/ts-images/issues"
   },
   "keywords": [
     "bun",
