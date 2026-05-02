@@ -1,7 +1,7 @@
 # Changelog
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.6...v0.1.7)
 
-### 🐛 Bug Fixes
+## 🐛 Bug Fixes
 
 - restore tests with sharp-free rewrite + fix imgx→ts-images rename ([8c6b50d](https://github.com/stacksjs/ts-images/commit/8c6b50d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 - typecheck + lint clean (no cac, no sharp) ([7326372](https://github.com/stacksjs/ts-images/commit/7326372)) _(by glennmichael123 <gtorregosa@gmail.com>)_
@@ -11,11 +11,11 @@
 - chain pantry publish:commit calls for single-arg CLI ([83dd6b2](https://github.com/stacksjs/ts-images/commit/83dd6b2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 - resolve typecheck errors ([78d832f](https://github.com/stacksjs/ts-images/commit/78d832f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 
-### 🤖 Continuous Integration
+## 🤖 Continuous Integration
 
 - drop redundant setup-bun (pantry installs bun via deps.yaml) ([80ff965](https://github.com/stacksjs/ts-images/commit/80ff965)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 
-### 🧹 Chores
+## 🧹 Chores
 
 - release v0.1.7 ([28ec1fe](https://github.com/stacksjs/ts-images/commit/28ec1fe)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 - update package.json URLs from stacksjs/imgx to stacksjs/ts-images ([278f3dd](https://github.com/stacksjs/ts-images/commit/278f3dd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
@@ -95,7 +95,7 @@
 - update tooling ([2823950](https://github.com/stacksjs/ts-images/commit/2823950)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
 - add bun-git-hooks with gitlint ([af2b139](https://github.com/stacksjs/ts-images/commit/af2b139)) _(by cab-mikee <mike.cabz32@gmail.com>)_
 
-### 📄 Miscellaneous
+## 📄 Miscellaneous
 
 - Merge pull request #20 from stacksjs/buddy-bot/update-non-major-updates-1759140383563 ([624bdd9](https://github.com/stacksjs/ts-images/commit/624bdd9)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#20](https://github.com/stacksjs/ts-images/issues/20), [#20](https://github.com/stacksjs/ts-images/issues/20))
 - Merge pull request #11 from stacksjs/renovate/actions-checkout-5.x ([8eb435f](https://github.com/stacksjs/ts-images/commit/8eb435f)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#11](https://github.com/stacksjs/ts-images/issues/11), [#11](https://github.com/stacksjs/ts-images/issues/11))
@@ -105,7 +105,7 @@
 - Merge pull request #13 from stacksjs/buddy-bot/update-major-update---actions/checkout-1756224859769 ([35ffea5](https://github.com/stacksjs/ts-images/commit/35ffea5)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#13](https://github.com/stacksjs/ts-images/issues/13), [#13](https://github.com/stacksjs/ts-images/issues/13))
 - Merge pull request #19 from stacksjs/buddy-bot/update-non-major-updates-1756829200926 ([bd28057](https://github.com/stacksjs/ts-images/commit/bd28057)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#19](https://github.com/stacksjs/ts-images/issues/19), [#19](https://github.com/stacksjs/ts-images/issues/19))
 
-### Contributors
+## Contributors
 
 - _Adelino Ngomacha <adelinob335@gmail.com>_
 - _Chris <chrisbreuer93@gmail.com>_
@@ -116,7 +116,7 @@
 
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.6...HEAD)
 
-### 🐛 Bug Fixes
+## 🐛 Bug Fixes
 
 - restore tests with sharp-free rewrite + fix imgx→ts-images rename ([8c6b50d](https://github.com/stacksjs/ts-images/commit/8c6b50d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 - typecheck + lint clean (no cac, no sharp) ([7326372](https://github.com/stacksjs/ts-images/commit/7326372)) _(by glennmichael123 <gtorregosa@gmail.com>)_
@@ -126,11 +126,11 @@
 - chain pantry publish:commit calls for single-arg CLI ([83dd6b2](https://github.com/stacksjs/ts-images/commit/83dd6b2)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 - resolve typecheck errors ([78d832f](https://github.com/stacksjs/ts-images/commit/78d832f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 
-### 🤖 Continuous Integration
+## 🤖 Continuous Integration
 
 - drop redundant setup-bun (pantry installs bun via deps.yaml) ([80ff965](https://github.com/stacksjs/ts-images/commit/80ff965)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 
-### 🧹 Chores
+## 🧹 Chores
 
 - update package.json URLs from stacksjs/imgx to stacksjs/ts-images ([278f3dd](https://github.com/stacksjs/ts-images/commit/278f3dd)) _(by glennmichael123 <gtorregosa@gmail.com>)_
 - minor updates ([918ac9d](https://github.com/stacksjs/ts-images/commit/918ac9d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
@@ -209,7 +209,7 @@
 - update tooling ([2823950](https://github.com/stacksjs/ts-images/commit/2823950)) _(by Adelino Ngomacha <adelinob335@gmail.com>)_
 - add bun-git-hooks with gitlint ([af2b139](https://github.com/stacksjs/ts-images/commit/af2b139)) _(by cab-mikee <mike.cabz32@gmail.com>)_
 
-### 📄 Miscellaneous
+## 📄 Miscellaneous
 
 - Merge pull request #20 from stacksjs/buddy-bot/update-non-major-updates-1759140383563 ([624bdd9](https://github.com/stacksjs/ts-images/commit/624bdd9)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#20](https://github.com/stacksjs/ts-images/issues/20), [#20](https://github.com/stacksjs/ts-images/issues/20))
 - Merge pull request #11 from stacksjs/renovate/actions-checkout-5.x ([8eb435f](https://github.com/stacksjs/ts-images/commit/8eb435f)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#11](https://github.com/stacksjs/ts-images/issues/11), [#11](https://github.com/stacksjs/ts-images/issues/11))
@@ -219,7 +219,7 @@
 - Merge pull request #13 from stacksjs/buddy-bot/update-major-update---actions/checkout-1756224859769 ([35ffea5](https://github.com/stacksjs/ts-images/commit/35ffea5)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#13](https://github.com/stacksjs/ts-images/issues/13), [#13](https://github.com/stacksjs/ts-images/issues/13))
 - Merge pull request #19 from stacksjs/buddy-bot/update-non-major-updates-1756829200926 ([bd28057](https://github.com/stacksjs/ts-images/commit/bd28057)) _(by Michael Vincent Caballero <mike.cabz32@gmail.com>)_ ([#19](https://github.com/stacksjs/ts-images/issues/19), [#19](https://github.com/stacksjs/ts-images/issues/19))
 
-### Contributors
+## Contributors
 
 - _Adelino Ngomacha <adelinob335@gmail.com>_
 - _Chris <chrisbreuer93@gmail.com>_
@@ -232,11 +232,11 @@
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.5...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Add zipping of bins ([31f6ade](https://github.com/stacksjs/imgx/commit/31f6ade))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
 
@@ -244,11 +244,11 @@
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.4...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Use Bun.Glob ([8c5b11c](https://github.com/stacksjs/imgx/commit/8c5b11c))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
 
@@ -256,11 +256,11 @@
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.3...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Adjust build ([fa0bcca](https://github.com/stacksjs/imgx/commit/fa0bcca))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
 
@@ -272,11 +272,11 @@
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.1...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Use dtsx to generate types ([870b7fd](https://github.com/stacksjs/imgx/commit/870b7fd))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
 
@@ -284,28 +284,28 @@
 
 [compare changes](https://github.com/stacksjs/imgx/compare/v0.1.0...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Use release script ([588a552](https://github.com/stacksjs/imgx/commit/588a552))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
 
 ## ...main
 
-### 🚀 Enhancements
+## 🚀 Enhancements
 
 - Add github preset ([6b9df15](https://github.com/stacksjs/imgx/commit/6b9df15))
 
-### 📖 Documentation
+## 📖 Documentation
 
 - Update index ([94698b5](https://github.com/stacksjs/imgx/commit/94698b5))
 - Adjust documentation ([b290cab](https://github.com/stacksjs/imgx/commit/b290cab))
 - Add api config page ([a2873b0](https://github.com/stacksjs/imgx/commit/a2873b0))
 - Add more pages ([43cadff](https://github.com/stacksjs/imgx/commit/43cadff))
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Initial commit ([fdb8038](https://github.com/stacksjs/imgx/commit/fdb8038))
 - Wip ([acec9b7](https://github.com/stacksjs/imgx/commit/acec9b7))
@@ -336,7 +336,7 @@
 - Adjust names ([b642d15](https://github.com/stacksjs/imgx/commit/b642d15))
 - Adjust intro ([7f5a47e](https://github.com/stacksjs/imgx/commit/7f5a47e))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
 - Test User ([@osintorg](https://github.com/osintorg))
@@ -345,14 +345,14 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.9.0...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Update bun version ([13d6955](https://github.com/stacksjs/rpx/commit/13d6955))
 - Improve node support ([bba6f59](https://github.com/stacksjs/rpx/commit/bba6f59))
 - Remove include option ([631c382](https://github.com/stacksjs/rpx/commit/631c382))
 - Lint ([67d36c8](https://github.com/stacksjs/rpx/commit/67d36c8))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -360,17 +360,17 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.8.1...main)
 
-### 🩹 Fixes
+## 🩹 Fixes
 
 - Properly utilize cleanup ([2128973](https://github.com/stacksjs/rpx/commit/2128973))
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Config changes ([51d56d2](https://github.com/stacksjs/rpx/commit/51d56d2))
 - Minor adjustments ([5d81278](https://github.com/stacksjs/rpx/commit/5d81278))
 - Update tlsx ([31581b8](https://github.com/stacksjs/rpx/commit/31581b8))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 - Cab-mikee ([@cab-mikee](http://github.com/cab-mikee))
@@ -379,7 +379,7 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.8.0...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Update eslint ([ac666c7](https://github.com/stacksjs/rpx/commit/ac666c7))
 - Enhance docs ([05f937b](https://github.com/stacksjs/rpx/commit/05f937b))
@@ -394,7 +394,7 @@
 - Use only dev deps ([d1b7c9d](https://github.com/stacksjs/rpx/commit/d1b7c9d))
 - Lint ([4b6b191](https://github.com/stacksjs/rpx/commit/4b6b191))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 - Cab-mikee ([@cab-mikee](http://github.com/cab-mikee))
@@ -403,15 +403,15 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.7.1...main)
 
-### 🚀 Enhancements
+## 🚀 Enhancements
 
 - Allow for cleaning up certificates ([a22b7d7](https://github.com/stacksjs/rpx/commit/a22b7d7))
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Update bun ([434a163](https://github.com/stacksjs/rpx/commit/434a163))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -419,11 +419,11 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.7.0...main)
 
-### 🩹 Fixes
+## 🩹 Fixes
 
 - Properly pass vitePluginUsage ([f5b520b](https://github.com/stacksjs/rpx/commit/f5b520b))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -431,18 +431,18 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.6.5...main)
 
-### 🚀 Enhancements
+## 🚀 Enhancements
 
 - Allow for vite plugin usage ([64d7852](https://github.com/stacksjs/rpx/commit/64d7852))
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Docs updates ([5672ee8](https://github.com/stacksjs/rpx/commit/5672ee8))
 - Docs updates ([79ce3c6](https://github.com/stacksjs/rpx/commit/79ce3c6))
 - Add default docs theme ([eadc187](https://github.com/stacksjs/rpx/commit/eadc187))
 - Wip ([a8566e0](https://github.com/stacksjs/rpx/commit/a8566e0))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -450,11 +450,11 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.6.4...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Update tlsx ([b5f1fc8](https://github.com/stacksjs/rpx/commit/b5f1fc8))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -462,11 +462,11 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.6.3...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Remove ununsed import ([3facd5f](https://github.com/stacksjs/rpx/commit/3facd5f))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -474,11 +474,11 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.6.2...main)
 
-### 🩹 Fixes
+## 🩹 Fixes
 
 - Paths after splitting ([bb64b43](https://github.com/stacksjs/rpx/commit/bb64b43))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -486,11 +486,11 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.6.1...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Add splitting to build ([e74cdaf](https://github.com/stacksjs/rpx/commit/e74cdaf))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -498,13 +498,13 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.6.0...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Update readme examples ([4284e7e](https://github.com/stacksjs/rpx/commit/4284e7e))
 - Minify build ([a00f9e6](https://github.com/stacksjs/rpx/commit/a00f9e6))
 - Add bun options ([96bbef6](https://github.com/stacksjs/rpx/commit/96bbef6))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -512,15 +512,15 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.5.1...main)
 
-### 🚀 Enhancements
+## 🚀 Enhancements
 
 - Add cleanUrls option ([52ab5f8](https://github.com/stacksjs/rpx/commit/52ab5f8))
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Add eslint comments ([cd13a99](https://github.com/stacksjs/rpx/commit/cd13a99))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -528,12 +528,12 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.5.0...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Move some functionality to utils ([5d1effc](https://github.com/stacksjs/rpx/commit/5d1effc))
 - Adjust sudo handling ([dd194be](https://github.com/stacksjs/rpx/commit/dd194be))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -541,12 +541,12 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.4.1...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Wip ([022f58e](https://github.com/stacksjs/rpx/commit/022f58e))
 - Several improvements ([1e6266c](https://github.com/stacksjs/rpx/commit/1e6266c))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -554,14 +554,14 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.4.0...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Update readme ([08e61e8](https://github.com/stacksjs/rpx/commit/08e61e8))
 - Ensure verbose is configurable ([0c2bb22](https://github.com/stacksjs/rpx/commit/0c2bb22))
 - Add default export ([c064d8d](https://github.com/stacksjs/rpx/commit/c064d8d))
 - Ensure verbose is false by default ([ee341b2](https://github.com/stacksjs/rpx/commit/ee341b2))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -569,20 +569,20 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.3.1...main)
 
-### 🚀 Enhancements
+## 🚀 Enhancements
 
 - Ensure multiple proxies work ([7420091](https://github.com/stacksjs/rpx/commit/7420091))
 
-### 🩹 Fixes
+## 🩹 Fixes
 
 - Ensure /etc/hosts is cleaned if configured ([501027c](https://github.com/stacksjs/rpx/commit/501027c))
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Several updates ([b519c5b](https://github.com/stacksjs/rpx/commit/b519c5b))
 - Lint ([c47d212](https://github.com/stacksjs/rpx/commit/c47d212))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -590,12 +590,12 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.3.0...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Adjust readme ([8fd4f68](https://github.com/stacksjs/rpx/commit/8fd4f68))
 - Some cleanup ([d8bf326](https://github.com/stacksjs/rpx/commit/d8bf326))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -603,16 +603,16 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.2.0...main)
 
-### 🚀 Enhancements
+## 🚀 Enhancements
 
 - /etc/hosts management ([53c930f](https://github.com/stacksjs/rpx/commit/53c930f))
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Update tlsx ([562613d](https://github.com/stacksjs/rpx/commit/562613d))
 - Improve httpsConfig handling ([5d62350](https://github.com/stacksjs/rpx/commit/5d62350))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -620,17 +620,17 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.1.1...main)
 
-### 🚀 Enhancements
+## 🚀 Enhancements
 
 - Allow for `https` boolean ([6153960](https://github.com/stacksjs/rpx/commit/6153960))
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Export cleanup ([5565a04](https://github.com/stacksjs/rpx/commit/5565a04))
 - Reset tests ([a758d40](https://github.com/stacksjs/rpx/commit/a758d40))
 - Update readme ([10bdade](https://github.com/stacksjs/rpx/commit/10bdade))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -638,12 +638,12 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.1.0...main)
 
-### 🚀 Enhancements
+## 🚀 Enhancements
 
 - Attach binaries ([a2453d1](https://github.com/stacksjs/rpx/commit/a2453d1))
 - Auto generate ssl certs ([7f50167](https://github.com/stacksjs/rpx/commit/7f50167))
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Adjust lint:fix ([bfb06a4](https://github.com/stacksjs/rpx/commit/bfb06a4))
 - Add stacks/biome-config ([553492b](https://github.com/stacksjs/rpx/commit/553492b))
@@ -660,7 +660,7 @@
 - Lint ([1529f60](https://github.com/stacksjs/rpx/commit/1529f60))
 - Adjust vscode settings ([c095ad1](https://github.com/stacksjs/rpx/commit/c095ad1))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
 
@@ -668,7 +668,7 @@
 
 [compare changes](https://github.com/stacksjs/rpx/compare/v0.0.1...main)
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Wip ([c5e31d5](https://github.com/stacksjs/rpx/commit/c5e31d5))
 - Wip ([6020df1](https://github.com/stacksjs/rpx/commit/6020df1))
@@ -688,13 +688,13 @@
 - Remove postcompile ([52a9bc6](https://github.com/stacksjs/rpx/commit/52a9bc6))
 - Remove lint:fix-unsafe ([91ad947](https://github.com/stacksjs/rpx/commit/91ad947))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris <chrisbreuer93@gmail.com>
 
 ## ...main
 
-### 🏡 Chore
+## 🏡 Chore
 
 - Initial commit ([beb4d96](https://github.com/stacksjs/rpx/commit/beb4d96))
 - Wip ([8e3fce6](https://github.com/stacksjs/rpx/commit/8e3fce6))
@@ -724,6 +724,6 @@
 - Wip ([5352f7a](https://github.com/stacksjs/rpx/commit/5352f7a))
 - Wip ([1b99dd0](https://github.com/stacksjs/rpx/commit/1b99dd0))
 
-### ❤️ Contributors
+## ❤️ Contributors
 
 - Chris <chrisbreuer93@gmail.com>
