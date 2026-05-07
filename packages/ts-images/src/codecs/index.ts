@@ -385,21 +385,30 @@ async function decodeWebp(buffer: Uint8Array, _options: DecodeOptions): Promise<
 async function encodeWebp(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
   const webp = await loadCodec('@stacksjs/ts-webp')
   const data = toCodecData(imageData, { channels: 4 })
-  // ts-webp's lossy (VP8) path is unimplemented; fall back to VP8L
-  // lossless on demand. VP8L handles full RGBA without quality loss, so
-  // file size is the only thing the caller "loses" by not getting VP8.
-  const tryEncode = (lossless: boolean): Uint8Array => webp.encode({
-    width: imageData.width,
-    height: imageData.height,
-    data: data instanceof Uint8Array ? data : new Uint8Array(data),
-    hasAlpha: imageData.hasAlpha,
-  }, {
-    quality: options.quality,
-    lossless,
-    effort: options.effort,
-  })
+  // Prefer `encodeAsync` when ts-webp exposes it (>= the version
+  // that added system `cwebp` integration). It tries the system
+  // binary first and falls back to the bundled pure-TS encoder
+  // when the binary is missing — so on any machine with libwebp
+  // installed (most dev boxes + CI), this produces real, compact
+  // libwebp output instead of the larger pure-TS bitstream.
+  const useAsync = typeof (webp as { encodeAsync?: unknown }).encodeAsync === 'function'
+  const tryEncode = async (lossless: boolean): Promise<Uint8Array> => {
+    const args = [{
+      width: imageData.width,
+      height: imageData.height,
+      data: data instanceof Uint8Array ? data : new Uint8Array(data),
+      hasAlpha: imageData.hasAlpha,
+    }, {
+      quality: options.quality,
+      lossless,
+      effort: options.effort,
+    }] as const
+    return useAsync
+      ? (webp as { encodeAsync: (...a: unknown[]) => Promise<Uint8Array> }).encodeAsync(...args)
+      : webp.encode(...args)
+  }
   try {
-    return tryEncode(options.lossless ?? false)
+    return await tryEncode(options.lossless ?? false)
   }
   catch (err) {
     if (err instanceof Error && /lossy.*not implemented/i.test(err.message)) {
@@ -418,7 +427,12 @@ async function decodeAvif(buffer: Uint8Array, _options: DecodeOptions): Promise<
 async function encodeAvif(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
   const avif = await loadCodec('@stacksjs/ts-avif')
   const data = toCodecData(imageData, { channels: 4 })
-  return avif.encode({
+  // Prefer `encodeAsync` when ts-avif exposes it. It shells out to
+  // `avifenc` (libavif) when present, which is the only path that
+  // produces real AV1 image data — the bundled `encode()` writes a
+  // valid container around stub frame bytes.
+  const useAsync = typeof (avif as { encodeAsync?: unknown }).encodeAsync === 'function'
+  const args = [{
     width: imageData.width,
     height: imageData.height,
     data: data instanceof Uint8Array ? data : new Uint8Array(data),
@@ -427,7 +441,10 @@ async function encodeAvif(imageData: ImageData, options: EncodeOptions): Promise
     quality: options.quality,
     lossless: options.lossless,
     effort: options.effort,
-  })
+  }] as const
+  return useAsync
+    ? (avif as { encodeAsync: (...a: unknown[]) => Promise<Uint8Array> }).encodeAsync(...args)
+    : avif.encode(...args)
 }
 
 /**

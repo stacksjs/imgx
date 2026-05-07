@@ -1,5 +1,11 @@
 export * from './analyze'
 export * from './app-icon'
+// `decode` / `encode` from the codecs module — exposed at the top
+// level so callers don't have to reach into `./codecs` to write a
+// PNG/JPEG buffer they synthesized via `createImageData`. Without
+// these, the only way out of an in-memory ImageData is the
+// processor pipeline, which assumes a file source.
+export { decode, encode, getMetadata } from './codecs'
 export { config } from './config'
 export * from './core'
 export * from './favicon'
