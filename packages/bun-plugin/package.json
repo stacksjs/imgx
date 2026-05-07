@@ -44,8 +44,8 @@
   ],
   "scripts": {
     "build": "bun build.ts",
-    "lint": "bunx --bun eslint .",
-    "lint:fix": "bunx --bun eslint . --fix",
+    "lint": "bunx --bun pickier .",
+    "lint:fix": "bunx --bun pickier . --fix",
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
     "prepublishOnly": "bun --bun run build",
     "release": "bun run changelog && bunx bumpp package.json --all",
@@ -62,6 +62,6 @@
     "pre-commit": "bunx lint-staged"
   },
   "lint-staged": {
-    "*.{js,ts}": "bunx eslint . --fix"
+    "*.{js,ts}": "bunx --bun pickier . --fix"
   }
 }
