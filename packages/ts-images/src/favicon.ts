@@ -197,4 +197,4 @@ function encodeIco(entries: { size: number, png: Uint8Array }[]): Uint8Array {
 
 // Re-export for tests / power users who want to pack a custom set of
 // sizes (e.g. include 64 for a Discord favicon, exclude 16 for retina-only).
-export const _internals = { encodeIco }
+export const _internals: { encodeIco: typeof encodeIco } = { encodeIco }
