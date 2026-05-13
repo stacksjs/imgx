@@ -36,7 +36,7 @@ export function threshold(
   src: ImageData,
   level: number = 128,
   options: {
-    grayscale?: boolean
+    grayscale?: boolean;
   } = {},
 ): ImageData {
   const { grayscale: convertToGray = true } = options
@@ -79,10 +79,10 @@ export function threshold(
 export function modulate(
   src: ImageData,
   options: {
-    brightness?: number // 1.0 = no change, 0.5 = 50% darker, 2.0 = 2x brighter
-    saturation?: number // 1.0 = no change, 0 = grayscale, 2.0 = 2x saturation
-    hue?: number // Degrees to rotate hue (0-360)
-    lightness?: number // 1.0 = no change
+    brightness?: number; // 1.0 = no change, 0.5 = 50% darker, 2.0 = 2x brighter
+    saturation?: number; // 1.0 = no change, 0 = grayscale, 2.0 = 2x saturation
+    hue?: number; // Degrees to rotate hue (0-360)
+    lightness?: number; // 1.0 = no change
   },
 ): ImageData {
   const {

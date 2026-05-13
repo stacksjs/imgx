@@ -62,6 +62,7 @@
     "changelog": "bunx changelogen --output CHANGELOG.md",
     "prepublishOnly": "bun --bun run build && bun run compile:all && bun run zip:all",
     "release": "bun run changelog && bunx bumpp package.json --all",
+    "release:patch": "bun --bun run changelog && bunx --bun bumpx patch --recursive --yes",
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit",
     "zip": "bun run zip:all",
