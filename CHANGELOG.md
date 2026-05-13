@@ -1,5 +1,26 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.7...HEAD)
+
+## 🚀 Features
+
+- **favicons**: real ICO + apple-touch + manifest, codecs re-export ([c47377b](https://github.com/stacksjs/ts-images/commit/c47377b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **release**: normalize changelog headings ([8bff14c](https://github.com/stacksjs/ts-images/commit/8bff14c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: emit valid image color declarations ([d2891f8](https://github.com/stacksjs/ts-images/commit/d2891f8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **changelog**: demote h3 sections to h2 ([562da06](https://github.com/stacksjs/ts-images/commit/562da06)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🧹 Chores
+
+- **ci**: bump actions/checkout to v6, actions/cache to v5 ([cd86185](https://github.com/stacksjs/ts-images/commit/cd86185)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.6...v0.1.7)
 
 ## 🐛 Bug Fixes
