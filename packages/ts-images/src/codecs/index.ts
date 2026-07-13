@@ -1,4 +1,5 @@
 import type { ImageData } from '../core/image-data'
+import { applyExifOrientation, jpegExifOrientation } from '../core/exif'
 import { fromCodecData, toCodecData } from '../core/image-data'
 
 export interface EncodeOptions {
@@ -12,6 +13,11 @@ export interface EncodeOptions {
 export interface DecodeOptions {
   colorTransform?: boolean
   formatAsRGBA?: boolean
+  /**
+   * Re-orient JPEG pixels upright per the EXIF orientation tag
+   * (default: true). The returned width/height reflect the upright image.
+   */
+  applyOrientation?: boolean
 }
 
 export interface ImageMetadata {
@@ -215,7 +221,14 @@ export async function decode(
   if (!format) throw new Error('ts-images: unknown image format (no matching magic bytes)')
 
   switch (format) {
-    case 'jpeg': return decodeJpeg(buffer, options)
+    case 'jpeg': {
+      const image = await decodeJpeg(buffer, options)
+      if (options.applyOrientation === false)
+        return image
+      // Cameras store sensor-native pixels + an orientation tag; without
+      // this, portrait shots decode sideways.
+      return applyExifOrientation(image, jpegExifOrientation(buffer))
+    }
     case 'png': return decodePng(buffer, options)
     case 'gif': return decodeGif(buffer, options)
     case 'bmp': return decodeBmp(buffer, options)

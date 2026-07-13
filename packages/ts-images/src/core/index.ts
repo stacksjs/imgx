@@ -45,6 +45,7 @@ export {
   extend,
   trim,
 } from './transforms'
+export { jpegExifOrientation, applyExifOrientation } from './exif'
 
 // Color operations
 export {
