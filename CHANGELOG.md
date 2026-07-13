@@ -1,5 +1,32 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.8...v0.1.9)
+
+## 🚀 Features
+
+- SplatHash placeholders + responsive picture-set tooling ([51dd8cd](https://github.com/stacksjs/ts-images/commit/51dd8cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **core**: auto-apply exif orientation on jpeg decode ([6eaa718](https://github.com/stacksjs/ts-images/commit/6eaa718)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **scripts**: stop double-generating CHANGELOG on release ([741c33b](https://github.com/stacksjs/ts-images/commit/741c33b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.1.9 ([c230595](https://github.com/stacksjs/ts-images/commit/c230595)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: refresh bun.lock to pick up pickier 0.1.37 ([7462168](https://github.com/stacksjs/ts-images/commit/7462168)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: refresh bun.lock to pick up pickier 0.1.35 ([cf6ec03](https://github.com/stacksjs/ts-images/commit/cf6ec03)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: refresh bun.lock to pick up pickier 0.1.33 ([7db0175](https://github.com/stacksjs/ts-images/commit/7db0175)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: refresh bun.lock to pick up @stacksjs/logsmith 0.2.3 ([c5e302d](https://github.com/stacksjs/ts-images/commit/c5e302d)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: refresh bun.lock to pick up buddy-bot 0.9.20 ([bc5f97e](https://github.com/stacksjs/ts-images/commit/bc5f97e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: bump better-dx to ^0.2.15 ([2fa1cf9](https://github.com/stacksjs/ts-images/commit/2fa1cf9)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.7...HEAD)
 
 ## 🚀 Features
