@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 // For the Express module
 import type { ImgxOptions, OptimizeResult, ProcessOptions } from '../src/types'
 import { Buffer } from 'node:buffer'
