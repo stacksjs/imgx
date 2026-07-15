@@ -1,5 +1,16 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.9...v0.1.10)
+
+## 🧹 Chores
+
+- release v0.1.10 ([6dff002](https://github.com/stacksjs/ts-images/commit/6dff002)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **pkg**: publint clean — sideEffects:false + executable bin shebang ([fba4aba](https://github.com/stacksjs/ts-images/commit/fba4aba)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.8...v0.1.9)
 
 ## 🚀 Features
