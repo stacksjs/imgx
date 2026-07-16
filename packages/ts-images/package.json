@@ -1,7 +1,6 @@
 {
   "name": "ts-images",
   "type": "module",
-  "sideEffects": false,
   "version": "0.1.10",
   "description": "Modern image optimizations & manipulations.",
   "author": "Chris Breuer <chris@stacksjs.org>",
@@ -61,7 +60,8 @@
     "lint:fix": "bunx --bun pickier . --fix",
     "fresh": "bunx rimraf node_modules/ bun.lock && bun i",
     "changelog": "bunx changelogen --output CHANGELOG.md",
-    "prepublishOnly": "bun --bun run build && bun run compile:all && bun run zip:all",
+    "prepublishOnly": "bun --bun run build && bun run smoke && bun run compile:all && bun run zip:all",
+    "smoke": "bun --bun scripts/smoke-dist.ts",
     "release": "bun run changelog && bunx bumpp package.json --all",
     "release:patch": "bun --bun run changelog && bunx --bun bumpx patch --recursive --yes",
     "test": "bun test",
