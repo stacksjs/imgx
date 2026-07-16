@@ -1,5 +1,21 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.10...v0.1.11)
+
+## 🐛 Bug Fixes
+
+- **pkg**: drop sideEffects:false, it broke the published bundle ([a2d8908](https://github.com/stacksjs/ts-images/commit/a2d8908)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.1.11 ([80b4d1f](https://github.com/stacksjs/ts-images/commit/80b4d1f)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **deps**: declare bun ^1.3.14 in deps.yaml ([630585b](https://github.com/stacksjs/ts-images/commit/630585b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.9...v0.1.10)
 
 ## 🧹 Chores
