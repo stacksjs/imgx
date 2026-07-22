@@ -1,4 +1,4 @@
-import type { ImageData } from './core'
+import type { ImageData, ResizeFit, ResizeOptions } from './core'
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
@@ -7,18 +7,47 @@ import { resize } from './core'
 import { imageToSplatHash, splatHashToBase64, splatHashToDataURL } from './splathash'
 
 export type WebImageFormat = 'avif' | 'webp' | 'jpeg' | 'png'
+export type ImageDeliveryPreset = 'avatar' | 'content' | 'hero' | 'thumbnail'
+
+export interface ImageStoredObject {
+  bytes: number
+  path?: string
+  url?: string
+}
+
+export interface ImageDeliveryStorage {
+  cacheNamespace: string
+  stat: (_key: string) => Promise<ImageStoredObject | null>
+  write: (_key: string, _bytes: Uint8Array, _metadata: { contentType: string, cacheControl: string }) => Promise<ImageStoredObject | void>
+  url?: (_key: string) => string | Promise<string>
+}
+
+export interface ImageAuthorizationRequest {
+  input: string | Uint8Array
+  name?: string
+  context?: unknown
+}
 
 export interface ImageDeliveryOptions {
   input: string | Uint8Array
-  outDir: string
+  outDir?: string
+  storage?: ImageDeliveryStorage
+  authorize?: (_request: ImageAuthorizationRequest) => boolean | Promise<boolean>
+  authorizationContext?: unknown
+  preset?: ImageDeliveryPreset
   name?: string
   baseUrl?: string
   widths?: readonly number[]
+  height?: number
+  aspectRatio?: number
+  fit?: ResizeFit
+  position?: ResizeOptions['position']
   formats?: readonly WebImageFormat[]
   fallbackFormat?: Extract<WebImageFormat, 'jpeg' | 'png'>
   quality?: number | Partial<Record<WebImageFormat, number>>
   concurrency?: number
   upscale?: boolean
+  includeOriginal?: boolean
   placeholder?: boolean
 }
 
@@ -68,6 +97,18 @@ const formatExtensions: Record<WebImageFormat, string> = {
 
 const activeGenerations = new Map<string, Promise<ImageDeliveryManifest>>()
 
+const deliveryPresets: Record<ImageDeliveryPreset, Partial<ImageDeliveryOptions>> = {
+  avatar: { widths: [64, 128, 256, 512], aspectRatio: 1, fit: 'cover', position: 'center', includeOriginal: false },
+  content: { widths: [320, 640, 960, 1280, 1920], fit: 'inside' },
+  hero: { widths: [640, 1280, 1920, 2560], aspectRatio: 16 / 9, fit: 'cover', position: 'center' },
+  thumbnail: { widths: [160, 320, 640], aspectRatio: 16 / 9, fit: 'cover', position: 'center', includeOriginal: false },
+}
+
+export function resolveImageDeliveryOptions(options: ImageDeliveryOptions): ImageDeliveryOptions {
+  const preset = options.preset ? deliveryPresets[options.preset] : undefined
+  return { ...preset, ...options }
+}
+
 function clampQuality(value: number): number {
   if (!Number.isFinite(value)) throw new TypeError('Image quality must be a finite number')
   return Math.max(1, Math.min(100, Math.round(value)))
@@ -99,16 +140,16 @@ function canonicalFormats(formats: readonly WebImageFormat[], fallback: WebImage
   return unique
 }
 
-export function normalizeImageWidths(widths: readonly number[], sourceWidth: number, upscale = false): number[] {
+export function normalizeImageWidths(widths: readonly number[], sourceWidth: number, upscale = false, includeOriginal = true): number[] {
   if (!Number.isInteger(sourceWidth) || sourceWidth < 1) throw new TypeError('Source width must be a positive integer')
 
   const normalized = widths.map((width) => {
-    if (!Number.isFinite(width) || width < 1) throw new TypeError('Image widths must be positive numbers')
+    if (!Number.isFinite(width) || width < 1 || width > 16_384) throw new TypeError('Image widths must be between 1 and 16384')
     return Math.round(width)
   })
 
   if (normalized.length === 0) normalized.push(sourceWidth)
-  if (!upscale) normalized.push(sourceWidth)
+  if (!upscale && includeOriginal) normalized.push(sourceWidth)
 
   const result = [...new Set(normalized)]
     .filter(width => upscale || width <= sourceWidth)
@@ -166,6 +207,24 @@ async function writeAtomically(path: string, bytes: Uint8Array): Promise<void> {
   }
 }
 
+function localStorage(outDir: string, baseUrl: string): ImageDeliveryStorage {
+  return {
+    cacheNamespace: `local:${outDir}:${baseUrl}`,
+    async stat(key) {
+      const path = join(outDir, key)
+      const value = await stat(path).catch(() => null)
+      return value ? { bytes: value.size, path, url: buildUrl(baseUrl, key) } : null
+    },
+    async write(key, bytes) {
+      await mkdir(outDir, { recursive: true })
+      const path = join(outDir, key)
+      await writeAtomically(path, bytes)
+      return { bytes: bytes.byteLength, path, url: buildUrl(baseUrl, key) }
+    },
+    url: key => buildUrl(baseUrl, key),
+  }
+}
+
 async function mapConcurrent<T, R>(items: T[], limit: number, work: (item: T) => Promise<R>): Promise<R[]> {
   const output = new Array<R>(items.length)
   let nextIndex = 0
@@ -198,41 +257,67 @@ async function generateManifest(options: ImageDeliveryOptions): Promise<ImageDel
     ? new Uint8Array(await readFile(options.input))
     : options.input
   const source = await decode(sourceBytes)
+  if (options.height !== undefined && (!Number.isInteger(options.height) || options.height < 1 || options.height > 16_384)) {
+    throw new TypeError('Image height must be between 1 and 16384')
+  }
+  if (options.aspectRatio !== undefined && (!Number.isFinite(options.aspectRatio) || options.aspectRatio <= 0 || options.aspectRatio > 100)) {
+    throw new TypeError('Image aspect ratio must be between 0 and 100')
+  }
+  if (options.height !== undefined && options.aspectRatio !== undefined) throw new TypeError('Image height and aspect ratio are mutually exclusive')
   const fallbackFormat = options.fallbackFormat ?? (source.hasAlpha ? 'png' : 'jpeg')
   const formats = canonicalFormats(options.formats ?? ['avif', 'webp'], fallbackFormat)
-  const widths = normalizeImageWidths(options.widths ?? [320, 640, 960, 1280, 1920], source.width, options.upscale)
+  const widths = normalizeImageWidths(options.widths ?? [320, 640, 960, 1280, 1920], source.width, options.upscale, options.includeOriginal)
   const concurrency = Math.max(1, Math.min(32, Math.round(options.concurrency ?? 4)))
   const name = normalizeName(options.input, options.name)
   const baseUrl = normalizeBaseUrl(options.baseUrl)
+  if (!options.storage && !options.outDir) throw new TypeError('Image delivery requires outDir or a storage adapter')
+  const storage = options.storage ?? localStorage(options.outDir!, baseUrl)
   const deliveryOptions = {
     formats,
     widths,
     quality: formats.map(format => [format, getQuality(options.quality, format)]),
     upscale: options.upscale ?? false,
+    includeOriginal: options.includeOriginal ?? true,
+    height: options.height,
+    aspectRatio: options.aspectRatio,
+    fit: options.fit ?? 'inside',
+    position: options.position ?? 'center',
+    storage: storage.cacheNamespace,
   }
   const sourceHash = createHash('sha256').update(sourceBytes).digest('hex')
   const deliveryHash = hashDelivery(sourceBytes, deliveryOptions).slice(0, 16)
 
-  await mkdir(options.outDir, { recursive: true })
-
   const tasks = formats.flatMap(format => widths.map(width => ({ format, width })))
   const variants = await mapConcurrent(tasks, concurrency, async ({ format, width }) => {
     const filename = `${name}-${deliveryHash}-${width}.${formatExtensions[format]}`
-    const path = join(options.outDir, filename)
-    const targetHeight = Math.max(1, Math.round(source.height * (width / source.width)))
-    const existing = await stat(path).catch(() => null)
+    const requestedHeight = options.height ?? (options.aspectRatio ? Math.max(1, Math.round(width / options.aspectRatio)) : undefined)
+    const fit = options.fit ?? 'inside'
+    const position = options.position ?? 'center'
+    const existing = await storage.stat(filename)
+    let generated: ImageData | undefined
     if (!existing) {
-      const image: ImageData = width === source.width ? source : resize(source, { width })
-      const encoded = await encode(image, format, { quality: getQuality(options.quality, format) })
-      await writeAtomically(path, encoded)
+      const unchanged = width === source.width && requestedHeight === undefined
+      generated = unchanged ? source : resize(source, { width, height: requestedHeight, fit, position })
+      if (!options.upscale && (generated.width > source.width || generated.height > source.height)) {
+        throw new TypeError(`Image variant ${generated.width}x${generated.height} would upscale the source`)
+      }
+      const encoded = await encode(generated, format, { quality: getQuality(options.quality, format) })
+      await storage.write(filename, encoded, {
+        contentType: formatMimeTypes[format],
+        cacheControl: 'public, max-age=31536000, immutable',
+      })
     }
-    const file = await stat(path)
+    const file = await storage.stat(filename)
+    if (!file) throw new Error(`Image storage did not persist ${filename}`)
+    const output = generated ?? (requestedHeight === undefined
+      ? { width, height: Math.max(1, Math.round(source.height * (width / source.width))) }
+      : resize(source, { width, height: requestedHeight, fit, position }))
     return {
-      path,
-      url: buildUrl(baseUrl, filename),
-      width,
-      height: targetHeight,
-      bytes: file.size,
+      path: file.path ?? filename,
+      url: file.url ?? await storage.url?.(filename) ?? buildUrl(baseUrl, filename),
+      width: output.width,
+      height: output.height,
+      bytes: file.bytes,
       format,
       mimeType: formatMimeTypes[format],
       cacheKey: `${sourceHash}:${deliveryHash}:${format}:${width}`,
@@ -265,24 +350,36 @@ async function generateManifest(options: ImageDeliveryOptions): Promise<ImageDel
 }
 
 export async function createImageDeliveryManifest(options: ImageDeliveryOptions): Promise<ImageDeliveryManifest> {
-  const sourceBytes = typeof options.input === 'string'
-    ? new Uint8Array(await readFile(options.input))
-    : options.input
+  const resolved = resolveImageDeliveryOptions(options)
+  if (resolved.authorize && !await resolved.authorize({
+    input: resolved.input,
+    name: resolved.name,
+    context: resolved.authorizationContext,
+  })) throw new Error('Image delivery is not authorized')
+  const sourceBytes = typeof resolved.input === 'string'
+    ? new Uint8Array(await readFile(resolved.input))
+    : resolved.input
   const key = hashDelivery(sourceBytes, {
-    outDir: options.outDir,
-    name: options.name,
-    baseUrl: options.baseUrl,
-    widths: options.widths,
-    formats: options.formats,
-    fallbackFormat: options.fallbackFormat,
-    quality: options.quality,
-    upscale: options.upscale,
-    placeholder: options.placeholder,
+    outDir: resolved.outDir,
+    storage: resolved.storage?.cacheNamespace,
+    name: resolved.name,
+    baseUrl: resolved.baseUrl,
+    widths: resolved.widths,
+    height: resolved.height,
+    aspectRatio: resolved.aspectRatio,
+    fit: resolved.fit,
+    position: resolved.position,
+    formats: resolved.formats,
+    fallbackFormat: resolved.fallbackFormat,
+    quality: resolved.quality,
+    upscale: resolved.upscale,
+    includeOriginal: resolved.includeOriginal,
+    placeholder: resolved.placeholder,
   })
   const active = activeGenerations.get(key)
   if (active) return active
 
-  const generation = generateManifest({ ...options, input: sourceBytes })
+  const generation = generateManifest({ ...resolved, input: sourceBytes })
   activeGenerations.set(key, generation)
   try {
     return await generation

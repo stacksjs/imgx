@@ -2,7 +2,7 @@ import { afterAll, describe, expect, test } from 'bun:test'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createImageDeliveryManifest, decode, negotiateImageFormat, normalizeImageWidths, selectImageVariant } from '../src'
+import { createImageDeliveryManifest, decode, negotiateImageFormat, normalizeImageWidths, resolveImageDeliveryOptions, selectImageVariant } from '../src'
 
 const fixture = join(import.meta.dir, 'fixtures/app-icon.png')
 const outputDirectories: string[] = []
@@ -70,5 +70,45 @@ describe('image delivery', () => {
       createImageDeliveryManifest(options),
     ])
     expect(second.variants.map(variant => variant.cacheKey)).toEqual(first.variants.map(variant => variant.cacheKey))
+  })
+
+  test('applies named crop presets before resolving defaults', () => {
+    const options = resolveImageDeliveryOptions({ input: fixture, outDir: '/tmp/images', preset: 'avatar', widths: [32] })
+    expect(options.widths).toEqual([32])
+    expect(options.aspectRatio).toBe(1)
+    expect(options.fit).toBe('cover')
+  })
+
+  test('authorizes before reading source metadata', async () => {
+    let called = false
+    await expect(createImageDeliveryManifest({
+      input: '/path/that/must/not/be/read.png',
+      outDir: '/tmp/images',
+      authorize: () => {
+        called = true
+        return false
+      },
+    })).rejects.toThrow('not authorized')
+    expect(called).toBe(true)
+  })
+
+  test('publishes variants through a storage adapter', async () => {
+    const objects = new Map<string, Uint8Array>()
+    const manifest = await createImageDeliveryManifest({
+      input: fixture,
+      preset: 'avatar',
+      widths: [32],
+      formats: ['webp'],
+      fallbackFormat: 'png',
+      placeholder: false,
+      storage: {
+        cacheNamespace: 'test-memory',
+        stat: async key => objects.has(key) ? { bytes: objects.get(key)!.byteLength, url: `https://cdn.example/${key}` } : null,
+        write: async (key, bytes) => { objects.set(key, bytes) },
+      },
+    })
+    expect(manifest.variants).toHaveLength(2)
+    expect(manifest.variants.every(variant => variant.width === 32 && variant.height === 32)).toBe(true)
+    expect(manifest.variants.every(variant => variant.url.startsWith('https://cdn.example/'))).toBe(true)
   })
 })
