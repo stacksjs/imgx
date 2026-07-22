@@ -39,6 +39,7 @@
     "changelog:generate": "bunx logsmith --output CHANGELOG.md && bun scripts/normalize-changelog.ts",
     "release": "bunx --bun bumpx prompt --recursive",
     "release:patch": "bunx --bun bumpx patch --recursive --yes",
+    "release:minor": "bunx --bun bumpx minor --recursive --commit --tag --push --yes",
     "postinstall": "bunx git-hooks",
     "typecheck": "bunx tsc --noEmit",
     "dev:docs": "bun --bun bunpress dev docs",
