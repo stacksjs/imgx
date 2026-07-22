@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.0...v0.2.1)
+
+## 🤖 Continuous Integration
+
+- build image packages before publish ([20f2a78](https://github.com/stacksjs/ts-images/commit/20f2a78)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.1 ([6f6cecf](https://github.com/stacksjs/ts-images/commit/6f6cecf)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.11...v0.2.0)
 
 ## 🚀 Features
