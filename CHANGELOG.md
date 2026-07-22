@@ -1,5 +1,25 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.11...v0.2.0)
+
+## 🚀 Features
+
+- add pluggable image delivery presets ([3ae5586](https://github.com/stacksjs/ts-images/commit/3ae5586)) _(by Chris <chrisbreuer93@gmail.com>)_
+- add responsive image delivery manifests ([e3ef415](https://github.com/stacksjs/ts-images/commit/e3ef415)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📦 Build System
+
+- refresh imgx binary ([4ce5906](https://github.com/stacksjs/ts-images/commit/4ce5906)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.0 ([6f8ff1c](https://github.com/stacksjs/ts-images/commit/6f8ff1c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- add minor release command ([9e39ae1](https://github.com/stacksjs/ts-images/commit/9e39ae1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.1.10...v0.1.11)
 
 ## 🐛 Bug Fixes
