@@ -106,8 +106,20 @@ export interface SocialCardOptions {
   color?: RGBA
   /** Eyebrow and rule colour. */
   accent?: RGBA
-  /** Plate behind the brand mark. Defaults to white, so it reads over a photo. */
+  /**
+   * Plate painted behind the mark before `drawMark` runs. Defaults to white,
+   * so a mark drawn in its own colours reads over any photograph.
+   */
   markPlate?: RGBA
+  /**
+   * Paint the logo mark into the square left of the wordmark.
+   *
+   * A library cannot know what a brand's mark looks like, so it supplies the
+   * plate and the position and hands the box back: `box` is in card pixels,
+   * and the primitives in `./shapes` draw into `card` directly. Without this
+   * the brand row is the wordmark alone.
+   */
+  drawMark?: (card: ImageData, box: { x: number, y: number, size: number }) => void
   /** Subtitle colour. Defaults to a dimmed `color`. */
   mutedColor?: RGBA
   titleSize?: number
@@ -151,29 +163,35 @@ export async function generateSocialCard(
 
   // Brand row, top left.
   //
-  // The mark sits on its own solid plate rather than being an outline over
-  // the photograph: an outline let the field texture through, and the two
-  // accent dots inside it disappeared into whatever happened to be behind
-  // them. A plate makes the mark legible over any image.
+  // The mark sits on its own solid plate rather than being drawn straight
+  // onto the photograph: over a field, an outlined mark let the texture
+  // through and the accent dots inside it disappeared into whatever happened
+  // to be behind them.
   if (options.brand) {
     const markSize = Math.round(width * 0.033)
+    const hasMark = Boolean(options.drawMark)
 
-    fillRoundedRect(
-      card,
-      { x: padding, y: padding, width: markSize, height: markSize, radius: markSize * 0.22 },
-      options.markPlate ?? { r: 255, g: 255, b: 255 },
-    )
+    if (hasMark) {
+      // The plate is larger than the mark so the mark has margin inside it,
+      // the way a logo has clear space around it in any brand sheet.
+      const plate = Math.round(markSize * 1.28)
+      const inset = Math.round((plate - markSize) / 2)
 
-    const dot = Math.round(markSize * 0.19)
-    fillRect(card, { x: padding + markSize * 0.24, y: padding + markSize * 0.26, width: dot, height: dot }, accent)
-    fillRect(card, { x: padding + markSize * 0.58, y: padding + markSize * 0.56, width: dot * 0.72, height: dot * 0.72 }, accent)
+      fillRoundedRect(
+        card,
+        { x: padding, y: padding, width: plate, height: plate, radius: plate * 0.24 },
+        options.markPlate ?? { r: 255, g: 255, b: 255 },
+      )
+
+      options.drawMark!(card, { x: padding + inset, y: padding + inset, size: markSize })
+    }
 
     drawText(card, {
       text: options.brand,
       font: options.titleFont,
       size: Math.round(width * 0.024),
-      x: padding + markSize * 1.42,
-      y: padding + markSize * 0.74,
+      x: hasMark ? padding + markSize * 1.72 : padding,
+      y: padding + markSize * 0.86,
       color,
       letterSpacing: -0.01,
     })
