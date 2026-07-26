@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.4...v0.2.5)
+
+## 🚀 Features
+
+- **og**: let a caller draw its own logo mark ([b140e6f](https://github.com/stacksjs/ts-images/commit/b140e6f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.5 ([85712d4](https://github.com/stacksjs/ts-images/commit/85712d4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.3...v0.2.4)
 
 ## 🚀 Features
