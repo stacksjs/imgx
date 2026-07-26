@@ -31,12 +31,13 @@ describe('og', () => {
 
       const results = await generateSocialImages(input, OUTPUT_DIR)
 
-      // Check all standard OG images were created
-      expect(results['og-github']).toBe(join(OUTPUT_DIR, 'og-github.png'))
-      expect(results['og-facebook']).toBe(join(OUTPUT_DIR, 'og-facebook.png'))
-      expect(results['og-twitter']).toBe(join(OUTPUT_DIR, 'og-twitter.png'))
-      expect(results['og-linkedin']).toBe(join(OUTPUT_DIR, 'og-linkedin.png'))
-      expect(results['og-instagram']).toBe(join(OUTPUT_DIR, 'og-instagram.png'))
+      // JPEG is the default: social cards are photographs, and lossless PNG
+      // made every one of them megabytes for no visible gain.
+      expect(results['og-github']).toBe(join(OUTPUT_DIR, 'og-github.jpg'))
+      expect(results['og-facebook']).toBe(join(OUTPUT_DIR, 'og-facebook.jpg'))
+      expect(results['og-twitter']).toBe(join(OUTPUT_DIR, 'og-twitter.jpg'))
+      expect(results['og-linkedin']).toBe(join(OUTPUT_DIR, 'og-linkedin.jpg'))
+      expect(results['og-instagram']).toBe(join(OUTPUT_DIR, 'og-instagram.jpg'))
 
       // Verify files exist
       for (const path of Object.values(results)) {
