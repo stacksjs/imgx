@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.3...v0.2.4)
+
+## 🚀 Features
+
+- **og**: draw the brand mark on a solid plate ([24af5ae](https://github.com/stacksjs/ts-images/commit/24af5ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.4 ([906d419](https://github.com/stacksjs/ts-images/commit/906d419)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.2...v0.2.3)
 
 ## 🚀 Features
