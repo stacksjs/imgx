@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.2...v0.2.3)
+
+## 🚀 Features
+
+- **text**: draw text onto images ([57e9974](https://github.com/stacksjs/ts-images/commit/57e9974)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.3 ([e8781db](https://github.com/stacksjs/ts-images/commit/e8781db)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.1...v0.2.2)
 
 ## 🚀 Features
