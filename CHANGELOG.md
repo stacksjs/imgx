@@ -1,5 +1,23 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.1...v0.2.2)
+
+## 🚀 Features
+
+- **og**: let social cards choose their format and networks ([fab1faa](https://github.com/stacksjs/ts-images/commit/fab1faa)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📚 Documentation
+
+- link the community as stacksjs.com/discord ([b441908](https://github.com/stacksjs/ts-images/commit/b441908)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.2 ([35d4eb5](https://github.com/stacksjs/ts-images/commit/35d4eb5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.0...v0.2.1)
 
 ## 🤖 Continuous Integration
