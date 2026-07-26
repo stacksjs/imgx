@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { resize } from './core'
 import { createImageData } from './core/image-data'
 import { decode, encode } from './codecs'
-import { drawText, fillRect, fillVerticalScrim, layoutText } from './text'
+import { drawText, fillRect, fillRoundedRect, fillVerticalScrim, layoutText } from './text'
 import { debugLog } from './utils'
 
 /** The networks `generateSocialImages` knows the aspect ratios for. */
@@ -106,6 +106,8 @@ export interface SocialCardOptions {
   color?: RGBA
   /** Eyebrow and rule colour. */
   accent?: RGBA
+  /** Plate behind the brand mark. Defaults to white, so it reads over a photo. */
+  markPlate?: RGBA
   /** Subtitle colour. Defaults to a dimmed `color`. */
   mutedColor?: RGBA
   titleSize?: number
@@ -147,30 +149,31 @@ export async function generateSocialCard(
     fillVerticalScrim(card, { x: 0, y: height * 0.26, width, height: height * 0.74 }, { r: 8, g: 11, b: 7 }, 0, 0.94)
   }
 
-  // Brand row, top left: a square outline holding two marks, echoing the
-  // site's own logo, then the wordmark.
+  // Brand row, top left.
+  //
+  // The mark sits on its own solid plate rather than being an outline over
+  // the photograph: an outline let the field texture through, and the two
+  // accent dots inside it disappeared into whatever happened to be behind
+  // them. A plate makes the mark legible over any image.
   if (options.brand) {
-    const markSize = Math.round(width * 0.031)
-    const stroke = Math.max(2, Math.round(markSize * 0.075))
+    const markSize = Math.round(width * 0.033)
 
-    for (const edge of [
-      { x: padding, y: padding, width: markSize, height: stroke },
-      { x: padding, y: padding + markSize - stroke, width: markSize, height: stroke },
-      { x: padding, y: padding, width: stroke, height: markSize },
-      { x: padding + markSize - stroke, y: padding, width: stroke, height: markSize },
-    ])
-      fillRect(card, edge, color)
+    fillRoundedRect(
+      card,
+      { x: padding, y: padding, width: markSize, height: markSize, radius: markSize * 0.22 },
+      options.markPlate ?? { r: 255, g: 255, b: 255 },
+    )
 
-    const dot = Math.round(markSize * 0.2)
-    fillRect(card, { x: padding + markSize * 0.22, y: padding + markSize * 0.24, width: dot, height: dot }, accent)
-    fillRect(card, { x: padding + markSize * 0.58, y: padding + markSize * 0.56, width: dot * 0.7, height: dot * 0.7 }, accent)
+    const dot = Math.round(markSize * 0.19)
+    fillRect(card, { x: padding + markSize * 0.24, y: padding + markSize * 0.26, width: dot, height: dot }, accent)
+    fillRect(card, { x: padding + markSize * 0.58, y: padding + markSize * 0.56, width: dot * 0.72, height: dot * 0.72 }, accent)
 
     drawText(card, {
       text: options.brand,
       font: options.titleFont,
       size: Math.round(width * 0.024),
-      x: padding + markSize * 1.5,
-      y: padding + markSize * 0.78,
+      x: padding + markSize * 1.42,
+      y: padding + markSize * 0.74,
       color,
       letterSpacing: -0.01,
     })

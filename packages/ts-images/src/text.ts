@@ -322,6 +322,69 @@ export function fillRect(
 }
 
 /**
+ * Fill a rectangle with rounded corners.
+ *
+ * The corners are anti-aliased by measuring, per row, how far the rounded
+ * edge cuts in and giving the boundary pixel its fractional share — the same
+ * coverage idea the glyph fill uses, in the one case simple enough to solve
+ * directly.
+ */
+export function fillRoundedRect(
+  target: ImageData,
+  rect: { x: number, y: number, width: number, height: number, radius: number },
+  color: RGBA,
+): void {
+  const alpha = color.a ?? 1
+  if (alpha <= 0)
+    return
+
+  const radius = Math.max(0, Math.min(rect.radius, rect.width / 2, rect.height / 2))
+  const left = rect.x
+  const top = rect.y
+  const right = rect.x + rect.width
+  const bottom = rect.y + rect.height
+
+  const rowStart = Math.max(0, Math.floor(top))
+  const rowEnd = Math.min(target.height - 1, Math.ceil(bottom) - 1)
+
+  for (let row = rowStart; row <= rowEnd; row++) {
+    const centreY = row + 0.5
+
+    // How far this row is into a corner, if at all.
+    let inset = 0
+    if (centreY < top + radius) {
+      const dy = top + radius - centreY
+      inset = radius - Math.sqrt(Math.max(0, radius * radius - dy * dy))
+    }
+    else if (centreY > bottom - radius) {
+      const dy = centreY - (bottom - radius)
+      inset = radius - Math.sqrt(Math.max(0, radius * radius - dy * dy))
+    }
+
+    const rowLeft = left + inset
+    const rowRight = right - inset
+    const colStart = Math.max(0, Math.floor(rowLeft))
+    const colEnd = Math.min(target.width - 1, Math.ceil(rowRight) - 1)
+
+    for (let column = colStart; column <= colEnd; column++) {
+      // Fractional coverage where the edge crosses this pixel.
+      const covered = Math.min(column + 1, rowRight) - Math.max(column, rowLeft)
+      const amount = Math.max(0, Math.min(1, covered)) * alpha
+      if (amount <= 0.002)
+        continue
+
+      const offset = (row * target.width + column) * 4
+      const data = target.data
+
+      data[offset] = Math.round(data[offset]! + (color.r - data[offset]!) * amount)
+      data[offset + 1] = Math.round(data[offset + 1]! + (color.g - data[offset + 1]!) * amount)
+      data[offset + 2] = Math.round(data[offset + 2]! + (color.b - data[offset + 2]!) * amount)
+      data[offset + 3] = Math.max(data[offset + 3]!, Math.round(amount * 255))
+    }
+  }
+}
+
+/**
  * A vertical gradient of one colour's opacity, darkest at the bottom.
  *
  * The usual scrim under text sitting on a photograph: enough contrast to read
