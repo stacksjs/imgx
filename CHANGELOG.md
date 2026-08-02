@@ -1,5 +1,21 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.5...v0.2.6)
+
+## 🚀 Features
+
+- **og**: add card presets and product shots ([f5204f8](https://github.com/stacksjs/ts-images/commit/f5204f8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **app-store**: compose multi-slide store screenshots ([3a5e48a](https://github.com/stacksjs/ts-images/commit/3a5e48a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **paint**: add gradient, image and shadow primitives ([cf95b3f](https://github.com/stacksjs/ts-images/commit/cf95b3f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.6 ([9f3b86a](https://github.com/stacksjs/ts-images/commit/9f3b86a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.4...v0.2.5)
 
 ## 🚀 Features
