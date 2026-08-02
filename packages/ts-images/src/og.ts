@@ -1,11 +1,14 @@
 import type { ImageData } from './core/image-data'
 import type { Font } from './font'
+import type { DropShadowOptions } from './paint'
+import type { SurfaceBackground } from './surface'
 import type { RGBA } from './text'
-import { readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { resize } from './core'
-import { createImageData } from './core/image-data'
 import { decode, encode } from './codecs'
+import { drawImage, dropShadow } from './paint'
+import { createSurface } from './surface'
 import { drawText, fillRect, fillRoundedRect, fillVerticalScrim, layoutText } from './text'
 import { debugLog } from './utils'
 
@@ -83,11 +86,43 @@ export async function generateSocialImages(
  * is what `generateSocialImages` produces. A card that says what the page is
  * survives being reposted, quoted, and shown at thumbnail size in a feed.
  */
+/**
+ * A product shot placed on the card, opposite the copy.
+ *
+ * A card that is only words is indistinguishable from every other card that
+ * is only words. Showing the thing itself is what makes a link recognisable
+ * in a feed at thumbnail size.
+ */
+export interface SocialCardForeground {
+  image: string
+  /**
+   * Fraction of the card's height the shot occupies. Defaults to 0.78, which
+   * leaves it clear of the brand row above and the foot below.
+   */
+  scale?: number
+  /** Corner radius as a fraction of the shot's drawn width. @default 0.045 */
+  radius?: number
+  /** Hairline around the shot, so a dark screenshot keeps its edge. */
+  borderColor?: RGBA
+  /** Shadow under the shot. Omit for none. */
+  shadow?: Omit<DropShadowOptions, 'blur'> & { blur?: number }
+  /** Fraction of the card's width the copy may use. @default 0.54 */
+  textWidth?: number
+}
+
 export interface SocialCardOptions {
   /** Background photograph. Cover-cropped to the card. */
   background?: string
   /** Flat background when there is no photograph. Defaults to near-black. */
   backgroundColor?: RGBA
+  /**
+   * Full background declaration — colour, gradient, glows, photograph — in
+   * the same shape a store screenshot takes. Supersedes `background` and
+   * `backgroundColor` when given.
+   */
+  surface?: SurfaceBackground
+  /** A shot of the product, placed opposite the copy. */
+  foreground?: SocialCardForeground
   /** The headline. Wrapped, and capped at `titleLines`. */
   title: string
   /** Small line above the title. The section, usually. */
@@ -140,26 +175,29 @@ export async function generateSocialCard(
   const bodyFont = options.bodyFont ?? options.titleFont
   const padding = Math.round(width * 0.065)
 
-  let card: ImageData
-  if (options.background) {
-    const source = await decode(new Uint8Array(await readFile(options.background)))
-    card = resize(source, { width, height, fit: 'cover' })
-  }
-  else {
-    card = createImageData(width, height, {
-      fill: options.backgroundColor ?? { r: 12, g: 15, b: 11, a: 1 },
-    })
-  }
+  // `surface` supersedes `background`/`backgroundColor`: it can express both
+  // (a flat colour, a photograph) plus the gradients and glows a brand field
+  // usually needs, and it is the same declaration a store screenshot takes,
+  // so a card and a listing can share one definition.
+  const surface: SurfaceBackground = options.surface
+    ?? { color: options.backgroundColor, image: options.background }
+  const photographic = Boolean(surface.image)
+  const card = await createSurface(width, height, surface)
 
   // A photograph is never uniformly dark enough to read white text against.
   // Two passes: a flat wash so the brand row at the top has contrast wherever
   // the image happens to be bright, and an eased scrim over the lower half
   // where the headline sits. A stubble field is nearly white, so the scrim has
   // to reach almost opaque at the foot or the eyebrow disappears into it.
-  if (options.background) {
+  if (photographic) {
     fillRect(card, { x: 0, y: 0, width, height }, { r: 8, g: 11, b: 7, a: 0.22 })
     fillVerticalScrim(card, { x: 0, y: height * 0.26, width, height: height * 0.74 }, { r: 8, g: 11, b: 7 }, 0, 0.94)
   }
+
+  // A wide card has room for the shot beside the copy; a square or portrait
+  // one does not, and forcing the split there leaves the headline in a
+  // half-width gutter with the shot floating in the void above it.
+  const beside = width / height >= 1.2
 
   // Brand row, top left.
   //
@@ -200,7 +238,10 @@ export async function generateSocialCard(
   // The text block is laid out from the bottom up, so a two-line title and a
   // three-line title both sit on the same baseline near the foot of the card.
   const titleSize = options.titleSize ?? Math.round(width * 0.062)
-  const maxTextWidth = width - padding * 2
+  // A shot beside the copy takes the right of the card, so the copy has to be
+  // told about it — otherwise the headline wraps under the shot and the two
+  // overlap. Stacked, the copy keeps the full measure.
+  const maxTextWidth = (options.foreground && beside ? width * (options.foreground.textWidth ?? 0.54) : width) - padding * 2
   const titleMetrics = layoutText({
     text: options.title,
     font: options.titleFont,
@@ -217,6 +258,23 @@ export async function generateSocialCard(
 
   const titleBottom = height - padding - subtitleBlock
   const firstBaseline = titleBottom - titleMetrics.height + titleMetrics.lineHeight * 0.78
+
+  // The shot is drawn before the text so the copy sits over it if they ever
+  // touch. Placing it needs the text block's extent, which is why it happens
+  // here rather than with the rest of the background.
+  if (options.foreground) {
+    const shot = await decode(new Uint8Array(await readFile(options.foreground.image)))
+    const eyebrowTop = firstBaseline - titleMetrics.lineHeight * (options.eyebrow ? 1.6 : 0.9)
+
+    placeForeground(card, shot, options.foreground, {
+      // Beside: the right-hand column, full height. Stacked: the band between
+      // the brand row and the top of the copy.
+      x: beside ? width * (options.foreground.textWidth ?? 0.54) : padding,
+      y: beside ? 0 : padding * 2.2 + width * 0.033,
+      width: beside ? width * (1 - (options.foreground.textWidth ?? 0.54)) - padding : width - padding * 2,
+      height: beside ? height : eyebrowTop - (padding * 2.2 + width * 0.033) - padding * 0.6,
+    })
+  }
 
   if (options.eyebrow) {
     const eyebrowBaseline = firstBaseline - titleMetrics.lineHeight * 0.72 - padding * 0.18
@@ -262,4 +320,128 @@ export async function generateSocialCard(
   await writeFile(outputPath, encoded)
 
   return outputPath
+}
+
+/**
+ * Fit the product shot into a stage and draw it centred there.
+ *
+ * Cropped from the top rather than the middle: a screenshot's identity is in
+ * its first few hundred pixels — the header, the headline number — and a
+ * centre crop throws exactly that away.
+ */
+function placeForeground(
+  card: ImageData,
+  shot: ImageData,
+  foreground: SocialCardForeground,
+  stage: { x: number, y: number, width: number, height: number },
+): void {
+  if (stage.width <= 0 || stage.height <= 0)
+    return
+
+  const aspect = shot.width / shot.height
+  const scale = foreground.scale ?? 0.92
+
+  let width = stage.width * scale
+  let height = width / aspect
+  if (height > stage.height * scale) {
+    height = stage.height * scale
+    width = height * aspect
+  }
+
+  const box = {
+    x: Math.round(stage.x + (stage.width - width) / 2),
+    y: Math.round(stage.y + (stage.height - height) / 2),
+    width: Math.round(width),
+    height: Math.round(height),
+  }
+  const radius = (foreground.radius ?? 0.045) * box.width
+
+  if (foreground.shadow !== undefined) {
+    dropShadow(card, { ...box, radius }, {
+      blur: foreground.shadow.blur ?? box.width * 0.2,
+      offsetY: foreground.shadow.offsetY ?? box.width * 0.07,
+      offsetX: foreground.shadow.offsetX,
+      spread: foreground.shadow.spread,
+      color: foreground.shadow.color ?? { r: 0, g: 0, b: 0, a: 0.5 },
+    })
+  }
+
+  if (foreground.borderColor) {
+    const thickness = Math.max(1, Math.round(box.width * 0.003))
+    fillRoundedRect(card, {
+      x: box.x - thickness,
+      y: box.y - thickness,
+      width: box.width + thickness * 2,
+      height: box.height + thickness * 2,
+      radius: radius + thickness,
+    }, foreground.borderColor)
+  }
+
+  drawImage(card, shot, { ...box, fit: 'cover', position: 'top', radius })
+}
+
+/**
+ * The card sizes worth generating, and what each is for.
+ *
+ * The default `og` size is the one every scraper understands. The others
+ * exist because some consumers reserve a taller slot than 1.91:1 and letterbox
+ * a wide card into it — Apple's link previews in Messages most visibly — and a
+ * page that declares only a wide card gets dead space on either side of it.
+ * Declaring the wide card first and offering the others as alternates lets a
+ * consumer that prefers a taller crop pick one.
+ */
+export type SocialCardPreset = 'og' | 'twitter' | 'square' | 'portrait'
+
+export interface SocialCardSize {
+  width: number
+  height: number
+}
+
+export const SOCIAL_CARD_PRESETS: Record<SocialCardPreset, SocialCardSize> = {
+  /** 1.91:1. The universal default: Open Graph, Slack, Discord, LinkedIn. */
+  og: { width: 1200, height: 630 },
+  /** 2:1. What X renders for `summary_large_image`. */
+  twitter: { width: 1200, height: 600 },
+  /** 1:1. Fills a square slot without a crop; safe everywhere. */
+  square: { width: 1200, height: 1200 },
+  /** 4:5. The tall slot Messages and Pinterest reserve. */
+  portrait: { width: 1200, height: 1500 },
+}
+
+export interface SocialCardSetOptions extends Omit<SocialCardOptions, 'width' | 'height'> {
+  /** Which sizes to build. Defaults to `og`, `square` and `portrait`. */
+  presets?: SocialCardPreset[]
+  /** Base file name, without an extension. @default 'og' */
+  name?: string
+}
+
+/**
+ * Build one card definition at several sizes.
+ *
+ * The default file for the `og` preset is `<name>.<ext>` and the rest are
+ * `<name>-<preset>.<ext>`, so the primary card keeps a stable URL when the
+ * set it belongs to grows.
+ */
+export async function generateSocialCards(
+  outputDir: string,
+  options: SocialCardSetOptions,
+): Promise<Record<string, string>> {
+  const presets = options.presets ?? ['og', 'square', 'portrait']
+  const name = options.name ?? 'og'
+  const format = options.format ?? 'jpeg'
+  const extension = format === 'jpeg' ? 'jpg' : format
+
+  await mkdir(outputDir, { recursive: true })
+
+  const results: Record<string, string> = {}
+  for (const preset of presets) {
+    const size = SOCIAL_CARD_PRESETS[preset]
+    if (!size)
+      throw new TypeError(`Unknown social card preset: ${preset}`)
+
+    const file = join(outputDir, `${name}${preset === 'og' ? '' : `-${preset}`}.${extension}`)
+    results[preset] = await generateSocialCard(file, { ...options, ...size })
+  }
+
+  return results
 }

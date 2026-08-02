@@ -1,5 +1,6 @@
 export * from './analyze'
 export * from './app-icon'
+export * from './app-store'
 // `decode` / `encode` from the codecs module — exposed at the top
 // level so callers don't have to reach into `./codecs` to write a
 // PNG/JPEG buffer they synthesized via `createImageData`. Without
@@ -12,6 +13,7 @@ export * from './delivery'
 export * from './favicon'
 export * from './font'
 export * from './og'
+export * from './paint'
 export * from './shapes'
 export * from './text'
 export * from './processor'
@@ -19,6 +21,7 @@ export * from './responsive'
 export * from './picture-set'
 export * from './splathash'
 export * from './sprite-generator'
+export * from './surface'
 export * from './thumbhash'
 export * from './types'
 export * from './utils'

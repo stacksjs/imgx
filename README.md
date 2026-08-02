@@ -51,6 +51,8 @@
   - ThumbHash placeholders
   - Sprite sheet generation
   - OG Image generation
+  - Composed social cards at every preview size
+  - Multi-slide App Store screenshots at Apple's exact dimensions
   - Low-resolution image placeholders
   - Batch image processing
 

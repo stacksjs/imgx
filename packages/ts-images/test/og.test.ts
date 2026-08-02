@@ -1,11 +1,18 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
-import { mkdir, rm } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { mkdir, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
-import { generateSocialImages } from '../src/og'
+import { loadFont } from '../src/font'
+import { generateSocialCard, generateSocialCards, generateSocialImages, SOCIAL_CARD_PRESETS } from '../src/og'
 import { readMetadata } from './utils/test-helpers'
 
 const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
 const OUTPUT_DIR = join(import.meta.dir, 'output')
+
+// The composed card draws real glyphs, so it needs a real face. Skipped
+// rather than failed where one is not on the machine, matching `text.test.ts`.
+const FONT = '/Users/chris/Code/Fonts/Satoshi/WEB/fonts/Satoshi-Bold.ttf'
+const hasFont = existsSync(FONT)
 
 describe('og', () => {
   beforeAll(async () => {
@@ -92,5 +99,84 @@ describe('og', () => {
       expect(lowQualityFileInfo.size).toBeGreaterThan(0)
       expect(highQualityFileInfo.size).toBeGreaterThan(0)
     }, 15000) // Increase timeout to 15 seconds
+  })
+
+  describe('SOCIAL_CARD_PRESETS', () => {
+    it('leads with the 1.91:1 card every scraper understands', () => {
+      expect(SOCIAL_CARD_PRESETS.og).toEqual({ width: 1200, height: 630 })
+      expect(SOCIAL_CARD_PRESETS.og.width / SOCIAL_CARD_PRESETS.og.height).toBeCloseTo(1.905, 2)
+    })
+
+    it('offers a square and a taller crop for the slots that reserve one', () => {
+      expect(SOCIAL_CARD_PRESETS.square.width).toBe(SOCIAL_CARD_PRESETS.square.height)
+      expect(SOCIAL_CARD_PRESETS.portrait.height).toBeGreaterThan(SOCIAL_CARD_PRESETS.portrait.width)
+    })
+  })
+
+  describe.if(hasFont)('generateSocialCards', () => {
+    async function font(): Promise<ReturnType<typeof loadFont>> {
+      return loadFont(new Uint8Array(await readFile(FONT)))
+    }
+
+    it('keeps the primary card on a stable name and suffixes the rest', async () => {
+      const results = await generateSocialCards(OUTPUT_DIR, {
+        title: 'Ads gone before the page loads.',
+        titleFont: await font(),
+      })
+
+      expect(results.og).toBe(join(OUTPUT_DIR, 'og.jpg'))
+      expect(results.square).toBe(join(OUTPUT_DIR, 'og-square.jpg'))
+      expect(results.portrait).toBe(join(OUTPUT_DIR, 'og-portrait.jpg'))
+    }, 30000)
+
+    it('writes each preset at its declared size', async () => {
+      const results = await generateSocialCards(OUTPUT_DIR, {
+        title: 'Ads gone before the page loads.',
+        titleFont: await font(),
+        presets: ['og', 'twitter', 'square'],
+      })
+
+      for (const [preset, path] of Object.entries(results)) {
+        const meta = await readMetadata(path)
+        expect(meta.width).toBe(SOCIAL_CARD_PRESETS[preset as keyof typeof SOCIAL_CARD_PRESETS].width)
+        expect(meta.height).toBe(SOCIAL_CARD_PRESETS[preset as keyof typeof SOCIAL_CARD_PRESETS].height)
+      }
+    }, 30000)
+
+    it('honours a custom base name and format', async () => {
+      const results = await generateSocialCards(OUTPUT_DIR, {
+        title: 'Features',
+        titleFont: await font(),
+        presets: ['og'],
+        name: 'features',
+        format: 'png',
+      })
+
+      expect(results.og).toBe(join(OUTPUT_DIR, 'features.png'))
+    }, 30000)
+
+    it('rejects an unknown preset', async () => {
+      await expect(generateSocialCards(OUTPUT_DIR, {
+        title: 'Nope',
+        titleFont: await font(),
+        presets: ['banner' as 'og'],
+      })).rejects.toThrow(/Unknown social card preset/)
+    })
+
+    it('places a product shot without throwing on any preset shape', async () => {
+      const path = await generateSocialCard(join(OUTPUT_DIR, 'with-shot.jpg'), {
+        title: 'Ads gone before the page loads.',
+        subtitle: 'No account, no telemetry, no bloat.',
+        eyebrow: 'Chrome · Firefox · Safari',
+        brand: 'Very Good AdBlock',
+        titleFont: await font(),
+        foreground: { image: join(FIXTURES_DIR, 'app-icon.png'), shadow: {} },
+        ...SOCIAL_CARD_PRESETS.portrait,
+      })
+
+      const meta = await readMetadata(path)
+      expect(meta.width).toBe(1200)
+      expect(meta.height).toBe(1500)
+    }, 30000)
   })
 })
