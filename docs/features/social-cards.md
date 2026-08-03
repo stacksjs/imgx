@@ -4,16 +4,25 @@ A link preview is the only part of a page most people ever see. `ts-images`
 composes the card that appears in it — background, brand, headline, product
 shot — without a browser in the pipeline.
 
-## Why more than one size
+## Declare one `og:image`
 
-Open Graph declares one image, and scrapers disagree about the slot they put it
-in. A 1.91:1 card is right for Facebook, LinkedIn, Slack and Discord. Apple's
-link previews in Messages reserve a taller box and letterbox a wide card into
-it, leaving dead space above and below. Pinterest wants taller still.
+**Repeated `og:image` is a gallery, not a fallback list.** It is tempting to
+publish a wide card plus a square and a portrait crop and let each consumer
+pick the shape that suits its slot. They do not pick. Discord lays every
+declared image out side by side, each cropped to a sliver, and what was meant
+as a graceful fallback renders as a worse preview than the single card would
+have. Facebook and Apple take the first and ignore the rest, so the extras buy
+nothing even where they do no harm.
 
-`generateSocialCards` builds one definition at several sizes so a page can
-declare the wide card as its primary `og:image` and offer the others as
-alternates:
+Generate one card at 1.91:1 and declare that. It is the ratio Facebook,
+LinkedIn, Slack and Discord all draw whole, and the one Apple letterboxes into
+its taller box rather than mangling.
+
+## More than one size
+
+The other presets are for the places you reference an image *directly* — an
+`<img>` in a page, an emailer, a social post you compose yourself — not for
+stacking into `og:image`:
 
 ```ts
 import { generateSocialCards, loadFont, parseColor } from 'ts-images'
@@ -33,6 +42,9 @@ const cards = await generateSocialCards('public/social', {
 // → { og: 'public/social/og.jpg',
 //     square: 'public/social/og-square.jpg',
 //     portrait: 'public/social/og-portrait.jpg' }
+//
+// Only `og` belongs in a meta tag. Reference the others by URL where you
+// actually want that shape.
 ```
 
 The `og` preset keeps the bare `<name>.<ext>` filename so the primary card's URL
@@ -42,10 +54,10 @@ stays stable as the set grows.
 
 | Preset | Size | Where it lands |
 | --- | --- | --- |
-| `og` | 1200×630 | Open Graph default: Facebook, LinkedIn, Slack, Discord |
-| `twitter` | 1200×600 | X, `summary_large_image` |
-| `square` | 1200×1200 | Square slots, no crop |
-| `portrait` | 1200×1500 | Messages, Pinterest |
+| `og` | 1200×630 | The one you declare as `og:image` — Facebook, LinkedIn, Slack, Discord, Messages |
+| `twitter` | 1200×600 | `twitter:image`, if you want X's exact ratio rather than reusing `og` |
+| `square` | 1200×1200 | Square slots you reference directly |
+| `portrait` | 1200×1500 | Tall slots you reference directly, e.g. a Pinterest pin |
 
 ## Layout
 
@@ -96,6 +108,9 @@ that cannot fetch the image has nothing to reserve space with:
 
 `twitter:card` must be `summary_large_image`; the default `summary` renders a
 small square thumbnail no matter how good the card is.
+
+Note the single `og:image`. Adding the square and portrait crops here is the
+mistake described above — Discord will collage them.
 
 ## Cropping from photographs
 
