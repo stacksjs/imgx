@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { mkdir, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { loadFont } from '../src/font'
-import { generateSocialCard, generateSocialCards, generateSocialImages, SOCIAL_CARD_PRESETS } from '../src/og'
+import { generateSocialCard, generateSocialCards, generateSocialImages, socialCardMetrics, SOCIAL_CARD_PRESETS } from '../src/og'
 import { readMetadata } from './utils/test-helpers'
 
 const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
@@ -99,6 +99,61 @@ describe('og', () => {
       expect(lowQualityFileInfo.size).toBeGreaterThan(0)
       expect(highQualityFileInfo.size).toBeGreaterThan(0)
     }, 15000) // Increase timeout to 15 seconds
+  })
+
+  describe('socialCardMetrics', () => {
+    // A tall capture — the popup, the shape that exposed the bug.
+    const tall = { aspect: 0.55 }
+
+    it('leaves only the margin to the right of the shot', () => {
+      const { foreground, padding } = socialCardMetrics({ width: 1200, height: 630, foreground: tall })
+
+      expect(foreground).toBeDefined()
+      // The shot used to be centred in a fixed column, parking it mid-panel
+      // with ~157px of background against the card's own edge.
+      expect(1200 - (foreground!.x + foreground!.width)).toBe(padding)
+    })
+
+    it('gives the copy the width a narrow shot does not need', () => {
+      const withTall = socialCardMetrics({ width: 1200, height: 630, foreground: tall })
+      const withWide = socialCardMetrics({ width: 1200, height: 630, foreground: { aspect: 1.6 } })
+
+      // The old fixed column was 1200 * 0.54 - 78 * 2 = 492 either way.
+      expect(withTall.textWidth).toBeGreaterThan(492)
+      expect(withTall.textWidth).toBeGreaterThan(withWide.textWidth)
+    })
+
+    it('never lets a wide shot take the copy below its floor', () => {
+      const { textWidth, foreground } = socialCardMetrics({
+        width: 1200,
+        height: 630,
+        foreground: { aspect: 4, textWidth: 0.54 },
+      })
+
+      expect(foreground!.width).toBeLessThanOrEqual(1200 - 1200 * 0.54)
+      expect(textWidth).toBeGreaterThan(0)
+    })
+
+    it('stacks on a square card and gives the copy the full measure', () => {
+      const square = socialCardMetrics({ width: 1200, height: 1200, foreground: tall })
+
+      expect(square.beside).toBe(false)
+      expect(square.textWidth).toBe(1200 - square.padding * 2)
+    })
+
+    it('places a stacked shot only when given a band to put it in', () => {
+      const without = socialCardMetrics({ width: 1200, height: 1200, foreground: tall })
+      const within = socialCardMetrics({
+        width: 1200,
+        height: 1200,
+        foreground: tall,
+        stackedStage: { y: 200, height: 600 },
+      })
+
+      expect(without.foreground).toBeUndefined()
+      expect(within.foreground!.y).toBeGreaterThanOrEqual(200)
+      expect(within.foreground!.y + within.foreground!.height).toBeLessThanOrEqual(800)
+    })
   })
 
   describe('SOCIAL_CARD_PRESETS', () => {

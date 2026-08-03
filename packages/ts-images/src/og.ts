@@ -106,7 +106,17 @@ export interface SocialCardForeground {
   borderColor?: RGBA
   /** Shadow under the shot. Omit for none. */
   shadow?: Omit<DropShadowOptions, 'blur'> & { blur?: number }
-  /** Fraction of the card's width the copy may use. @default 0.54 */
+  /**
+   * Share of the card's width the copy is guaranteed, as a floor rather than a
+   * fixed column: the shot is sized off the height it can use and the copy
+   * gets whatever is left, so a tall capture buys the headline a wider measure
+   * instead of leaving a band of background beside it. Only a shot wide enough
+   * to eat into this is capped.
+   *
+   * Ask `socialCardMetrics` for the number rather than recomputing it.
+   *
+   * @default 0.54
+   */
   textWidth?: number
 }
 
@@ -194,11 +204,6 @@ export async function generateSocialCard(
     fillVerticalScrim(card, { x: 0, y: height * 0.26, width, height: height * 0.74 }, { r: 8, g: 11, b: 7 }, 0, 0.94)
   }
 
-  // A wide card has room for the shot beside the copy; a square or portrait
-  // one does not, and forcing the split there leaves the headline in a
-  // half-width gutter with the shot floating in the void above it.
-  const beside = width / height >= 1.2
-
   // Brand row, top left.
   //
   // The mark sits on its own solid plate rather than being drawn straight
@@ -241,7 +246,22 @@ export async function generateSocialCard(
   // A shot beside the copy takes the right of the card, so the copy has to be
   // told about it — otherwise the headline wraps under the shot and the two
   // overlap. Stacked, the copy keeps the full measure.
-  const maxTextWidth = (options.foreground && beside ? width * (options.foreground.textWidth ?? 0.54) : width) - padding * 2
+  //
+  // Decoded before the text is laid out because the measure depends on how
+  // wide the shot ends up: a tall capture needs less width than the column it
+  // was once given, and the copy should have the difference.
+  const shot = options.foreground
+    ? await decode(new Uint8Array(await readFile(options.foreground.image)))
+    : undefined
+
+  const metrics = socialCardMetrics({
+    width,
+    height,
+    foreground: shot && options.foreground
+      ? { aspect: shot.width / shot.height, scale: options.foreground.scale, textWidth: options.foreground.textWidth }
+      : undefined,
+  })
+  const maxTextWidth = metrics.textWidth
   const titleMetrics = layoutText({
     text: options.title,
     font: options.titleFont,
@@ -262,18 +282,22 @@ export async function generateSocialCard(
   // The shot is drawn before the text so the copy sits over it if they ever
   // touch. Placing it needs the text block's extent, which is why it happens
   // here rather than with the rest of the background.
-  if (options.foreground) {
-    const shot = await decode(new Uint8Array(await readFile(options.foreground.image)))
+  if (options.foreground && shot) {
     const eyebrowTop = firstBaseline - titleMetrics.lineHeight * (options.eyebrow ? 1.6 : 0.9)
+    const stackedTop = padding * 2.2 + width * 0.033
 
-    placeForeground(card, shot, options.foreground, {
-      // Beside: the right-hand column, full height. Stacked: the band between
-      // the brand row and the top of the copy.
-      x: beside ? width * (options.foreground.textWidth ?? 0.54) : padding,
-      y: beside ? 0 : padding * 2.2 + width * 0.033,
-      width: beside ? width * (1 - (options.foreground.textWidth ?? 0.54)) - padding : width - padding * 2,
-      height: beside ? height : eyebrowTop - (padding * 2.2 + width * 0.033) - padding * 0.6,
-    })
+    // Beside, the box is already known — it is what set the copy's measure.
+    // Stacked, it depends on where the copy ended up, which is only settled
+    // now that the title has been laid out.
+    const box = metrics.foreground ?? socialCardMetrics({
+      width,
+      height,
+      foreground: { aspect: shot.width / shot.height, scale: options.foreground.scale, textWidth: options.foreground.textWidth },
+      stackedStage: { y: stackedTop, height: eyebrowTop - stackedTop - padding * 0.6 },
+    }).foreground
+
+    if (box)
+      placeForeground(card, shot, options.foreground, box)
   }
 
   if (options.eyebrow) {
@@ -322,8 +346,127 @@ export async function generateSocialCard(
   return outputPath
 }
 
+export interface SocialCardRegion {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export interface SocialCardMetrics {
+  /** Margin the layout is built on. */
+  padding: number
+  /** Whether the shot sits beside the copy rather than above it. */
+  beside: boolean
+  /** The width the headline and subtitle wrap within. */
+  textWidth: number
+  /** Where the product shot lands, if there is one. */
+  foreground?: SocialCardRegion
+}
+
+export interface SocialCardMetricsOptions {
+  width?: number
+  height?: number
+  /**
+   * The shot's proportions and placement rules. `aspect` is width ÷ height of
+   * the capture; everything else mirrors `SocialCardForeground`.
+   */
+  foreground?: { aspect: number, scale?: number, textWidth?: number }
+  /** Vertical band the shot may use when it sits above the copy. */
+  stackedStage?: { y: number, height: number }
+}
+
 /**
- * Fit the product shot into a stage and draw it centred there.
+ * Where everything goes on a card.
+ *
+ * Split out and exported because the copy has to be written to fit a measure
+ * that only this file knows. Re-deriving it downstream — a validator that
+ * hard-codes `width * 0.54 - padding * 2` — is right until the layout moves,
+ * and then it is confidently wrong in whichever direction hurts: passing copy
+ * that will be truncated, or rejecting copy that would have fit.
+ */
+export function socialCardMetrics(options: SocialCardMetricsOptions = {}): SocialCardMetrics {
+  const width = options.width ?? 1200
+  const height = options.height ?? 630
+  const padding = Math.round(width * 0.065)
+  const beside = width / height >= 1.2
+  const full = width - padding * 2
+
+  if (!options.foreground || !beside)
+    return { padding, beside, textWidth: full, foreground: besideless(options, padding, width, height, beside) }
+
+  const { aspect } = options.foreground
+  const scale = options.foreground.scale ?? 0.92
+
+  // Size the shot off the height it can actually use, not off a column width
+  // guessed in advance. A tall capture in a fixed 46% column is limited by the
+  // card's height long before it runs out of width, so it came out narrow and
+  // was then centred in the leftover — parked in the middle of the right-hand
+  // side with a band of empty background either side of it, the widest of them
+  // against the card's own edge.
+  let shotHeight = height * scale
+  let shotWidth = shotHeight * aspect
+
+  // The copy keeps its share no matter how wide the shot wants to be.
+  const gutter = padding * 0.9
+  const reserved = width * (options.foreground.textWidth ?? 0.54)
+  const room = width - reserved - padding - gutter
+  if (shotWidth > room) {
+    shotWidth = room
+    shotHeight = shotWidth / aspect
+  }
+
+  // Right-aligned against the margin, so the only gap is the gutter the copy
+  // needs — and the copy gets everything to its left.
+  const x = width - padding - shotWidth
+
+  return {
+    padding,
+    beside,
+    textWidth: Math.max(0, Math.round(x - gutter - padding)),
+    foreground: {
+      x: Math.round(x),
+      y: Math.round((height - shotHeight) / 2),
+      width: Math.round(shotWidth),
+      height: Math.round(shotHeight),
+    },
+  }
+}
+
+/** Stacked placement: centred in the band between the brand row and the copy. */
+function besideless(
+  options: SocialCardMetricsOptions,
+  padding: number,
+  width: number,
+  height: number,
+  beside: boolean,
+): SocialCardRegion | undefined {
+  if (!options.foreground || beside || !options.stackedStage)
+    return undefined
+
+  const { aspect } = options.foreground
+  const scale = options.foreground.scale ?? 0.92
+  const stage = { x: padding, width: width - padding * 2, ...options.stackedStage }
+  if (stage.width <= 0 || stage.height <= 0)
+    return undefined
+
+  let shotWidth = stage.width * scale
+  let shotHeight = shotWidth / aspect
+  if (shotHeight > stage.height * scale) {
+    shotHeight = stage.height * scale
+    shotWidth = shotHeight * aspect
+  }
+
+  return {
+    x: Math.round(stage.x + (stage.width - shotWidth) / 2),
+    y: Math.round(stage.y + (stage.height - shotHeight) / 2),
+    width: Math.round(shotWidth),
+    height: Math.round(shotHeight),
+  }
+}
+
+/**
+ * Draw the product shot into a box the layout already decided on.
  *
  * Cropped from the top rather than the middle: a screenshot's identity is in
  * its first few hundred pixels — the header, the headline number — and a
@@ -333,27 +476,11 @@ function placeForeground(
   card: ImageData,
   shot: ImageData,
   foreground: SocialCardForeground,
-  stage: { x: number, y: number, width: number, height: number },
+  box: SocialCardRegion,
 ): void {
-  if (stage.width <= 0 || stage.height <= 0)
+  if (box.width <= 0 || box.height <= 0)
     return
 
-  const aspect = shot.width / shot.height
-  const scale = foreground.scale ?? 0.92
-
-  let width = stage.width * scale
-  let height = width / aspect
-  if (height > stage.height * scale) {
-    height = stage.height * scale
-    width = height * aspect
-  }
-
-  const box = {
-    x: Math.round(stage.x + (stage.width - width) / 2),
-    y: Math.round(stage.y + (stage.height - height) / 2),
-    width: Math.round(width),
-    height: Math.round(height),
-  }
   const radius = (foreground.radius ?? 0.045) * box.width
 
   if (foreground.shadow !== undefined) {
