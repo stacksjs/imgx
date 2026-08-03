@@ -1,5 +1,20 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.6...v0.2.7)
+
+## 🐛 Bug Fixes
+
+- **og**: size the shot off its height, not a fixed column ([e0eccf3](https://github.com/stacksjs/ts-images/commit/e0eccf3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.7 ([8df7e8d](https://github.com/stacksjs/ts-images/commit/8df7e8d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- rename docs config ([de24cca](https://github.com/stacksjs/ts-images/commit/de24cca)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.5...v0.2.6)
 
 ## 🚀 Features
