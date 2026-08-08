@@ -1,5 +1,23 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.7...v0.2.8)
+
+## 🐛 Bug Fixes
+
+- **og**: let the brand row hold a wordmark, not just an icon ([3fded68](https://github.com/stacksjs/ts-images/commit/3fded68)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📚 Documentation
+
+- **og**: repeated og:image is a gallery, not a fallback list ([907e85d](https://github.com/stacksjs/ts-images/commit/907e85d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.8 ([d2d6484](https://github.com/stacksjs/ts-images/commit/d2d6484)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.6...v0.2.7)
 
 ## 🐛 Bug Fixes
