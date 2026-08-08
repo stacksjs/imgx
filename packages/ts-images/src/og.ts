@@ -153,18 +153,34 @@ export interface SocialCardOptions {
   accent?: RGBA
   /**
    * Plate painted behind the mark before `drawMark` runs. Defaults to white,
-   * so a mark drawn in its own colours reads over any photograph.
+   * so a mark drawn in its own colours reads over any photograph. `null`
+   * draws no plate, which is what a mark already in the card's own palette
+   * wants: a white plate behind a white wordmark hides it.
    */
-  markPlate?: RGBA
+  markPlate?: RGBA | null
   /**
-   * Paint the logo mark into the square left of the wordmark.
+   * Paint the logo mark, left of the wordmark.
    *
    * A library cannot know what a brand's mark looks like, so it supplies the
    * plate and the position and hands the box back: `box` is in card pixels,
    * and the primitives in `./shapes` draw into `card` directly. Without this
    * the brand row is the wordmark alone.
+   *
+   * `box.width` is the space reserved horizontally, which is `box.size` for a
+   * square mark and wider for a wordmark (see `markAspect`). `box.size` stays
+   * the height, so a painter written against the old square-only box keeps
+   * working.
    */
-  drawMark?: (card: ImageData, box: { x: number, y: number, size: number }) => void
+  drawMark?: (card: ImageData, box: { x: number, y: number, size: number, width: number }) => void
+  /**
+   * The mark's width divided by its height. Defaults to 1, a square.
+   *
+   * A logo is often a wordmark rather than an icon, and reserving a square for
+   * one either shrinks it to half the row's height or runs it over the text
+   * beside it. Declaring the shape lets the row reserve the right width and
+   * put the wordmark after it.
+   */
+  markAspect?: number
   /** Subtitle colour. Defaults to a dimmed `color`. */
   mutedColor?: RGBA
   titleSize?: number
@@ -210,34 +226,63 @@ export async function generateSocialCard(
   // onto the photograph: over a field, an outlined mark let the texture
   // through and the accent dots inside it disappeared into whatever happened
   // to be behind them.
-  if (options.brand) {
-    const markSize = Math.round(width * 0.033)
-    const hasMark = Boolean(options.drawMark)
+  // The row renders for a mark on its own as well as for a wordmark. A brand
+  // whose logo already carries its name has nothing to add in type beside it,
+  // and gating the row on `brand` meant supplying only a mark drew nothing.
+  const hasMark = Boolean(options.drawMark)
+
+  if (options.brand || hasMark) {
+    // A mark standing alone IS the brand on the card, so it takes the room the
+    // wordmark beside it would otherwise have used. Next to text it stays the
+    // size it always was, so an icon-plus-wordmark row is unchanged.
+    const markSize = Math.round(width * (options.brand ? 0.033 : 0.05))
+    // A wordmark is wider than it is tall. Reserving a square for one either
+    // shrinks it to half the row height or runs it over the text beside it.
+    const markAspect = Number.isFinite(options.markAspect) && (options.markAspect ?? 0) > 0
+      ? options.markAspect!
+      : 1
+    const markWidth = Math.round(markSize * markAspect)
+    let rowWidth = 0
 
     if (hasMark) {
       // The plate is larger than the mark so the mark has margin inside it,
-      // the way a logo has clear space around it in any brand sheet.
-      const plate = Math.round(markSize * 1.28)
-      const inset = Math.round((plate - markSize) / 2)
+      // the way a logo has clear space around it in any brand sheet. It
+      // follows the mark's shape rather than always being square.
+      const inset = Math.round(markSize * 0.14)
+      const plateWidth = markWidth + inset * 2
+      const plateHeight = markSize + inset * 2
 
-      fillRoundedRect(
-        card,
-        { x: padding, y: padding, width: plate, height: plate, radius: plate * 0.24 },
-        options.markPlate ?? { r: 255, g: 255, b: 255 },
-      )
+      if (options.markPlate !== null) {
+        fillRoundedRect(
+          card,
+          { x: padding, y: padding, width: plateWidth, height: plateHeight, radius: plateHeight * 0.24 },
+          options.markPlate ?? { r: 255, g: 255, b: 255 },
+        )
+      }
 
-      options.drawMark!(card, { x: padding + inset, y: padding + inset, size: markSize })
+      options.drawMark!(card, {
+        x: padding + inset,
+        y: padding + inset,
+        size: markSize,
+        width: markWidth,
+      })
+
+      rowWidth = plateWidth
     }
 
-    drawText(card, {
-      text: options.brand,
-      font: options.titleFont,
-      size: Math.round(width * 0.024),
-      x: hasMark ? padding + markSize * 1.72 : padding,
-      y: padding + markSize * 0.86,
-      color,
-      letterSpacing: -0.01,
-    })
+    if (options.brand) {
+      drawText(card, {
+        text: options.brand,
+        font: options.titleFont,
+        // Measured off the mark actually drawn, not off a square that may not
+        // be the shape of the mark.
+        x: hasMark ? padding + rowWidth + Math.round(markSize * 0.44) : padding,
+        y: padding + markSize * 0.86,
+        size: Math.round(width * 0.024),
+        color,
+        letterSpacing: -0.01,
+      })
+    }
   }
 
   // The text block is laid out from the bottom up, so a two-line title and a
