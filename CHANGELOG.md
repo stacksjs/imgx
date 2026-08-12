@@ -1,5 +1,21 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.8...v0.2.9)
+
+## 🚀 Features
+
+- add route-aware activity share cards ([2f9e69a](https://github.com/stacksjs/ts-images/commit/2f9e69a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.9 ([5f34d9d](https://github.com/stacksjs/ts-images/commit/5f34d9d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update shivammathur/setup-php action to v2.37.1 [security] (#1950) ([6cd6800](https://github.com/stacksjs/ts-images/commit/6cd6800)) _(by [renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot]))_ ([#1950](https://github.com/stacksjs/ts-images/issues/1950), [#1950](https://github.com/stacksjs/ts-images/issues/1950))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _[renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>](https://github.com/renovate[bot])_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.7...v0.2.8)
 
 ## 🐛 Bug Fixes
