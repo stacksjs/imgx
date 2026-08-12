@@ -7,6 +7,7 @@ import {
   convertImageFormat,
   generatePlaceholder,
   optimizeImage,
+  processImage,
 } from '../src/processor'
 
 const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
@@ -46,6 +47,29 @@ describe('processor', () => {
       // Ensure the file exists
       const exists = await Bun.file(output).exists()
       expect(exists).toBe(true)
+    })
+
+    it('resizes string dimensions used by the CLI', async () => {
+      const input = join(FIXTURES_DIR, 'app-icon.png')
+      const output = join(OUTPUT_DIR, 'resized.png')
+
+      await processImage({ input, output, format: 'png', resize: '240x160' })
+
+      const metadata = await readMetadata(output)
+      expect(metadata.width).toBe(240)
+      expect(metadata.height).toBe(160)
+    })
+
+    it('calculates percentage dimensions from the source image', async () => {
+      const input = join(FIXTURES_DIR, 'app-icon.png')
+      const output = join(OUTPUT_DIR, 'half-size.png')
+      const source = await readMetadata(input)
+
+      await processImage({ input, output, format: 'png', resize: '50%' })
+
+      const metadata = await readMetadata(output)
+      expect(metadata.width).toBe(Math.round(source.width / 2))
+      expect(metadata.height).toBe(Math.round(source.height / 2))
     })
   })
 

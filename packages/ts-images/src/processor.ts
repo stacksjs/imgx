@@ -36,13 +36,32 @@ import { decode, encode, detectFormat, getMetadata } from './codecs'
 import { generateThumbHash } from './thumbhash'
 import { debugLog } from './utils'
 
-function parseResize(resize: string | { width?: number, height?: number }) {
+function parseResize(resize: string | { width?: number, height?: number }, sourceWidth: number, sourceHeight: number): { width?: number, height?: number } | null {
   if (typeof resize === 'string') {
-    const match = resize.match(/^(\d+)%$/)
-    if (match) {
-      const percentage = Number.parseInt(match[1], 10)
-      return { width: percentage, height: percentage }
+    const percentageMatch = resize.match(/^(\d+(?:\.\d+)?)%$/)
+    if (percentageMatch) {
+      const scale = Number.parseFloat(percentageMatch[1]) / 100
+      if (scale <= 0)
+        return null
+      return {
+        width: Math.max(1, Math.round(sourceWidth * scale)),
+        height: Math.max(1, Math.round(sourceHeight * scale)),
+      }
     }
+
+    const dimensionsMatch = resize.match(/^(\d+)?x(\d+)?$/i)
+    if (!dimensionsMatch || (!dimensionsMatch[1] && !dimensionsMatch[2]))
+      return null
+
+    const width = dimensionsMatch[1] ? Number.parseInt(dimensionsMatch[1], 10) : undefined
+    const height = dimensionsMatch[2] ? Number.parseInt(dimensionsMatch[2], 10) : undefined
+    if (width && height)
+      return { width, height }
+    if (width)
+      return { width, height: Math.max(1, Math.round(width * sourceHeight / sourceWidth)) }
+    if (height)
+      return { width: Math.max(1, Math.round(height * sourceWidth / sourceHeight)), height }
+
     return null
   }
   return resize
@@ -103,7 +122,7 @@ export async function processImage(options: ProcessOptions): Promise<OptimizeRes
     let processedData = imageData
 
     if (resizeOpt) {
-      const dimensions = parseResize(resizeOpt)
+      const dimensions = parseResize(resizeOpt, imageData.width, imageData.height)
       if (dimensions) {
         processedData = resize(processedData, {
           width: dimensions.width,
