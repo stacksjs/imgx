@@ -8,8 +8,8 @@ const logger = new Logger('imgx', {
 async function main(): Promise<void> {
   logger.info('Building...')
 
-  await Bun.build({
-    entrypoints: ['./src/index.ts', './bin/cli.ts'],
+  const result = await Bun.build({
+    entrypoints: ['./src/index.ts', './src/activity-card.ts', './bin/cli.ts'],
     outdir: './dist',
     format: 'esm',
     target: 'bun',
@@ -17,6 +17,12 @@ async function main(): Promise<void> {
     splitting: true,
     plugins: [dts()],
   })
+
+  if (!result.success) {
+    for (const log of result.logs)
+      logger.error(log)
+    throw new Error('Build failed')
+  }
 
   logger.success('Built')
 }

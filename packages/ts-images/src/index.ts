@@ -1,6 +1,7 @@
 export * from './analyze'
 export * from './app-icon'
 export * from './app-store'
+export * from './activity-card'
 // `decode` / `encode` from the codecs module — exposed at the top
 // level so callers don't have to reach into `./codecs` to write a
 // PNG/JPEG buffer they synthesized via `createImageData`. Without

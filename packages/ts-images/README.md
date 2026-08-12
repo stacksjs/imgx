@@ -32,6 +32,29 @@ await processImage('photo.png', {
 })
 ```
 
+### Activity share cards
+
+Create branded, browser-safe SVG cards for activity feeds, downloads, and native social sharing. The card includes a normalized route trace and the activity's key metrics without embedding source coordinates in the output.
+
+```typescript
+import { activityShareCardSvg } from 'ts-images/activity-card'
+
+const svg = activityShareCardSvg({
+  activityType: 'Trail run',
+  athlete: 'Chris',
+  completedAt: 'August 12, 2026',
+  distance: '8.42 mi',
+  duration: '1:07:32',
+  elevation: '1,284 ft',
+  pace: '8:01 /mi',
+  preset: 'story',
+  route: recordedPoints,
+  title: 'Headlands sunrise',
+})
+```
+
+Use `square` for feed posts, `story` for vertical stories, and `landscape` for link previews. `activityShareCardFileName()` creates a safe download name for the selected preset.
+
 ### CLI
 
 ```bash
@@ -63,6 +86,7 @@ imgx svg-optimize ./svgs
 - **Responsive Images** - Generate multiple sizes for responsive web design
 - **Watermarking** - Add text or image watermarks
 - **Image to SVG** - Convert raster images to SVG using potrace
+- **Activity Share Cards** - Render route-aware square, story, and landscape social assets
 
 ## Supported Formats
 

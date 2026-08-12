@@ -10,6 +10,7 @@ function fail(message: string): never {
 }
 
 const distEntry = new URL('../dist/src/index.js', import.meta.url).href
+const activityCardEntry = new URL('../dist/src/activity-card.js', import.meta.url).href
 
 let mod: Record<string, unknown>
 try {
@@ -34,4 +35,15 @@ const roundTrip = await decode(png)
 if (roundTrip.width !== 4 || roundTrip.height !== 4)
   fail(`decode(encode(img)) returned ${roundTrip.width}x${roundTrip.height}, expected 4x4`)
 
-console.log('smoke-dist: dist imports and png round-trips')
+const activityCard = await import(activityCardEntry) as typeof import('../src/activity-card')
+const card = activityCard.activityShareCardSvg({
+  activityType: 'Trail run',
+  distance: '10.4 km',
+  duration: '52:18',
+  route: [{ lat: 37.1, lng: -122.1 }, { lat: 37.2, lng: -122.2 }],
+  title: 'Ridge loop',
+})
+if (!card.includes('id="activity-route"') || !card.includes('10.4 km'))
+  fail('activity-card subpath did not render route and metrics')
+
+console.log('smoke-dist: dist imports, png round-trips, and activity cards render')
