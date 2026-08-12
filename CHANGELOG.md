@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.9...v0.2.10)
+
+## 🐛 Bug Fixes
+
+- restore browser-safe webp and cli resizing ([f2810e6](https://github.com/stacksjs/ts-images/commit/f2810e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.10 ([0bc0301](https://github.com/stacksjs/ts-images/commit/0bc0301)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.8...v0.2.9)
 
 ## 🚀 Features
