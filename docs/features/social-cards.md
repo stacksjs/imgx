@@ -91,6 +91,32 @@ await generateSocialCard('public/og.jpg', {
 `backgroundColor` options, and takes the same shape a store screenshot's
 background does — so a site and an App Store listing can share one palette.
 
+### Copy that is longer than the space
+
+A card quotes a page, and a page's headline is not written to fit a card. Both
+the headline and the supporting line wrap, and both mark the cut when they run
+out of room:
+
+```ts
+await generateSocialCard('public/og.jpg', {
+  title: 'How to maintain muscle while using GLP-1 weight loss medications',
+  subtitle: 'Pool, tennis, squash, strength, recovery, and coaching.',
+  titleLines: 3, // default
+  subtitleLines: 2, // default; 1 restores the old single-line behaviour
+  titleFont,
+  bodyFont,
+})
+```
+
+The subtitle reserves the height it actually needs, so wrapping it pushes the
+headline up rather than colliding with it. Anything still too long is
+ellipsised — which matters more than it sounds, because a headline cut without
+a mark reads as a complete, shorter headline rather than a truncated one, and
+nobody reviewing the card notices.
+
+`layoutText` and `drawText` take the same `ellipsis` flag, off by default so
+existing layouts keep the metrics they were built against.
+
 ## Meta tags
 
 Generating the images is half of it. Declare the dimensions too, or a scraper

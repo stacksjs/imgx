@@ -39,8 +39,22 @@ export interface TextOptions {
   lineHeight?: number
   /** Extra space between glyphs, as a multiple of `size`. Negative tightens. */
   letterSpacing?: number
-  /** Stop after this many lines. The last one is not ellipsised. */
+  /** Stop after this many lines. */
   maxLines?: number
+  /**
+   * Mark a truncated last line with an ellipsis. @default false
+   *
+   * Without it, text that overruns `maxLines` simply stops, and the result
+   * reads as a complete phrase rather than a cut one: a headline capped from
+   * "How to maintain muscle while using GLP-1 weight loss medications" to
+   * "How to maintain muscle while using GLP-1" is not shorter, it is
+   * different. An ellipsis says the sentence continues.
+   *
+   * Off by default so existing layouts keep the width and line count they
+   * were designed against. Turn it on wherever the copy is not under the
+   * layout's control.
+   */
+  ellipsis?: boolean
 }
 
 export interface TextMetrics {
@@ -69,6 +83,12 @@ export function layoutText(options: Omit<TextOptions, 'x' | 'y' | 'color'>): Tex
   }
 
   const lines: string[] = []
+  // Set whenever a word is dropped. The line count cannot stand in for this:
+  // the loops below break the moment the cap is reached, discarding the
+  // partial line in hand and every word after it, so a truncated block and a
+  // block that happens to fill its last line have the same length.
+  let truncated = false
+
   for (const paragraph of text.split('\n')) {
     let current = ''
 
@@ -83,18 +103,40 @@ export function layoutText(options: Omit<TextOptions, 'x' | 'y' | 'color'>): Tex
       lines.push(current)
       current = word
 
-      if (maxLines && lines.length >= maxLines)
+      if (maxLines && lines.length >= maxLines) {
+        truncated = true
         break
+      }
     }
 
     if (current && (!maxLines || lines.length < maxLines))
       lines.push(current)
+    else if (current)
+      truncated = true
 
-    if (maxLines && lines.length >= maxLines)
+    if (maxLines && lines.length >= maxLines) {
+      // More paragraphs behind this one are dropped too.
+      if (text.split('\n').indexOf(paragraph) < text.split('\n').length - 1)
+        truncated = true
       break
+    }
   }
 
   const kept = maxLines ? lines.slice(0, maxLines) : lines
+
+  if (options.ellipsis && kept.length > 0) {
+    // A word longer than the measure is kept whole by the wrapper above —
+    // there is nowhere to break it — so it paints outside the box. A caller
+    // asking for an ellipsis is asking for the text to fit, so trim it.
+    for (let i = 0; i < kept.length; i++) {
+      if (measure(kept[i]) > maxWidth)
+        kept[i] = withEllipsis(kept[i], measure, maxWidth)
+    }
+
+    const last = kept.length - 1
+    if ((truncated || lines.length > kept.length) && !kept[last].endsWith('\u2026'))
+      kept[last] = withEllipsis(kept[last], measure, maxWidth)
+  }
 
   return {
     width: Math.max(...kept.map(measure), 0),
@@ -102,6 +144,40 @@ export function layoutText(options: Omit<TextOptions, 'x' | 'y' | 'color'>): Tex
     lines: kept,
     lineHeight,
   }
+}
+
+/**
+ * Append an ellipsis to `line`, dropping trailing words or characters until
+ * the result fits `maxWidth`.
+ *
+ * A bare append is not enough: the last line is by definition close to full,
+ * so adding a character to it usually pushes it over the measure it was
+ * wrapped to.
+ */
+function withEllipsis(line: string, measure: (value: string) => number, maxWidth: number): string {
+  const ellipsis = '\u2026'
+
+  if (measure(line + ellipsis) <= maxWidth)
+    return line + ellipsis
+
+  // Whole words first, so the result still breaks where a reader expects.
+  const words = line.split(' ')
+  while (words.length > 1) {
+    words.pop()
+    const candidate = words.join(' ') + ellipsis
+    if (measure(candidate) <= maxWidth)
+      return candidate
+  }
+
+  // One very long word. Trim characters off it.
+  let head = words[0] ?? ''
+  while (head.length > 1) {
+    head = head.slice(0, -1)
+    if (measure(head + ellipsis) <= maxWidth)
+      return head + ellipsis
+  }
+
+  return ellipsis
 }
 
 function measureLine(text: string, font: Font, size: number, letterSpacing: number): number {

@@ -185,6 +185,16 @@ export interface SocialCardOptions {
   mutedColor?: RGBA
   titleSize?: number
   titleLines?: number
+  /**
+   * Lines the subtitle may wrap to. @default 2
+   *
+   * The supporting line is where a card carries the specifics — a price, a
+   * date, what the thing actually is — and one line of it at this size is
+   * around sixty characters. Capping at one silently cut the rest off
+   * mid-word, which reads as a broken card rather than a terse one. Set 1 to
+   * keep the old behaviour.
+   */
+  subtitleLines?: number
   quality?: number
   format?: 'jpeg' | 'png' | 'webp' | 'avif'
 }
@@ -315,11 +325,32 @@ export async function generateSocialCard(
     lineHeight: 1.14,
     letterSpacing: -0.018,
     maxLines: options.titleLines ?? 3,
+    // A card's headline comes from a page, not from this layout, so it can
+    // always be longer than three lines. Cut without a mark it reads as a
+    // different, shorter headline rather than a truncated one.
+    ellipsis: true,
   })
 
   const subtitleSize = Math.round(width * 0.0245)
   const eyebrowSize = Math.round(width * 0.019)
-  const subtitleBlock = options.subtitle ? subtitleSize * 1.35 + padding * 0.32 : 0
+  // Measured, not assumed: the block the subtitle needs sets where the title
+  // above it has to stop, so a subtitle that wraps pushes the headline up
+  // instead of being trimmed to fit a gap that was reserved before anyone
+  // knew how long it was.
+  const subtitleMetrics = options.subtitle
+    ? layoutText({
+        text: options.subtitle,
+        font: bodyFont,
+        size: subtitleSize,
+        maxWidth: maxTextWidth,
+        lineHeight: 1.35,
+        maxLines: options.subtitleLines ?? 2,
+        ellipsis: true,
+      })
+    : undefined
+  const subtitleBlock = subtitleMetrics
+    ? subtitleSize * 1.35 + (subtitleMetrics.lines.length - 1) * subtitleMetrics.lineHeight + padding * 0.32
+    : 0
 
   const titleBottom = height - padding - subtitleBlock
   const firstBaseline = titleBottom - titleMetrics.height + titleMetrics.lineHeight * 0.78
@@ -369,18 +400,27 @@ export async function generateSocialCard(
     lineHeight: 1.14,
     letterSpacing: -0.018,
     maxLines: options.titleLines ?? 3,
+    // A card's headline comes from a page, not from this layout, so it can
+    // always be longer than three lines. Cut without a mark it reads as a
+    // different, shorter headline rather than a truncated one.
+    ellipsis: true,
   })
 
-  if (options.subtitle) {
+  if (options.subtitle && subtitleMetrics) {
+    const lastBaseline = height - padding - subtitleSize * 0.15
     drawText(card, {
       text: options.subtitle,
       font: bodyFont,
       size: subtitleSize,
       x: padding,
-      y: height - padding - subtitleSize * 0.15,
+      // The last line keeps the baseline a single line always had, so the
+      // foot of the card does not move when a subtitle wraps.
+      y: lastBaseline - (subtitleMetrics.lines.length - 1) * subtitleMetrics.lineHeight,
       color: muted,
       maxWidth: maxTextWidth,
-      maxLines: 1,
+      lineHeight: 1.35,
+      maxLines: options.subtitleLines ?? 2,
+      ellipsis: true,
     })
   }
 
