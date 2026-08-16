@@ -117,6 +117,29 @@ nobody reviewing the card notices.
 `layoutText` and `drawText` take the same `ellipsis` flag, off by default so
 existing layouts keep the metrics they were built against.
 
+### Give it a static font
+
+`loadFont` reads TrueType outlines, and it draws a variable font's default
+master and nothing else — the `gvar` deltas that move outlines along an axis
+are not applied.
+
+This bites more often than it sounds, because most families now ship as one
+variable file. Ask Google Fonts for Outfit Bold and you get
+`Outfit[wght].ttf`, whose default instance is Regular: it parses, it
+rasterises, and the card goes out in the wrong weight. `loadFont` warns once
+when it sees one, and reports `font.variable` so a build can fail on it:
+
+```ts
+const font = loadFont(new Uint8Array(await readFile('fonts/Outfit-Bold.ttf')))
+
+if (font.variable)
+  throw new Error('supply a static instance — this is a variable font')
+```
+
+Pass `{ warnOnVariable: false }` when the default master is the weight you
+want. Static instances usually live in the upstream project's own repository
+rather than on Google Fonts.
+
 ## Meta tags
 
 Generating the images is half of it. Declare the dimensions too, or a scraper

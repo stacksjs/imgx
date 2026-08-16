@@ -36,6 +36,23 @@ export interface Font {
   advanceWidth: (glyphId: number) => number
   /** Contours in font units, y up. Empty for blank glyphs such as space. */
   outline: (glyphId: number) => GlyphContour[]
+  /**
+   * True when the file is a variable font.
+   *
+   * Only the default master is rasterised — the `gvar` deltas that would
+   * move the outlines to another point on the weight axis are not applied.
+   * See `loadFont`.
+   */
+  variable: boolean
+}
+
+export interface LoadFontOptions {
+  /**
+   * Warn on stderr when the file is a variable font. @default true
+   *
+   * Set false if you know the default master is the weight you want.
+   */
+  warnOnVariable?: boolean
 }
 
 interface TableRecord {
@@ -78,9 +95,16 @@ class Reader {
 /**
  * Parse a TrueType font.
  *
+ * Variable fonts load, but only their default master is drawn: the `gvar`
+ * deltas that move outlines along an axis are not applied. That matters
+ * because most families are now distributed as a single variable file — ask
+ * Google Fonts for Outfit Bold and you get `Outfit[wght].ttf`, whose default
+ * master is Regular. Rendered, it is simply the wrong weight, with nothing to
+ * say so, which is why this warns rather than staying quiet.
+ *
  * @param bytes the raw .ttf contents
  */
-export function loadFont(bytes: Uint8Array): Font {
+export function loadFont(bytes: Uint8Array, options: LoadFontOptions = {}): Font {
   const reader = new Reader(bytes)
   const version = reader.uint32()
 
@@ -165,6 +189,12 @@ export function loadFont(bytes: Uint8Array): Font {
     return contours
   }
 
+  // 'fvar' is the axis table. Its presence is what makes a file variable.
+  const variable = tables.has('fvar')
+
+  if (variable && options.warnOnVariable !== false)
+    warnVariable(tables.has('gvar'))
+
   return {
     unitsPerEm,
     ascender,
@@ -174,7 +204,26 @@ export function loadFont(bytes: Uint8Array): Font {
     glyphIdFor: (codePoint: number) => cmap.get(codePoint) ?? 0,
     advanceWidth: (glyphId: number) => advances[Math.min(glyphId, advances.length - 1)] ?? 0,
     outline,
+    variable,
   }
+}
+
+/** Said once per process: one warning is a heads-up, one per face is noise. */
+let warnedVariable = false
+
+function warnVariable(hasDeltas: boolean): void {
+  if (warnedVariable)
+    return
+
+  warnedVariable = true
+  console.warn(
+    'ts-images: this is a variable font, and only its default master is drawn'
+    + `${hasDeltas ? ' — its gvar deltas are not applied' : ''}.\n`
+    + '  If you asked for a specific weight, you are not getting it: a variable\n'
+    + '  file named Bold still rasterises at whatever its default instance is.\n'
+    + '  Supply a static instance, or pass { warnOnVariable: false } if the\n'
+    + '  default is the weight you want.',
+  )
 }
 
 /** Advance width per glyph. Glyphs past `numberOfHMetrics` reuse the last one. */
