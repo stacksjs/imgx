@@ -1,5 +1,23 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.10...v0.2.11)
+
+## 🚀 Features
+
+- **font**: report variable fonts rather than drawing the wrong weight ([b5d01bc](https://github.com/stacksjs/ts-images/commit/b5d01bc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **og**: wrap the subtitle, and mark copy that had to be cut ([d0afdcc](https://github.com/stacksjs/ts-images/commit/d0afdcc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🧹 Chores
+
+- release v0.2.11 ([d97bccc](https://github.com/stacksjs/ts-images/commit/d97bccc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.9...v0.2.10)
 
 ## 🐛 Bug Fixes
