@@ -20,7 +20,8 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
+    // No `baseUrl`: TypeScript 7 removed it. The paths below are written
+    // relative to this file, which is how they resolve without one.
     "paths": {
       "ts-images": ["./packages/ts-images/src/index.ts"],
       "ts-images/*": ["./packages/ts-images/src/*"]
