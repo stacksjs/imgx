@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { mkdir, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { loadFont } from '../src/font'
-import { generateSocialCard, generateSocialCards, generateSocialImages, socialCardMetrics, SOCIAL_CARD_PRESETS } from '../src/og'
+import { generateSocialCard, generateSocialCards, generateSocialImages, renderSocialCard, socialCardMetrics, SOCIAL_CARD_PRESETS } from '../src/og'
 import { readMetadata } from './utils/test-helpers'
 
 const FIXTURES_DIR = join(import.meta.dir, 'fixtures')
@@ -232,6 +232,22 @@ describe('og', () => {
       const meta = await readMetadata(path)
       expect(meta.width).toBe(1200)
       expect(meta.height).toBe(1500)
+    }, 30000)
+
+    it('renders to bytes without touching the disk', async () => {
+      const bytes = await renderSocialCard({
+        title: 'Ads gone before the page loads.',
+        titleFont: await font(),
+        format: 'png',
+      })
+
+      expect(bytes.byteLength).toBeGreaterThan(0)
+      // PNG's signature, so this is a decodable image rather than a buffer of
+      // the right length.
+      expect(Array.from(bytes.slice(0, 4))).toEqual([0x89, 0x50, 0x4E, 0x47])
+      // The one property a caller serving this on a response depends on: no
+      // file was invented on the side.
+      expect(existsSync(join(OUTPUT_DIR, 'og.png'))).toBe(false)
     }, 30000)
   })
 })

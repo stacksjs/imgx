@@ -199,10 +199,19 @@ export interface SocialCardOptions {
   format?: 'jpeg' | 'png' | 'webp' | 'avif'
 }
 
-export async function generateSocialCard(
-  outputPath: string,
-  options: SocialCardOptions,
-): Promise<string> {
+/**
+ * Compose a card and hand back the encoded bytes.
+ *
+ * The same drawing `generateSocialCard` does, stopping short of the disk. A
+ * card is not always a build artefact: a forge, a shop, a docs site with a
+ * page per entity cannot enumerate its pages ahead of time, so the card for
+ * `/owner/repository` has to be drawn when somebody asks for it and returned
+ * on the response. Routing that through a file meant inventing a writable
+ * directory inside a request handler and reading back what had just been
+ * written, which is two syscalls and a cleanup problem in exchange for
+ * nothing.
+ */
+export async function renderSocialCard(options: SocialCardOptions): Promise<Uint8Array> {
   const width = options.width ?? 1200
   const height = options.height ?? 630
   const color = options.color ?? { r: 255, g: 255, b: 255 }
@@ -425,8 +434,21 @@ export async function generateSocialCard(
   }
 
   const format = options.format ?? 'jpeg'
-  const encoded = await encode(card, format, { quality: options.quality ?? 82 })
-  await writeFile(outputPath, encoded)
+
+  return encode(card, format, { quality: options.quality ?? 82 })
+}
+
+/**
+ * Draw a card and write it, answering the path it was written to.
+ *
+ * The build-time half of the pair: what `generateSocialCards` and the CLI
+ * call. The composition itself lives in `renderSocialCard`.
+ */
+export async function generateSocialCard(
+  outputPath: string,
+  options: SocialCardOptions,
+): Promise<string> {
+  await writeFile(outputPath, await renderSocialCard(options))
 
   return outputPath
 }

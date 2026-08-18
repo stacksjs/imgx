@@ -161,6 +161,39 @@ small square thumbnail no matter how good the card is.
 Note the single `og:image`. Adding the square and portrait crops here is the
 mistake described above — Discord will collage them.
 
+## Cards a build cannot enumerate
+
+A site with a page per entity — a forge with a page per repository, a shop
+with a page per product — cannot list its cards ahead of time. Those get drawn
+when somebody asks for them, and `renderSocialCard` hands back the encoded
+bytes so the response can carry them straight out:
+
+```ts
+import { renderSocialCard } from 'ts-images'
+
+const bytes = await renderSocialCard({
+  brand: 'ReviewOS',
+  eyebrow: 'Pull request #128',
+  title: 'Anchor review threads to the merge base',
+  subtitle: 'reviewos/reviewos.org · 42 files changed',
+  titleFont,
+  format: 'png',
+})
+
+return new Response(bytes, { headers: { 'content-type': 'image/png' } })
+```
+
+`generateSocialCard` is the same drawing followed by a write, so the two agree
+on every layout decision by construction. Two things are worth doing around
+the call rather than inside it:
+
+- **Load the face once.** `loadFont` parses the whole table on every call, and
+  a request handler that does it per request pays for it per request. Hold the
+  `Font` in a module-level variable.
+- **Cache the bytes.** A card changes when the page's title changes, which is
+  rarely. Key a cache on whatever the title is derived from and let scrapers,
+  which fetch the same URL repeatedly, hit it.
+
 ## Cropping from photographs
 
 `generateSocialImages` is the simpler tool: it cover-crops one source image to
