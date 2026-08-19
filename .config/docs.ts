@@ -1,7 +1,7 @@
-import type { BunPressConfig } from 'bunpress'
+import type { BunPressConfig } from '@stacksjs/bunpress'
 
 const config: BunPressConfig = {
-  name: 'imgx',
+  title: 'imgx',
   description: 'A powerful image optimization toolkit for modern web development',
   url: 'https://imgx.sh',
 
