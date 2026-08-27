@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.12...v0.2.13)
+
+## 🐛 Bug Fixes
+
+- **docs**: use the config keys bunpress actually has ([2c401e9](https://github.com/stacksjs/ts-images/commit/2c401e9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.13 ([0a9bc9b](https://github.com/stacksjs/ts-images/commit/0a9bc9b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.11...v0.2.12)
 
 ## ✨ Features
