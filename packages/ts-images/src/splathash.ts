@@ -1,4 +1,16 @@
 /**
+ * SplatHash: a sixteen-byte summary of an image, and the code to read one.
+ *
+ * Exported as its own entry point (`ts-images/splathash`) as well as from the
+ * root, because the two halves run in different places. Producing a hash
+ * happens at build time next to the encoders, which are native and Node-only;
+ * *decoding* one happens in a browser, where a placeholder has to be painted
+ * before the real file arrives. Importing the root to get the decoder drags
+ * the codecs in with it, so a bundler either fails on them or ships them.
+ *
+ * Nothing here imports anything but a type, which is what makes that safe.
+ */
+/**
  * SplatHash — compact image placeholders in 16 bytes.
  *
  * Ported to TypeScript for ts-images from the reference implementation by
@@ -240,6 +252,19 @@ export function splatHashToBase64(hash: Uint8Array): string {
 }
 
 /** Decode a base64 SplatHash string back to its 16 bytes. */
+/** A SplatHash is exactly this many bytes; anything else is not one. */
+export const SPLATHASH_BYTES = 16
+
+/**
+ * Decode a base64 SplatHash.
+ *
+ * Throws on anything that does not decode to exactly `SPLATHASH_BYTES`.
+ * Non-base64 characters were skipped silently, so a truncated or corrupted
+ * value produced a short buffer, and the renderer downstream read it as though
+ * it were a hash - painting noise into the frame where a placeholder should
+ * be. That is worse than no placeholder: it looks like a decoding bug in the
+ * image itself rather than a bad string handed in.
+ */
 export function splatHashFromBase64(str: string): Uint8Array {
   const clean = str.replace(/=+$/, '')
   const bytes: number[] = []
@@ -255,6 +280,10 @@ export function splatHashFromBase64(str: string): Uint8Array {
       bytes.push((acc >> bits) & 0xFF)
     }
   }
+
+  if (bytes.length !== SPLATHASH_BYTES)
+    throw new Error(`Not a SplatHash: decoded ${bytes.length} bytes, expected ${SPLATHASH_BYTES}`)
+
   return new Uint8Array(bytes)
 }
 

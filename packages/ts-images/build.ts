@@ -9,7 +9,7 @@ async function main(): Promise<void> {
   logger.info('Building...')
 
   const result = await Bun.build({
-    entrypoints: ['./src/index.ts', './src/activity-card.ts', './bin/cli.ts'],
+    entrypoints: ['./src/index.ts', './src/splathash.ts', './src/activity-card.ts', './bin/cli.ts'],
     outdir: './dist',
     format: 'esm',
     target: 'bun',

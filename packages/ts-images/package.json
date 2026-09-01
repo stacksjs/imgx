@@ -37,6 +37,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./splathash": {
+      "types": "./dist/splathash.d.ts",
+      "import": "./dist/src/splathash.js"
+    },
     "./activity-card": {
       "types": "./dist/activity-card.d.ts",
       "import": "./dist/src/activity-card.js"
