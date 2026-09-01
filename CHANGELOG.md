@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.13...v0.2.14)
+
+## ✨ Features
+
+- **splathash**: its own entry point, and a decoder that refuses junk ([46827e6](https://github.com/stacksjs/ts-images/commit/46827e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.14 ([8793095](https://github.com/stacksjs/ts-images/commit/8793095)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.12...v0.2.13)
 
 ## 🐛 Bug Fixes
