@@ -80,6 +80,42 @@ describe('image delivery', () => {
     expect(decoded.height).toBeGreaterThan(0)
   })
 
+  test('encodes opaque RGBA sources as AVIF and preserves transparent sources with alpha formats', async () => {
+    const opaqueOut = await mkdtemp(join(tmpdir(), 'ts-images-avif-opaque-'))
+    const transparentOut = await mkdtemp(join(tmpdir(), 'ts-images-avif-transparent-'))
+    outputDirectories.push(opaqueOut, transparentOut)
+
+    const opaque = new Uint8Array([
+      255, 0, 0, 255,
+      0, 0, 255, 255,
+    ])
+    const transparent = new Uint8Array([
+      255, 0, 0, 128,
+      0, 0, 255, 255,
+    ])
+    const { encode } = await import('../src')
+    const opaquePng = await encode({ data: opaque, width: 2, height: 1, channels: 4 }, 'png')
+    const transparentPng = await encode({ data: transparent, width: 2, height: 1, channels: 4 }, 'png')
+
+    const opaqueManifest = await createImageDeliveryManifest({
+      input: opaquePng,
+      outDir: opaqueOut,
+      widths: [2],
+      formats: ['avif', 'webp'],
+    })
+    const transparentManifest = await createImageDeliveryManifest({
+      input: transparentPng,
+      outDir: transparentOut,
+      widths: [2],
+      formats: ['avif', 'webp'],
+    })
+
+    expect(opaqueManifest.sources.avif).toBeDefined()
+    expect(transparentManifest.sources.avif).toBeUndefined()
+    expect(transparentManifest.sources.webp).toBeDefined()
+    expect(transparentManifest.sources.png).toBeDefined()
+  })
+
   test('builds a deterministic catalog with bounded source concurrency', async () => {
     const outDir = await mkdtemp(join(tmpdir(), 'ts-images-catalog-'))
     outputDirectories.push(outDir)

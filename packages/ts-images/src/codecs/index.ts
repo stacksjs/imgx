@@ -440,6 +440,19 @@ async function decodeAvif(buffer: Uint8Array, _options: DecodeOptions): Promise<
 async function encodeAvif(imageData: ImageData, options: EncodeOptions): Promise<Uint8Array> {
   const avif = await loadCodec('@stacksjs/ts-avif')
   const data = toCodecData(imageData, { channels: 4 })
+  // Decoders normalize pixels to RGBA, so `hasAlpha` describes the source
+  // channel layout rather than proving any pixel is transparent. The bundled
+  // AVIF encoder accepts opaque RGBA input and only rejects real transparency;
+  // inspect alpha bytes so ordinary PNGs do not get misclassified.
+  let hasVisibleAlpha = false
+  if (imageData.hasAlpha) {
+    for (let index = 3; index < data.length; index += 4) {
+      if (data[index] !== 255) {
+        hasVisibleAlpha = true
+        break
+      }
+    }
+  }
   // Prefer `encodeAsync` when ts-avif exposes it. It shells out to
   // `avifenc` (libavif) when present, which is the only path that
   // produces real AV1 image data — the bundled `encode()` writes a
@@ -449,7 +462,7 @@ async function encodeAvif(imageData: ImageData, options: EncodeOptions): Promise
     width: imageData.width,
     height: imageData.height,
     data: data instanceof Uint8Array ? data : new Uint8Array(data),
-    hasAlpha: imageData.hasAlpha,
+    hasAlpha: hasVisibleAlpha,
   }, {
     quality: options.quality,
     lossless: options.lossless,

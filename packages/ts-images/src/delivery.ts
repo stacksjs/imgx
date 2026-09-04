@@ -274,6 +274,14 @@ function createSrcset(variants: ImageVariant[]): string {
   return variants.map(variant => `${variant.url} ${variant.width}w`).join(', ')
 }
 
+function hasVisibleAlpha(image: ImageData): boolean {
+  if (!image.hasAlpha) return false
+  for (let index = 3; index < image.data.length; index += 4) {
+    if (image.data[index] !== 255) return true
+  }
+  return false
+}
+
 async function generateManifest(options: ImageDeliveryOptions): Promise<ImageDeliveryManifest> {
   const sourceBytes = typeof options.input === 'string'
     ? new Uint8Array(await readFile(options.input))
@@ -288,6 +296,10 @@ async function generateManifest(options: ImageDeliveryOptions): Promise<ImageDel
   if (options.height !== undefined && options.aspectRatio !== undefined) throw new TypeError('Image height and aspect ratio are mutually exclusive')
   const fallbackFormat = options.fallbackFormat ?? (source.hasAlpha ? 'png' : 'jpeg')
   const formats = canonicalFormats(options.formats ?? ['avif', 'webp'], fallbackFormat)
+    // The bundled AVIF codec intentionally rejects transparency until it can
+    // preserve an alpha plane. Never fail an otherwise optimizable transparent
+    // image, and never flatten it: WebP + PNG remain lossless-alpha outputs.
+    .filter(format => format !== 'avif' || !hasVisibleAlpha(source))
   const widths = normalizeImageWidths(options.widths ?? [320, 640, 960, 1280, 1920], source.width, options.upscale, options.includeOriginal)
   const concurrency = Math.max(1, Math.min(32, Math.round(options.concurrency ?? 4)))
   const name = normalizeName(options.input, options.name)
