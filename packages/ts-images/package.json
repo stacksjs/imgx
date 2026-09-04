@@ -37,6 +37,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./delivery": {
+      "types": "./dist/delivery.d.ts",
+      "import": "./dist/src/index.js"
+    },
     "./splathash": {
       "types": "./dist/splathash.d.ts",
       "import": "./dist/src/splathash.js"
