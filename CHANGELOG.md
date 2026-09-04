@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.16...v0.2.17)
+
+## 🐛 Bug Fixes
+
+- **package**: export image delivery API ([54c83e5](https://github.com/stacksjs/ts-images/commit/54c83e5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.17 ([79637c8](https://github.com/stacksjs/ts-images/commit/79637c8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.15...v0.2.16)
 
 ## 🐛 Bug Fixes
