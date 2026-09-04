@@ -83,7 +83,7 @@
     "zip:darwin-arm64": "zip -j bin/imgx-darwin-arm64.zip bin/imgx-darwin-arm64"
   },
   "dependencies": {
-    "@stacksjs/ts-avif": "^0.1.0",
+    "@stacksjs/ts-avif": "^0.1.4",
     "@stacksjs/ts-bmp": "^0.1.0",
     "@stacksjs/ts-png": "^0.1.2",
     "@stacksjs/ts-svg": "^0.1.1",

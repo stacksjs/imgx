@@ -70,6 +70,28 @@ export interface ImageDeliveryManifest {
   placeholder?: { hash: string, dataUrl: string }
 }
 
+export interface ImageDeliveryCatalogEntry {
+  /** Stable public identifier used by consumers to look the image up. */
+  key: string
+  input: string | Uint8Array
+  /** Optional output basename. Defaults to the entry key. */
+  name?: string
+  /** Per-image overrides layered over the catalog defaults. */
+  options?: Partial<Omit<ImageDeliveryOptions, 'input' | 'name'>>
+}
+
+export interface ImageDeliveryCatalogOptions extends Omit<ImageDeliveryOptions, 'input' | 'name'> {
+  entries: readonly ImageDeliveryCatalogEntry[]
+  /** Number of source images processed concurrently. */
+  batchConcurrency?: number
+}
+
+export interface ImageDeliveryCatalog {
+  entries: Record<string, ImageDeliveryManifest>
+  /** Content-derived digest suitable for build cache invalidation. */
+  fingerprint: string
+}
+
 export interface SelectedImageVariant {
   variant: ImageVariant
   headers: Record<string, string>
@@ -387,6 +409,48 @@ export async function createImageDeliveryManifest(options: ImageDeliveryOptions)
   finally {
     activeGenerations.delete(key)
   }
+}
+
+/**
+ * Build a deterministic group of responsive image manifests.
+ *
+ * Frameworks should use this instead of coordinating one manifest promise per
+ * template. It bounds source-level concurrency, rejects duplicate public keys,
+ * and returns one digest that can participate in an HTML build cache key.
+ */
+export async function createImageDeliveryCatalog(options: ImageDeliveryCatalogOptions): Promise<ImageDeliveryCatalog> {
+  const { entries, batchConcurrency = 4, ...defaults } = options
+  if (!Number.isInteger(batchConcurrency) || batchConcurrency < 1 || batchConcurrency > 32)
+    throw new TypeError('Image catalog concurrency must be between 1 and 32')
+
+  const seen = new Set<string>()
+  for (const entry of entries) {
+    if (!entry.key.trim()) throw new TypeError('Image catalog keys cannot be empty')
+    if (seen.has(entry.key)) throw new TypeError(`Duplicate image catalog key: ${entry.key}`)
+    seen.add(entry.key)
+  }
+
+  const manifests = await mapConcurrent([...entries], batchConcurrency, async (entry) => {
+    const manifest = await createImageDeliveryManifest({
+      ...defaults,
+      ...entry.options,
+      input: entry.input,
+      name: entry.name ?? entry.key,
+    })
+    return [entry.key, manifest] as const
+  })
+
+  const catalogEntries = Object.fromEntries(manifests)
+  const fingerprint = createHash('sha256')
+    .update(JSON.stringify(manifests.map(([key, manifest]) => ({
+      key,
+      source: manifest.source.hash,
+      variants: manifest.variants.map(variant => variant.cacheKey),
+      placeholder: manifest.placeholder?.hash ?? null,
+    }))))
+    .digest('hex')
+
+  return { entries: catalogEntries, fingerprint }
 }
 
 export function selectImageVariant(

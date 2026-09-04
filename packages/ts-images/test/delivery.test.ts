@@ -2,7 +2,7 @@ import { afterAll, describe, expect, test } from 'bun:test'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createImageDeliveryManifest, decode, negotiateImageFormat, normalizeImageWidths, resolveImageDeliveryOptions, selectImageVariant } from '../src'
+import { createImageDeliveryCatalog, createImageDeliveryManifest, decode, negotiateImageFormat, normalizeImageWidths, resolveImageDeliveryOptions, selectImageVariant } from '../src'
 
 const fixture = join(import.meta.dir, 'fixtures/app-icon.png')
 const outputDirectories: string[] = []
@@ -59,6 +59,61 @@ describe('image delivery', () => {
     expect(selected.variant.width).toBe(128)
     expect(selected.headers.Vary).toBe('Accept')
     expect(selected.headers['Cache-Control']).toContain('immutable')
+  })
+
+  test('emits decodable AVIF variants instead of advertising stub containers', async () => {
+    const outDir = await mkdtemp(join(tmpdir(), 'ts-images-avif-'))
+    outputDirectories.push(outDir)
+    const manifest = await createImageDeliveryManifest({
+      input: join(import.meta.dir, 'fixtures/og-image.jpg'),
+      outDir,
+      widths: [64],
+      formats: ['avif'],
+      fallbackFormat: 'jpeg',
+      includeOriginal: false,
+      placeholder: false,
+    })
+    const avif = manifest.variants.find(variant => variant.format === 'avif')
+    expect(avif).toBeDefined()
+    const decoded = await decode(new Uint8Array(await readFile(avif!.path)))
+    expect(decoded.width).toBe(64)
+    expect(decoded.height).toBeGreaterThan(0)
+  })
+
+  test('builds a deterministic catalog with bounded source concurrency', async () => {
+    const outDir = await mkdtemp(join(tmpdir(), 'ts-images-catalog-'))
+    outputDirectories.push(outDir)
+    const input = join(import.meta.dir, 'fixtures/og-image.jpg')
+    const options = {
+      entries: [
+        { key: '/images/hero.jpg', input },
+        { key: '/images/card.jpg', input },
+      ],
+      outDir,
+      baseUrl: '/_images',
+      widths: [64],
+      formats: ['webp'] as const,
+      fallbackFormat: 'jpeg' as const,
+      includeOriginal: false,
+      batchConcurrency: 2,
+    }
+    const first = await createImageDeliveryCatalog(options)
+    const second = await createImageDeliveryCatalog(options)
+
+    expect(Object.keys(first.entries)).toEqual(['/images/hero.jpg', '/images/card.jpg'])
+    expect(first.fingerprint).toHaveLength(64)
+    expect(second.fingerprint).toBe(first.fingerprint)
+    expect(first.entries['/images/hero.jpg'].sources.webp).toContain('/_images/')
+  })
+
+  test('rejects duplicate catalog keys before processing files', async () => {
+    await expect(createImageDeliveryCatalog({
+      entries: [
+        { key: '/same.jpg', input: new Uint8Array() },
+        { key: '/same.jpg', input: new Uint8Array() },
+      ],
+      outDir: '/tmp/ts-images-duplicate-key-test',
+    })).rejects.toThrow('Duplicate image catalog key')
   })
 
   test('deduplicates simultaneous identical generations', async () => {
