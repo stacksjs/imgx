@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.15...v0.2.16)
+
+## 🐛 Bug Fixes
+
+- **delivery**: handle PNG alpha for AVIF ([a8df31a](https://github.com/stacksjs/ts-images/commit/a8df31a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.16 ([0de83cf](https://github.com/stacksjs/ts-images/commit/0de83cf)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.14...v0.2.15)
 
 ## ✨ Features
