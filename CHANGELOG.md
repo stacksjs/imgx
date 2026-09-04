@@ -1,5 +1,19 @@
 # Changelog
 
+[Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.14...v0.2.15)
+
+## ✨ Features
+
+- **delivery**: add build-time image catalogs ([f95a0b2](https://github.com/stacksjs/ts-images/commit/f95a0b2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.2.15 ([9d4bc70](https://github.com/stacksjs/ts-images/commit/9d4bc70)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/ts-images/compare/v0.2.13...v0.2.14)
 
 ## ✨ Features

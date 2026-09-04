@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/imgx-vscode",
   "type": "module",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "private": true,
   "description": "VSCode extension for imgx",
   "author": "Chris Breuer <chris@stacksjs.org>",
